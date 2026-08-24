@@ -1,0 +1,28 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-ruff
+        name: backend ruff
+        entry: bash -c 'cd backend && uv run ruff check .'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+      - id: backend-black
+        name: backend black
+        entry: bash -c 'cd backend && uv run black --check .'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+      - id: backend-mypy
+        name: backend mypy
+        entry: bash -c 'cd backend && uv run mypy app'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+      - id: backend-pytest
+        name: backend pytest
+        entry: bash -c 'cd backend && uv run pytest -q'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+        stages: [pre-push]
