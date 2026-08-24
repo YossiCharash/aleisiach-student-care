@@ -1,8 +1,16 @@
-from functools import lru_cache
+from typing import Annotated
 
+from fastapi import Depends, Request
+
+from app.configuration.bootstrap import Bootstrap
 from app.configuration.settings import Settings
 
 
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
+def get_bootstrap(request: Request) -> Bootstrap:
+    bootstrap = request.app.state.bootstrap
+    assert isinstance(bootstrap, Bootstrap)
+    return bootstrap
+
+
+def get_settings(bootstrap: Annotated[Bootstrap, Depends(get_bootstrap)]) -> Settings:
+    return bootstrap.settings
