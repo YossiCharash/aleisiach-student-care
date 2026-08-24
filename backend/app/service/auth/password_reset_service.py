@@ -1,0 +1,48 @@
+from datetime import timedelta
+
+from app.client.email.email_sender import EmailSender
+from app.client.users.user_repository import UserRepository
+from app.configuration.auth.auth_settings import AuthSettings
+from app.configuration.email.email_settings import EmailSettings
+from app.errors.service.invalid_token_error import InvalidTokenError
+from app.models.client.token_kind import TokenKind
+from app.models.client.user_status import UserStatus
+from app.service.auth.token_consumer import TokenConsumer
+from app.service.auth.token_issuer import TokenIssuer
+from app.utils.service.password_hasher import PasswordHasher
+
+
+class PasswordResetService:
+    def __init__(
+        self,
+        users: UserRepository,
+        token_issuer: TokenIssuer,
+        token_consumer: TokenConsumer,
+        password_hasher: PasswordHasher,
+        email_sender: EmailSender,
+        auth_settings: AuthSettings,
+        email_settings: EmailSettings,
+    ) -> None:
+        self._users = users
+        self._token_issuer = token_issuer
+        self._token_consumer = token_consumer
+        self._password_hasher = password_hasher
+        self._email_sender = email_sender
+        self._auth_settings = auth_settings
+        self._email_settings = email_settings
+
+    def request(self, email: str) -> None:
+        user = self._users.get_by_email(email)
+        if user is None or user.status != UserStatus.ACTIVE:
+            return
+        ttl = timedelta(hours=self._auth_settings.reset_token_ttl_hours)
+        raw_token = self._token_issuer.issue(user.id, TokenKind.PASSWORD_RESET, ttl)
+        link = f"{self._email_settings.reset_base_url}?token={raw_token}"
+        self._email_sender.send_password_reset(user.email, link)
+
+    def reset(self, raw_token: str, new_password: str) -> None:
+        token = self._token_consumer.consume(raw_token, TokenKind.PASSWORD_RESET)
+        user = self._users.get(token.user_id)
+        if user is None:
+            raise InvalidTokenError
+        user.password_hash = self._password_hasher.hash(new_password)
