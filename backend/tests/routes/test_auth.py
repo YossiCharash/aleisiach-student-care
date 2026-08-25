@@ -45,7 +45,8 @@ def test_accept_invitation_then_login(api: TestClient, db_session: Session) -> N
 
     ok = api.post("/auth/login", json={"username": "manager1", "password": "password123"})
     assert ok.status_code == 200
-    assert ok.json()["username"] == "manager1"
+    assert ok.json()["token"]
+    assert ok.json()["user"]["username"] == "manager1"
 
     bad = api.post("/auth/login", json={"username": "manager1", "password": "nope"})
     assert bad.status_code == 401
@@ -80,4 +81,4 @@ def test_login_seeded_active_user(api: TestClient, db_session: Session) -> None:
 
     response = api.post("/auth/login", json={"username": "prof1", "password": "password123"})
     assert response.status_code == 200
-    assert response.json()["role"] == "professional_teacher"
+    assert response.json()["user"]["role"] == "professional_teacher"

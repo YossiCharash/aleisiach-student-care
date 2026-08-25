@@ -8,14 +8,18 @@ from app.client.database.provider import get_session
 from app.client.users.user_repository import UserRepository
 from app.configuration.bootstrap import Bootstrap
 from app.configuration.provider import get_bootstrap
+from app.routes.security import CredentialsDep, Manager, build_session_service
 from app.schema.routes.invitation_accept_request import InvitationAcceptRequest
 from app.schema.routes.login_request import LoginRequest
+from app.schema.routes.login_response import LoginResponse
 from app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
 from app.schema.routes.password_reset_request import PasswordResetRequest
 from app.schema.routes.user_response import UserResponse
+from app.schema.service.invitation_command import InvitationCommand
 from app.service.auth.authentication_service import AuthenticationService
 from app.service.auth.invitation_service import InvitationService
 from app.service.auth.password_reset_service import PasswordResetService
+from app.service.auth.session_service import SessionService
 from app.service.auth.token_consumer import TokenConsumer
 from app.service.auth.token_issuer import TokenIssuer
 
@@ -57,16 +61,38 @@ def get_password_reset_service(
     )
 
 
+def get_session_service(session: SessionDep, bootstrap: BootstrapDep) -> SessionService:
+    return build_session_service(session, bootstrap)
+
+
 InvitationDep = Annotated[InvitationService, Depends(get_invitation_service)]
 AuthenticationDep = Annotated[AuthenticationService, Depends(get_authentication_service)]
 PasswordResetDep = Annotated[PasswordResetService, Depends(get_password_reset_service)]
+SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/login", response_model=UserResponse)
-def login(request: LoginRequest, service: AuthenticationDep) -> UserResponse:
-    return service.authenticate(request.username, request.password)
+@router.post("/login", response_model=LoginResponse)
+def login(
+    request: LoginRequest, auth: AuthenticationDep, sessions: SessionServiceDep
+) -> LoginResponse:
+    user = auth.authenticate(request.username, request.password)
+    token = sessions.create(user.id)
+    return LoginResponse(token=token, user=user)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(credentials: CredentialsDep, sessions: SessionServiceDep) -> None:
+    if credentials is not None:
+        sessions.revoke(credentials.credentials)
+
+
+@router.post("/invitations", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_invitation(
+    request: InvitationCommand, service: InvitationDep, _: Manager
+) -> UserResponse:
+    return service.invite(request)
 
 
 @router.post("/invitations/accept", response_model=UserResponse)
