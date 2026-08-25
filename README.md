@@ -15,14 +15,16 @@ Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 cd backend
 uv sync --all-extras --dev
 cp .env.example .env
-uv run uvicorn app.main:app --reload
+uv run uvicorn backend.app.main:app --reload --app-dir ..
 ```
+
+> Code is imported as `backend.app.*` (import root = repo root).
 
 Quality gates (also enforced in CI and via pre-commit):
 
 ```bash
 cd backend
-uv run ruff check . && uv run black --check . && uv run mypy app && uv run pytest -q
+uv run ruff check . && uv run black --check . && uv run mypy -p backend.app && uv run pytest -q
 ```
 
 Database migrations (Alembic):

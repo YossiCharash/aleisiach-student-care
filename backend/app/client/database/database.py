@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.configuration.database.database_settings import DatabaseSettings
+from backend.app.configuration.database.database_settings import DatabaseSettings
 
 
 class Database:

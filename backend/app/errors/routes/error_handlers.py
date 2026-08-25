@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app.errors.service.app_error import AppError
+from backend.app.errors.service.app_error import AppError
 
 
 async def handle_app_error(request: Request, error: AppError) -> JSONResponse:

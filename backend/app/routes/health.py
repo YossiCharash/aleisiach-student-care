@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.configuration.provider import get_settings
-from app.configuration.settings import Settings
-from app.schema.routes.health_response import HealthResponse
-from app.service.health.health_service import HealthService
+from backend.app.configuration.provider import get_settings
+from backend.app.configuration.settings import Settings
+from backend.app.schema.routes.health_response import HealthResponse
+from backend.app.service.health.health_service import HealthService
 
 
 def get_health_service(

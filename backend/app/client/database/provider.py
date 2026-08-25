@@ -4,8 +4,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.configuration.bootstrap import Bootstrap
-from app.configuration.provider import get_bootstrap
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.provider import get_bootstrap
 
 
 def get_session(

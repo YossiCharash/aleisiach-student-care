@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.configuration.bootstrap import Bootstrap
-from app.configuration.settings import Settings
-from app.errors.routes.error_handlers import register_error_handlers
-from app.routes.health import router as health_router
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.settings import Settings
+from backend.app.errors.routes.error_handlers import register_error_handlers
+from backend.app.routes.auth import router as auth_router
+from backend.app.routes.health import router as health_router
+from backend.app.routes.students import router as students_router
 
 
 def create_app() -> FastAPI:
@@ -22,6 +24,8 @@ def create_app() -> FastAPI:
 
     register_error_handlers(app)
     app.include_router(health_router)
+    app.include_router(auth_router)
+    app.include_router(students_router)
     return app
 
 

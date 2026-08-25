@@ -1,9 +1,10 @@
 from logging.config import fileConfig
 
 from alembic import context
-from app.configuration.settings import Settings
-from app.models.base import Base
 from sqlalchemy import engine_from_config, pool
+
+from backend.app.configuration.settings import Settings
+from backend.app.models.base import Base
 
 config = context.config
 if config.config_file_name is not None:

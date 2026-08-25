@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from app.configuration.bootstrap import Bootstrap
-from app.configuration.settings import Settings
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.settings import Settings
 
 
 def get_bootstrap(request: Request) -> Bootstrap:

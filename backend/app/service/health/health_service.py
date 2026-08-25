@@ -1,5 +1,5 @@
-from app.configuration.app.app_settings import AppSettings
-from app.schema.routes.health_response import HealthResponse
+from backend.app.configuration.app.app_settings import AppSettings
+from backend.app.schema.routes.health_response import HealthResponse
 
 
 class HealthService:
