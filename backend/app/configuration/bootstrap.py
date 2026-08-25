@@ -1,9 +1,9 @@
-from app.client.database.database import Database
-from app.client.email.console_email_sender import ConsoleEmailSender
-from app.client.email.email_sender import EmailSender
-from app.configuration.settings import Settings
-from app.utils.service.password_hasher import PasswordHasher
-from app.utils.service.token_factory import TokenFactory
+from backend.app.client.database.database import Database
+from backend.app.client.email.console_email_sender import ConsoleEmailSender
+from backend.app.client.email.email_sender import EmailSender
+from backend.app.configuration.settings import Settings
+from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 class Bootstrap:

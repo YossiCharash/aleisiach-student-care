@@ -4,16 +4,16 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.client.auth.session_repository import SessionRepository
-from app.client.database.provider import get_session
-from app.client.users.user_repository import UserRepository
-from app.configuration.bootstrap import Bootstrap
-from app.configuration.provider import get_bootstrap
-from app.errors.service.authentication_error import AuthenticationError
-from app.errors.service.authorization_error import AuthorizationError
-from app.models.client.user import User
-from app.models.client.user_role import UserRole
-from app.service.auth.session_service import SessionService
+from backend.app.client.auth.session_repository import SessionRepository
+from backend.app.client.database.provider import get_session
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.provider import get_bootstrap
+from backend.app.errors.service.authentication_error import AuthenticationError
+from backend.app.errors.service.authorization_error import AuthorizationError
+from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
+from backend.app.service.auth.session_service import SessionService
 
 _bearer = HTTPBearer(auto_error=False)
 

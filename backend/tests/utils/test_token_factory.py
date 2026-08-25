@@ -1,4 +1,4 @@
-from app.utils.service.token_factory import TokenFactory
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 def test_create_returns_raw_and_matching_hash() -> None:

@@ -1,12 +1,12 @@
 import uuid
 from datetime import UTC, datetime
 
-from app.client.classes.class_repository import ClassRepository
-from app.client.students.student_repository import StudentRepository
-from app.errors.service.not_found_error import NotFoundError
-from app.models.client.student import Student
-from app.schema.routes.student_create_request import StudentCreateRequest
-from app.schema.routes.student_response import StudentResponse
+from backend.app.client.classes.class_repository import ClassRepository
+from backend.app.client.students.student_repository import StudentRepository
+from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.models.client.student import Student
+from backend.app.schema.routes.student_create_request import StudentCreateRequest
+from backend.app.schema.routes.student_response import StudentResponse
 
 
 class StudentService:

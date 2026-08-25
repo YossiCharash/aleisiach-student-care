@@ -1,4 +1,4 @@
-from app.errors.service.app_error import AppError
+from backend.app.errors.service.app_error import AppError
 
 
 class AuthorizationError(AppError):

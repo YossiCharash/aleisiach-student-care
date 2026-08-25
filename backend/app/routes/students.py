@@ -4,12 +4,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.client.classes.class_repository import ClassRepository
-from app.client.database.provider import get_session
-from app.client.students.student_repository import StudentRepository
-from app.schema.routes.student_create_request import StudentCreateRequest
-from app.schema.routes.student_response import StudentResponse
-from app.service.students.student_service import StudentService
+from backend.app.client.classes.class_repository import ClassRepository
+from backend.app.client.database.provider import get_session
+from backend.app.client.students.student_repository import StudentRepository
+from backend.app.schema.routes.student_create_request import StudentCreateRequest
+from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.service.students.student_service import StudentService
 
 
 def get_student_service(

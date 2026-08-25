@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.client.auth_token import AuthToken
+from backend.app.models.client.auth_token import AuthToken
 
 
 class AuthTokenRepository:

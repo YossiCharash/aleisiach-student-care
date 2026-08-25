@@ -2,8 +2,8 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 
 
 class UserResponse(BaseModel):

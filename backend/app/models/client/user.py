@@ -3,9 +3,9 @@ import uuid
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
+from backend.app.models.base import Base
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 
 
 class User(Base):

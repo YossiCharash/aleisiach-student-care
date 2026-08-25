@@ -2,7 +2,7 @@ import uuid
 
 from pydantic import BaseModel, EmailStr
 
-from app.models.client.user_role import UserRole
+from backend.app.models.client.user_role import UserRole
 
 
 class InvitationCommand(BaseModel):

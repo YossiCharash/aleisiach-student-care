@@ -1,13 +1,14 @@
 from collections.abc import Iterator
 
 import pytest
-from app.client.database.provider import get_session
-from app.main import create_app
-from app.models.base import Base
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+
+from backend.app.client.database.provider import get_session
+from backend.app.main import create_app
+from backend.app.models.base import Base
 
 
 @pytest.fixture

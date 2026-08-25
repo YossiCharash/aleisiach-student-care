@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.client.user_session import UserSession
+from backend.app.models.client.user_session import UserSession
 
 
 class SessionRepository:

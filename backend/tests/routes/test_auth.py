@@ -1,14 +1,15 @@
 from datetime import UTC, datetime, timedelta
 
-from app.models.client.auth_token import AuthToken
-from app.models.client.token_kind import TokenKind
-from app.models.client.user import User
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
-from app.utils.service.password_hasher import PasswordHasher
-from app.utils.service.token_factory import TokenFactory
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+
+from backend.app.models.client.auth_token import AuthToken
+from backend.app.models.client.token_kind import TokenKind
+from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
+from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 def _seed_invited_user(session: Session) -> str:

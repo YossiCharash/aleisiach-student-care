@@ -1,10 +1,10 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.configuration.app.app_settings import AppSettings
-from app.configuration.auth.auth_settings import AuthSettings
-from app.configuration.database.database_settings import DatabaseSettings
-from app.configuration.email.email_settings import EmailSettings
+from backend.app.configuration.app.app_settings import AppSettings
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.configuration.database.database_settings import DatabaseSettings
+from backend.app.configuration.email.email_settings import EmailSettings
 
 
 class Settings(BaseSettings):

@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 
-from app.client.auth.auth_token_repository import AuthTokenRepository
-from app.errors.service.invalid_token_error import InvalidTokenError
-from app.models.client.auth_token import AuthToken
-from app.models.client.token_kind import TokenKind
-from app.utils.service.token_factory import TokenFactory
+from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.errors.service.invalid_token_error import InvalidTokenError
+from backend.app.models.client.auth_token import AuthToken
+from backend.app.models.client.token_kind import TokenKind
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 class TokenConsumer:

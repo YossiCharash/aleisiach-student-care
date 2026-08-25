@@ -1,9 +1,10 @@
-from app.models.client.user import User
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
-from app.utils.service.password_hasher import PasswordHasher
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+
+from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 _INVITE_BODY = {"full_name": "New User", "email": "new@example.com", "role": "instructor"}
 

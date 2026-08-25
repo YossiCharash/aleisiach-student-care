@@ -1,8 +1,8 @@
 import logging
 
-from app.client.email.email_sender import EmailSender
+from backend.app.client.email.email_sender import EmailSender
 
-logger = logging.getLogger("app.email")
+logger = logging.getLogger("backend.app.email")
 
 
 class ConsoleEmailSender(EmailSender):

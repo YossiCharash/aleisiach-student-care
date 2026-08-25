@@ -1,4 +1,4 @@
-from app.utils.service.password_hasher import PasswordHasher
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 
 def test_hash_is_not_plaintext_and_verifies() -> None:

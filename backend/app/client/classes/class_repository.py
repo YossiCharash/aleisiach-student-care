@@ -2,7 +2,7 @@ import uuid
 
 from sqlalchemy.orm import Session
 
-from app.models.client.class_entity import ClassEntity
+from backend.app.models.client.class_entity import ClassEntity
 
 
 class ClassRepository:

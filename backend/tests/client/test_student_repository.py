@@ -1,9 +1,10 @@
 import uuid
 
-from app.client.students.student_repository import StudentRepository
-from app.models.client.class_entity import ClassEntity
-from app.models.client.student import Student
 from sqlalchemy.orm import Session
+
+from backend.app.client.students.student_repository import StudentRepository
+from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.student import Student
 
 
 def _seed_class(session: Session) -> uuid.UUID:

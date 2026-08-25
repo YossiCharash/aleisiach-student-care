@@ -1,15 +1,15 @@
 from datetime import timedelta
 
-from app.client.email.email_sender import EmailSender
-from app.client.users.user_repository import UserRepository
-from app.configuration.auth.auth_settings import AuthSettings
-from app.configuration.email.email_settings import EmailSettings
-from app.errors.service.invalid_token_error import InvalidTokenError
-from app.models.client.token_kind import TokenKind
-from app.models.client.user_status import UserStatus
-from app.service.auth.token_consumer import TokenConsumer
-from app.service.auth.token_issuer import TokenIssuer
-from app.utils.service.password_hasher import PasswordHasher
+from backend.app.client.email.email_sender import EmailSender
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.errors.service.invalid_token_error import InvalidTokenError
+from backend.app.models.client.token_kind import TokenKind
+from backend.app.models.client.user_status import UserStatus
+from backend.app.service.auth.token_consumer import TokenConsumer
+from backend.app.service.auth.token_issuer import TokenIssuer
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 
 class PasswordResetService:

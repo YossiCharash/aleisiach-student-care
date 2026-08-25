@@ -1,10 +1,11 @@
 import uuid
 
-from app.client.auth.session_repository import SessionRepository
-from app.configuration.auth.auth_settings import AuthSettings
-from app.service.auth.session_service import SessionService
-from app.utils.service.token_factory import TokenFactory
 from sqlalchemy.orm import Session
+
+from backend.app.client.auth.session_repository import SessionRepository
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.service.auth.session_service import SessionService
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 def _service(session: Session) -> SessionService:

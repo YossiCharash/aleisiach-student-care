@@ -1,21 +1,21 @@
 import pytest
-from app.client.auth.auth_token_repository import AuthTokenRepository
-from app.client.users.user_repository import UserRepository
-from app.configuration.auth.auth_settings import AuthSettings
-from app.configuration.email.email_settings import EmailSettings
-from app.errors.service.email_already_used_error import EmailAlreadyUsedError
-from app.errors.service.invalid_token_error import InvalidTokenError
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
-from app.schema.service.invitation_command import InvitationCommand
-from app.service.auth.invitation_service import InvitationService
-from app.service.auth.token_consumer import TokenConsumer
-from app.service.auth.token_issuer import TokenIssuer
-from app.utils.service.password_hasher import PasswordHasher
-from app.utils.service.token_factory import TokenFactory
 from sqlalchemy.orm import Session
 
-from tests.service.capturing_email_sender import CapturingEmailSender
+from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.errors.service.email_already_used_error import EmailAlreadyUsedError
+from backend.app.errors.service.invalid_token_error import InvalidTokenError
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
+from backend.app.schema.service.invitation_command import InvitationCommand
+from backend.app.service.auth.invitation_service import InvitationService
+from backend.app.service.auth.token_consumer import TokenConsumer
+from backend.app.service.auth.token_issuer import TokenIssuer
+from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.app.utils.service.token_factory import TokenFactory
+from backend.tests.service.capturing_email_sender import CapturingEmailSender
 
 
 def _service(session: Session, sender: CapturingEmailSender) -> InvitationService:

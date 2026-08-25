@@ -1,10 +1,10 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from app.client.auth.auth_token_repository import AuthTokenRepository
-from app.models.client.auth_token import AuthToken
-from app.models.client.token_kind import TokenKind
-from app.utils.service.token_factory import TokenFactory
+from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.models.client.auth_token import AuthToken
+from backend.app.models.client.token_kind import TokenKind
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 class TokenIssuer:

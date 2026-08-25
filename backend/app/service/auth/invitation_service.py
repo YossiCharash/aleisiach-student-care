@@ -1,20 +1,20 @@
 from datetime import timedelta
 
-from app.client.email.email_sender import EmailSender
-from app.client.users.user_repository import UserRepository
-from app.configuration.auth.auth_settings import AuthSettings
-from app.configuration.email.email_settings import EmailSettings
-from app.errors.service.email_already_used_error import EmailAlreadyUsedError
-from app.errors.service.invalid_token_error import InvalidTokenError
-from app.errors.service.username_already_used_error import UsernameAlreadyUsedError
-from app.models.client.token_kind import TokenKind
-from app.models.client.user import User
-from app.models.client.user_status import UserStatus
-from app.schema.routes.user_response import UserResponse
-from app.schema.service.invitation_command import InvitationCommand
-from app.service.auth.token_consumer import TokenConsumer
-from app.service.auth.token_issuer import TokenIssuer
-from app.utils.service.password_hasher import PasswordHasher
+from backend.app.client.email.email_sender import EmailSender
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.errors.service.email_already_used_error import EmailAlreadyUsedError
+from backend.app.errors.service.invalid_token_error import InvalidTokenError
+from backend.app.errors.service.username_already_used_error import UsernameAlreadyUsedError
+from backend.app.models.client.token_kind import TokenKind
+from backend.app.models.client.user import User
+from backend.app.models.client.user_status import UserStatus
+from backend.app.schema.routes.user_response import UserResponse
+from backend.app.schema.service.invitation_command import InvitationCommand
+from backend.app.service.auth.token_consumer import TokenConsumer
+from backend.app.service.auth.token_issuer import TokenIssuer
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 
 class InvitationService:

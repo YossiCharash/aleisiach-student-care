@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schema.routes.user_response import UserResponse
+from backend.app.schema.routes.user_response import UserResponse
 
 
 class LoginResponse(BaseModel):

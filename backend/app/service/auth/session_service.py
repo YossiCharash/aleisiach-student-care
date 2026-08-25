@@ -1,10 +1,10 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from app.client.auth.session_repository import SessionRepository
-from app.configuration.auth.auth_settings import AuthSettings
-from app.models.client.user_session import UserSession
-from app.utils.service.token_factory import TokenFactory
+from backend.app.client.auth.session_repository import SessionRepository
+from backend.app.configuration.auth.auth_settings import AuthSettings
+from backend.app.models.client.user_session import UserSession
+from backend.app.utils.service.token_factory import TokenFactory
 
 
 class SessionService:

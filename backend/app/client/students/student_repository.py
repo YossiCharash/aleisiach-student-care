@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.client.student import Student
+from backend.app.models.client.student import Student
 
 
 class StudentRepository:

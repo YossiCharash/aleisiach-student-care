@@ -1,8 +1,9 @@
 import uuid
 
-from app.models.client.class_entity import ClassEntity
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+
+from backend.app.models.client.class_entity import ClassEntity
 
 
 def _seed_class(session: Session) -> uuid.UUID:

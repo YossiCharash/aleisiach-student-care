@@ -1,9 +1,9 @@
-from app.client.users.user_repository import UserRepository
-from app.errors.service.authentication_error import AuthenticationError
-from app.models.client.user import User
-from app.models.client.user_status import UserStatus
-from app.schema.routes.user_response import UserResponse
-from app.utils.service.password_hasher import PasswordHasher
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.errors.service.authentication_error import AuthenticationError
+from backend.app.models.client.user import User
+from backend.app.models.client.user_status import UserStatus
+from backend.app.schema.routes.user_response import UserResponse
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 
 class AuthenticationService:

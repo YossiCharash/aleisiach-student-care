@@ -1,4 +1,4 @@
-from app.client.email.email_sender import EmailSender
+from backend.app.client.email.email_sender import EmailSender
 
 
 class CapturingEmailSender(EmailSender):

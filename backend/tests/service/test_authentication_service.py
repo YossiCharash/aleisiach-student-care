@@ -1,12 +1,13 @@
 import pytest
-from app.client.users.user_repository import UserRepository
-from app.errors.service.authentication_error import AuthenticationError
-from app.models.client.user import User
-from app.models.client.user_role import UserRole
-from app.models.client.user_status import UserStatus
-from app.service.auth.authentication_service import AuthenticationService
-from app.utils.service.password_hasher import PasswordHasher
 from sqlalchemy.orm import Session
+
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.errors.service.authentication_error import AuthenticationError
+from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
+from backend.app.service.auth.authentication_service import AuthenticationService
+from backend.app.utils.service.password_hasher import PasswordHasher
 
 
 def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:

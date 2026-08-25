@@ -3,25 +3,25 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.client.auth.auth_token_repository import AuthTokenRepository
-from app.client.database.provider import get_session
-from app.client.users.user_repository import UserRepository
-from app.configuration.bootstrap import Bootstrap
-from app.configuration.provider import get_bootstrap
-from app.routes.security import CredentialsDep, Manager, build_session_service
-from app.schema.routes.invitation_accept_request import InvitationAcceptRequest
-from app.schema.routes.login_request import LoginRequest
-from app.schema.routes.login_response import LoginResponse
-from app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
-from app.schema.routes.password_reset_request import PasswordResetRequest
-from app.schema.routes.user_response import UserResponse
-from app.schema.service.invitation_command import InvitationCommand
-from app.service.auth.authentication_service import AuthenticationService
-from app.service.auth.invitation_service import InvitationService
-from app.service.auth.password_reset_service import PasswordResetService
-from app.service.auth.session_service import SessionService
-from app.service.auth.token_consumer import TokenConsumer
-from app.service.auth.token_issuer import TokenIssuer
+from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.client.database.provider import get_session
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.provider import get_bootstrap
+from backend.app.routes.security import CredentialsDep, Manager, build_session_service
+from backend.app.schema.routes.invitation_accept_request import InvitationAcceptRequest
+from backend.app.schema.routes.login_request import LoginRequest
+from backend.app.schema.routes.login_response import LoginResponse
+from backend.app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
+from backend.app.schema.routes.password_reset_request import PasswordResetRequest
+from backend.app.schema.routes.user_response import UserResponse
+from backend.app.schema.service.invitation_command import InvitationCommand
+from backend.app.service.auth.authentication_service import AuthenticationService
+from backend.app.service.auth.invitation_service import InvitationService
+from backend.app.service.auth.password_reset_service import PasswordResetService
+from backend.app.service.auth.session_service import SessionService
+from backend.app.service.auth.token_consumer import TokenConsumer
+from backend.app.service.auth.token_issuer import TokenIssuer
 
 SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
