@@ -56,3 +56,14 @@ def require_manager(user: CurrentUser) -> User:
 
 
 Manager = Annotated[User, Depends(require_manager)]
+
+_MEETING_WRITER_ROLES = frozenset({UserRole.MANAGER, UserRole.INSTRUCTOR})
+
+
+def require_meeting_writer(user: CurrentUser) -> User:
+    if user.role not in _MEETING_WRITER_ROLES:
+        raise AuthorizationError
+    return user
+
+
+MeetingWriter = Annotated[User, Depends(require_meeting_writer)]
