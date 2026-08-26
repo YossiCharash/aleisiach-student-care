@@ -10,6 +10,7 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.security import CurrentUser, Manager
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_service import StudentService
 
@@ -17,7 +18,11 @@ from backend.app.service.students.student_service import StudentService
 def get_student_service(
     session: Annotated[Session, Depends(get_session)],
 ) -> StudentService:
-    return StudentService(StudentRepository(session), ClassRepository(session))
+    return StudentService(
+        StudentRepository(session),
+        ClassRepository(session),
+        StudentAccessGuard(StudentRepository(session)),
+    )
 
 
 ServiceDep = Annotated[StudentService, Depends(get_student_service)]

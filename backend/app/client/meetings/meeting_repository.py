@@ -1,8 +1,9 @@
 import uuid
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
+from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.team_meeting import TeamMeeting
 
 
@@ -26,6 +27,8 @@ class MeetingRepository:
                 TeamMeeting.year.desc(),
                 TeamMeeting.month.desc(),
                 TeamMeeting.created_at.desc(),
+                TeamMeeting.id.desc(),
             )
+            .options(selectinload(TeamMeeting.entries).selectinload(MeetingEntry.solutions))
         )
         return list(self._session.scalars(statement).all())
