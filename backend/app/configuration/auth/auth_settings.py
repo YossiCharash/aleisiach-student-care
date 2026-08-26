@@ -10,3 +10,4 @@ class AuthSettings(BaseSettings):
     reset_token_ttl_hours: int = 2
     max_failed_logins: int = 5
     lockout_minutes: int = 15
+    reset_request_interval_minutes: int = 5
