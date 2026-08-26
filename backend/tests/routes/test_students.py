@@ -2,35 +2,20 @@ import uuid
 from collections.abc import Callable
 
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
-from backend.app.models.client.class_entity import ClassEntity
-from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
-
-
-def _seed_class(session: Session, name: str) -> uuid.UUID:
-    entity = ClassEntity(name=name)
-    session.add(entity)
-    session.flush()
-    return entity.id
-
-
-def _seed_student(session: Session, name: str, class_id: uuid.UUID) -> uuid.UUID:
-    student = Student(full_name=name, class_id=class_id)
-    session.add(student)
-    session.flush()
-    return student.id
+SeedClass = Callable[..., uuid.UUID]
+SeedStudent = Callable[..., uuid.UUID]
 
 
 def test_manager_creates_and_reads_student(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient, seed_class: SeedClass, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
+    class_id = seed_class("Aleph")
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -45,8 +30,8 @@ def test_manager_creates_and_reads_student(
     assert fetched.json()["full_name"] == "Dana"
 
 
-def test_create_requires_authentication(api: TestClient, db_session: Session) -> None:
-    class_id = _seed_class(db_session, "Aleph")
+def test_create_requires_authentication(api: TestClient, seed_class: SeedClass) -> None:
+    class_id = seed_class("Aleph")
     response = api.post("/students", json={"full_name": "X", "class_id": str(class_id)})
     assert response.status_code == 401
 
@@ -65,9 +50,9 @@ def test_create_with_unknown_class_returns_404(
 
 
 def test_instructor_cannot_create_student(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient, seed_class: SeedClass, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
+    class_id = seed_class("Aleph")
     seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
     headers = auth_headers(api, "teacher")
 
@@ -78,12 +63,16 @@ def test_instructor_cannot_create_student(
 
 
 def test_instructor_lists_only_own_class(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
 ) -> None:
-    class_a = _seed_class(db_session, "Aleph")
-    class_b = _seed_class(db_session, "Bet")
-    _seed_student(db_session, "Own", class_a)
-    _seed_student(db_session, "Other", class_b)
+    class_a = seed_class("Aleph")
+    class_b = seed_class("Bet")
+    seed_student(class_a, "Own")
+    seed_student(class_b, "Other")
     seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_a)
     headers = auth_headers(api, "teacher")
 
@@ -92,11 +81,15 @@ def test_instructor_lists_only_own_class(
 
 
 def test_instructor_cannot_read_other_class_student(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
 ) -> None:
-    class_a = _seed_class(db_session, "Aleph")
-    class_b = _seed_class(db_session, "Bet")
-    other_id = _seed_student(db_session, "Other", class_b)
+    class_a = seed_class("Aleph")
+    class_b = seed_class("Bet")
+    other_id = seed_student(class_b, "Other")
     seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_a)
     headers = auth_headers(api, "teacher")
 
@@ -105,12 +98,16 @@ def test_instructor_cannot_read_other_class_student(
 
 
 def test_professional_teacher_reads_all_but_cannot_create(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
 ) -> None:
-    class_a = _seed_class(db_session, "Aleph")
-    class_b = _seed_class(db_session, "Bet")
-    _seed_student(db_session, "One", class_a)
-    _seed_student(db_session, "Two", class_b)
+    class_a = seed_class("Aleph")
+    class_b = seed_class("Bet")
+    seed_student(class_a, "One")
+    seed_student(class_b, "Two")
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     headers = auth_headers(api, "prof")
 
@@ -124,10 +121,14 @@ def test_professional_teacher_reads_all_but_cannot_create(
 
 
 def test_only_manager_archives_and_it_hides_student(
-    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    student_id = _seed_student(db_session, "Goes", class_id)
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id, "Goes")
     seed_user("boss", UserRole.MANAGER)
     seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
 
