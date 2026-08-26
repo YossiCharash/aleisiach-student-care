@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from backend.app.client.database.provider import get_session
+from backend.app.client.pdf.pdf_renderer import PdfRenderer
 from backend.app.main import create_app
 from backend.app.models.base import Base
 from backend.app.models.client.class_entity import ClassEntity
@@ -15,6 +16,7 @@ from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.routes.meetings import get_pdf_renderer
 from backend.app.utils.service.password_hasher import PasswordHasher
 
 
@@ -54,9 +56,15 @@ def api(db_session: Session) -> Iterator[TestClient]:
             raise
 
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[get_pdf_renderer] = lambda: _StubPdfRenderer()
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+class _StubPdfRenderer(PdfRenderer):
+    def render(self, html: str) -> bytes:
+        return b"%PDF-1.4 stub"
 
 
 @pytest.fixture

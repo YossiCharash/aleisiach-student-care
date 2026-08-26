@@ -167,3 +167,29 @@ def test_writing_requires_authentication(api: TestClient, db_session: Session) -
     body = {"year": 2026, "month": 8, "entries": [_entry(domain.skill_id, "green", [])]}
     response = api.post(f"/students/{domain.student_id}/meetings", json=body)
     assert response.status_code == 401
+
+
+def test_manager_downloads_meeting_pdf(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    body = {"year": 2026, "month": 8, "entries": [_entry(domain.skill_id, "green", [])]}
+    meeting_id = api.post(
+        f"/students/{domain.student_id}/meetings", headers=headers, json=body
+    ).json()["id"]
+
+    pdf = api.get(f"/students/{domain.student_id}/meetings/{meeting_id}/pdf", headers=headers)
+    assert pdf.status_code == 200
+    assert pdf.headers["content-type"] == "application/pdf"
+    assert pdf.content.startswith(b"%PDF")
+
+
+def test_pdf_requires_authentication(api: TestClient, db_session: Session) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+
+    response = api.get(f"/students/{domain.student_id}/meetings/{uuid.uuid4()}/pdf")
+    assert response.status_code == 401
