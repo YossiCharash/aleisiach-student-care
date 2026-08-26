@@ -13,18 +13,21 @@ class StudentDetailsRepository:
     def get(self, student_id: uuid.UUID) -> StudentDetails | None:
         return self._session.get(StudentDetails, student_id)
 
-    def create(self, student_id: uuid.UUID) -> StudentDetails:
+    def get_or_create(self, student_id: uuid.UUID) -> tuple[StudentDetails, bool]:
+        existing = self.get(student_id)
+        if existing is not None:
+            return existing, False
         details = StudentDetails(student_id=student_id)
         try:
             with self._session.begin_nested():
                 self._session.add(details)
                 self._session.flush()
         except IntegrityError:
-            existing = self.get(student_id)
-            if existing is None:
+            raced = self.get(student_id)
+            if raced is None:
                 raise
-            return existing
-        return details
+            return raced, False
+        return details, True
 
     def flush(self) -> None:
         self._session.flush()

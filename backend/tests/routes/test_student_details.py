@@ -1,7 +1,10 @@
 from collections.abc import Callable
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 
@@ -113,6 +116,28 @@ def test_instructor_cannot_write_other_class_details(
 
     response = api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
     assert response.status_code == 404
+
+
+def test_upsert_writes_audit_row_for_the_acting_user(
+    api: TestClient,
+    db_session: Session,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id)
+    boss_id = seed_user("boss", UserRole.MANAGER).id
+    headers = auth_headers(api, "boss")
+
+    api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
+
+    logs = list(db_session.scalars(select(AuditLog)))
+    assert len(logs) == 1
+    assert logs[0].actor_id == boss_id
+    assert logs[0].entity_id == student_id
+    assert logs[0].entity_type == "student_details"
 
 
 def test_details_require_authentication(

@@ -19,23 +19,25 @@ def _seed_student(session: Session) -> uuid.UUID:
     return student.id
 
 
-def test_create_inserts_when_absent(db_session: Session) -> None:
+def test_get_or_create_inserts_when_absent(db_session: Session) -> None:
     student_id = _seed_student(db_session)
     repository = StudentDetailsRepository(db_session)
 
-    details = repository.create(student_id)
+    details, created = repository.get_or_create(student_id)
 
     assert details.student_id == student_id
+    assert created is True
 
 
-def test_create_returns_existing_row_on_conflict(db_session: Session) -> None:
+def test_get_or_create_returns_existing_without_duplicate(db_session: Session) -> None:
     student_id = _seed_student(db_session)
     repository = StudentDetailsRepository(db_session)
-    repository.create(student_id)
+    repository.get_or_create(student_id)
 
-    again = repository.create(student_id)
+    again, created = repository.get_or_create(student_id)
 
     assert again.student_id == student_id
+    assert created is False
     count = db_session.scalar(
         select(func.count())
         .select_from(StudentDetails)

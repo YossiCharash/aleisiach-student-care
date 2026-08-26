@@ -118,6 +118,17 @@ def test_upsert_records_audit_entry_with_field_names_only(db_session: Session) -
     assert set(create_log.changes) == {"national_id", "legal_status"}
     assert "123" not in create_log.changes
 
+    update_log = next(log for log in logs if log.action == AuditAction.UPDATE)
+    assert "legal_status" in update_log.changes
+
+
+def test_no_op_upsert_records_no_audit(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    service.upsert(student_id, StudentDetailsUpsertRequest(), _ALL, _ACTOR)
+
+    assert list(db_session.scalars(select(AuditLog))) == []
+
 
 def test_get_hides_sensitive_when_not_permitted(db_session: Session) -> None:
     service, student_id = _setup(db_session)

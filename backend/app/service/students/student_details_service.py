@@ -17,7 +17,16 @@ from backend.app.utils.service.age_calculator import AgeCalculator
 from backend.app.utils.service.clock import Clock
 
 _ENTITY_TYPE = "student_details"
-_EMPTY_VALUES: tuple[object, ...] = (None, [], "")
+_TRACKED_FIELDS = (
+    "national_id",
+    "date_of_birth",
+    "address",
+    "home_language",
+    "medical_diagnoses",
+    "emergency_contacts",
+    "legal_status",
+    "guardians",
+)
 
 
 class StudentDetailsService:
@@ -48,20 +57,22 @@ class StudentDetailsService:
         actor_id: uuid.UUID,
     ) -> StudentDetailsResponse:
         self._guard.require(student_id, scope)
-        existing = self._details.get(student_id)
-        action = AuditAction.UPDATE if existing is not None else AuditAction.CREATE
-        details = existing or self._details.create(student_id)
+        details, created = self._details.get_or_create(student_id)
+        before = self._snapshot(details)
         self._apply(details, request)
+        changed = self._changed_fields(before, self._snapshot(details))
         self._details.flush()
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=student_id,
-                changes=self._changed_fields(request),
+        if changed:
+            action = AuditAction.CREATE if created else AuditAction.UPDATE
+            self._audit.record(
+                AuditEntry(
+                    actor_id=actor_id,
+                    action=action,
+                    entity_type=_ENTITY_TYPE,
+                    entity_id=student_id,
+                    changes=changed,
+                )
             )
-        )
         return self._to_response(student_id, details, include_sensitive=True)
 
     def _apply(self, details: StudentDetails, request: StudentDetailsUpsertRequest) -> None:
@@ -74,8 +85,11 @@ class StudentDetailsService:
         details.legal_status = request.legal_status
         details.guardians = [item.model_dump() for item in request.guardians]
 
-    def _changed_fields(self, request: StudentDetailsUpsertRequest) -> list[str]:
-        return [name for name, value in request.model_dump().items() if value not in _EMPTY_VALUES]
+    def _snapshot(self, details: StudentDetails) -> dict[str, object]:
+        return {name: getattr(details, name) for name in _TRACKED_FIELDS}
+
+    def _changed_fields(self, before: dict[str, object], after: dict[str, object]) -> list[str]:
+        return [name for name in _TRACKED_FIELDS if before[name] != after[name]]
 
     def _to_response(
         self,
