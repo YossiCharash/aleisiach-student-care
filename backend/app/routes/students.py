@@ -7,8 +7,10 @@ from sqlalchemy.orm import Session
 from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.student_repository import StudentRepository
+from backend.app.routes.security import CurrentUser, Manager
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_service import StudentService
 
 
@@ -24,20 +26,24 @@ router = APIRouter(prefix="/students", tags=["students"])
 
 
 @router.post("", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
-def create_student(request: StudentCreateRequest, service: ServiceDep) -> StudentResponse:
+def create_student(
+    request: StudentCreateRequest, service: ServiceDep, _: Manager
+) -> StudentResponse:
     return service.create(request)
 
 
 @router.get("", response_model=list[StudentResponse])
-def list_students(service: ServiceDep) -> list[StudentResponse]:
-    return service.list_active()
+def list_students(service: ServiceDep, user: CurrentUser) -> list[StudentResponse]:
+    return service.list_active(StudentAccessPolicy.scope_for(user))
 
 
 @router.get("/{student_id}", response_model=StudentResponse)
-def get_student(student_id: uuid.UUID, service: ServiceDep) -> StudentResponse:
-    return service.get(student_id)
+def get_student(student_id: uuid.UUID, service: ServiceDep, user: CurrentUser) -> StudentResponse:
+    return service.get(student_id, StudentAccessPolicy.scope_for(user))
 
 
 @router.post("/{student_id}/archive", response_model=StudentResponse)
-def archive_student(student_id: uuid.UUID, service: ServiceDep) -> StudentResponse:
-    return service.archive(student_id)
+def archive_student(
+    student_id: uuid.UUID, service: ServiceDep, manager: Manager
+) -> StudentResponse:
+    return service.archive(student_id, manager.id)
