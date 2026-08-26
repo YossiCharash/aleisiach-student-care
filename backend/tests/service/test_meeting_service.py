@@ -29,16 +29,16 @@ class _Fixture:
         service: MeetingService,
         student_id: uuid.UUID,
         skill_id: uuid.UUID,
+        other_skill_id: uuid.UUID,
         solution_id: uuid.UUID,
         other_solution_id: uuid.UUID,
-        class_id: uuid.UUID,
     ) -> None:
         self.service = service
         self.student_id = student_id
         self.skill_id = skill_id
+        self.other_skill_id = other_skill_id
         self.solution_id = solution_id
         self.other_solution_id = other_solution_id
-        self.class_id = class_id
 
 
 def _setup(session: Session) -> _Fixture:
@@ -64,7 +64,7 @@ def _setup(session: Session) -> _Fixture:
     service = MeetingService(
         MeetingRepository(session), StudentRepository(session), TaxonomyRepository(session)
     )
-    return _Fixture(service, student.id, skill.id, solution.id, other_solution.id, class_entity.id)
+    return _Fixture(service, student.id, skill.id, other_skill.id, solution.id, other_solution.id)
 
 
 def test_create_captures_snapshots(db_session: Session) -> None:
@@ -158,3 +158,60 @@ def test_student_outside_scope_is_hidden(db_session: Session) -> None:
 
     with pytest.raises(NotFoundError):
         fx.service.create(fx.student_id, request, foreign_scope, uuid.uuid4())
+
+
+def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
+    fx = _setup(db_session)
+    request = MeetingCreateRequest(
+        year=2026,
+        month=8,
+        entries=[
+            MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
+            MeetingEntryRequest(
+                skill_id=fx.skill_id,
+                rating=MeetingRating.RED,
+                solution_ids=[fx.solution_id],
+            ),
+        ],
+    )
+
+    with pytest.raises(InvalidMeetingError):
+        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+
+
+def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
+    fx = _setup(db_session)
+    request = MeetingCreateRequest(
+        year=2026,
+        month=8,
+        entries=[
+            MeetingEntryRequest(
+                skill_id=fx.skill_id,
+                rating=MeetingRating.YELLOW,
+                solution_ids=[fx.solution_id, fx.solution_id],
+            )
+        ],
+    )
+
+    with pytest.raises(InvalidMeetingError):
+        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+
+
+def test_entries_are_persisted_in_request_order(db_session: Session) -> None:
+    fx = _setup(db_session)
+    request = MeetingCreateRequest(
+        year=2026,
+        month=8,
+        entries=[
+            MeetingEntryRequest(skill_id=fx.other_skill_id, rating=MeetingRating.GREEN),
+            MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
+        ],
+    )
+    fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+
+    reloaded = fx.service.list_for_student(fx.student_id, _ALL)[0]
+
+    assert [entry.skill_name_snapshot for entry in reloaded.entries] == [
+        "צחצוח שיניים",
+        "רחיצת ידיים",
+    ]

@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Enum, ForeignKey, String
+from sqlalchemy import Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.models.base import Base
@@ -18,4 +18,7 @@ class MeetingEntry(Base):
     rating: Mapped[MeetingRating] = mapped_column(
         Enum(MeetingRating, native_enum=False, length=16), nullable=False
     )
-    solutions: Mapped[list[MeetingEntrySolution]] = relationship(cascade="all, delete-orphan")
+    position: Mapped[int] = mapped_column("position", Integer, nullable=False)
+    solutions: Mapped[list[MeetingEntrySolution]] = relationship(
+        cascade="all, delete-orphan", order_by=MeetingEntrySolution.position
+    )

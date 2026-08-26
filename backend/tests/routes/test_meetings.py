@@ -138,6 +138,28 @@ def test_yellow_without_solution_returns_422(
     assert response.json()["code"] == "invalid_meeting"
 
 
+def test_get_meeting_validates_it_belongs_to_the_url_student(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    other_student = Student(full_name="Roni", class_id=class_id)
+    db_session.add(other_student)
+    db_session.flush()
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    body = {"year": 2026, "month": 8, "entries": [_entry(domain.skill_id, "green", [])]}
+    meeting_id = api.post(
+        f"/students/{domain.student_id}/meetings", headers=headers, json=body
+    ).json()["id"]
+
+    correct = api.get(f"/students/{domain.student_id}/meetings/{meeting_id}", headers=headers)
+    assert correct.status_code == 200
+
+    mismatched = api.get(f"/students/{other_student.id}/meetings/{meeting_id}", headers=headers)
+    assert mismatched.status_code == 404
+
+
 def test_writing_requires_authentication(api: TestClient, db_session: Session) -> None:
     class_id = _seed_class(db_session, "Aleph")
     domain = _seed_domain(db_session, class_id)

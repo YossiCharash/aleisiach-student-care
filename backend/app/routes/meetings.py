@@ -55,4 +55,4 @@ def get_meeting(
     service: ServiceDep,
     user: CurrentUser,
 ) -> MeetingResponse:
-    return service.get(meeting_id, StudentAccessPolicy.scope_for(user))
+    return service.get(student_id, meeting_id, StudentAccessPolicy.scope_for(user))

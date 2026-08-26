@@ -19,4 +19,6 @@ class TeamMeeting(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
     )
-    entries: Mapped[list[MeetingEntry]] = relationship(cascade="all, delete-orphan")
+    entries: Mapped[list[MeetingEntry]] = relationship(
+        cascade="all, delete-orphan", order_by=MeetingEntry.position
+    )

@@ -39,13 +39,16 @@ class MeetingService:
         author_id: uuid.UUID,
     ) -> MeetingResponse:
         self._require_student(student_id, scope)
+        self._reject_duplicate_skills(request)
         meeting = TeamMeeting(
             student_id=student_id,
             year=request.year,
             month=request.month,
             author_id=author_id,
         )
-        meeting.entries = [self._build_entry(entry) for entry in request.entries]
+        meeting.entries = [
+            self._build_entry(position, entry) for position, entry in enumerate(request.entries)
+        ]
         self._meetings.add(meeting)
         return MeetingResponse.model_validate(meeting)
 
@@ -56,9 +59,11 @@ class MeetingService:
         meetings = self._meetings.list_for_student(student_id)
         return [MeetingResponse.model_validate(meeting) for meeting in meetings]
 
-    def get(self, meeting_id: uuid.UUID, scope: StudentAccessScope) -> MeetingResponse:
+    def get(
+        self, student_id: uuid.UUID, meeting_id: uuid.UUID, scope: StudentAccessScope
+    ) -> MeetingResponse:
         meeting = self._meetings.get(meeting_id)
-        if meeting is None:
+        if meeting is None or meeting.student_id != student_id:
             raise NotFoundError("meeting")
         student = self._students.get(meeting.student_id)
         if student is None or not scope.permits(student.class_id):
@@ -71,16 +76,24 @@ class MeetingService:
             raise NotFoundError("student")
         return student
 
-    def _build_entry(self, request: MeetingEntryRequest) -> MeetingEntry:
+    def _reject_duplicate_skills(self, request: MeetingCreateRequest) -> None:
+        skill_ids = [entry.skill_id for entry in request.entries]
+        if len(set(skill_ids)) != len(skill_ids):
+            raise InvalidMeetingError("a skill appears more than once in the meeting")
+
+    def _build_entry(self, position: int, request: MeetingEntryRequest) -> MeetingEntry:
         skill = self._require_skill(request.skill_id)
         self._validate_rating(request)
+        self._reject_duplicate_solutions(request)
         entry = MeetingEntry(
             skill_id=skill.id,
             skill_name_snapshot=skill.name,
             rating=request.rating,
+            position=position,
         )
         entry.solutions = [
-            self._build_solution(solution_id, skill) for solution_id in request.solution_ids
+            self._build_solution(solution_position, solution_id, skill)
+            for solution_position, solution_id in enumerate(request.solution_ids)
         ]
         return entry
 
@@ -91,13 +104,20 @@ class MeetingService:
         if not needs_solution and request.solution_ids:
             raise InvalidMeetingError("a green rating cannot have solutions")
 
-    def _build_solution(self, solution_id: uuid.UUID, skill: Skill) -> MeetingEntrySolution:
+    def _reject_duplicate_solutions(self, request: MeetingEntryRequest) -> None:
+        if len(set(request.solution_ids)) != len(request.solution_ids):
+            raise InvalidMeetingError("a solution was chosen more than once")
+
+    def _build_solution(
+        self, position: int, solution_id: uuid.UUID, skill: Skill
+    ) -> MeetingEntrySolution:
         solution = self._require_solution(solution_id)
         if solution.skill_id != skill.id:
             raise InvalidMeetingError("a solution does not belong to its skill")
         return MeetingEntrySolution(
             solution_id=solution.id,
             solution_text_snapshot=solution.text,
+            position=position,
         )
 
     def _require_skill(self, skill_id: uuid.UUID) -> Skill:
