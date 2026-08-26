@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
@@ -16,6 +17,7 @@ from backend.app.schema.routes.password_reset_confirm_request import PasswordRes
 from backend.app.schema.routes.password_reset_request import PasswordResetRequest
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.service.invitation_command import InvitationCommand
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.service.auth.invitation_service import InvitationService
 from backend.app.service.auth.password_reset_service import PasswordResetService
@@ -37,6 +39,7 @@ def get_invitation_service(session: SessionDep, bootstrap: BootstrapDep) -> Invi
         bootstrap.email_sender,
         bootstrap.settings.auth,
         bootstrap.settings.email,
+        AuditLogger(AuditLogRepository(session)),
     )
 
 
@@ -90,9 +93,9 @@ def logout(credentials: CredentialsDep, sessions: SessionServiceDep) -> None:
 
 @router.post("/invitations", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_invitation(
-    request: InvitationCommand, service: InvitationDep, _: Manager
+    request: InvitationCommand, service: InvitationDep, manager: Manager
 ) -> UserResponse:
-    return service.invite(request)
+    return service.invite(request, manager.id)
 
 
 @router.post("/invitations/accept", response_model=UserResponse)
