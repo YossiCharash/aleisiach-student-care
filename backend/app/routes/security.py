@@ -13,6 +13,7 @@ from backend.app.errors.service.authentication_error import AuthenticationError
 from backend.app.errors.service.authorization_error import AuthorizationError
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 from backend.app.service.auth.session_service import SessionService
 
 _bearer = HTTPBearer(auto_error=False)
@@ -41,7 +42,7 @@ def get_current_user(
     if user_id is None:
         raise AuthenticationError
     user = UserRepository(session).get(user_id)
-    if user is None:
+    if user is None or user.status != UserStatus.ACTIVE:
         raise AuthenticationError
     return user
 
