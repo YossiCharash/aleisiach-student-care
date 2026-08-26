@@ -4,12 +4,14 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.security import CurrentUser, Manager
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_service import StudentService
@@ -22,6 +24,7 @@ def get_student_service(
         StudentRepository(session),
         ClassRepository(session),
         StudentAccessGuard(StudentRepository(session)),
+        AuditLogger(AuditLogRepository(session)),
     )
 
 
@@ -32,9 +35,9 @@ router = APIRouter(prefix="/students", tags=["students"])
 
 @router.post("", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
 def create_student(
-    request: StudentCreateRequest, service: ServiceDep, _: Manager
+    request: StudentCreateRequest, service: ServiceDep, manager: Manager
 ) -> StudentResponse:
-    return service.create(request)
+    return service.create(request, manager.id)
 
 
 @router.get("", response_model=list[StudentResponse])

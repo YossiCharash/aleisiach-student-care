@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.label import Label
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
@@ -23,30 +24,58 @@ from backend.app.schema.routes.sub_label_create_request import SubLabelCreateReq
 from backend.app.schema.routes.sub_label_response import SubLabelResponse
 from backend.app.schema.routes.sub_label_tree_node import SubLabelTreeNode
 from backend.app.schema.routes.sub_label_update_request import SubLabelUpdateRequest
+from backend.app.schema.service.audit_entry import AuditEntry
+from backend.app.service.audit.audit_logger import AuditLogger
+
+_ENTITY_TYPE = "taxonomy"
 
 
 class TaxonomyService:
-    def __init__(self, taxonomy_repository: TaxonomyRepository) -> None:
+    def __init__(self, taxonomy_repository: TaxonomyRepository, audit_logger: AuditLogger) -> None:
         self._taxonomy = taxonomy_repository
+        self._audit = audit_logger
+
+    def _audit_change(
+        self,
+        actor_id: uuid.UUID,
+        action: AuditAction,
+        entity_id: uuid.UUID,
+        changes: list[str],
+    ) -> None:
+        self._audit.record(
+            AuditEntry(
+                actor_id=actor_id,
+                action=action,
+                entity_type=_ENTITY_TYPE,
+                entity_id=entity_id,
+                changes=changes,
+            )
+        )
 
     def list_labels(self, include_inactive: bool) -> list[LabelResponse]:
         labels = self._taxonomy.list_labels(include_inactive)
         return [LabelResponse.model_validate(label) for label in labels]
 
-    def create_label(self, request: LabelCreateRequest) -> LabelResponse:
+    def create_label(self, request: LabelCreateRequest, actor_id: uuid.UUID) -> LabelResponse:
         label = Label(name=request.name, order=self._taxonomy.next_label_order())
         self._taxonomy.add_label(label)
+        self._audit_change(actor_id, AuditAction.CREATE, label.id, ["name"])
         return LabelResponse.model_validate(label)
 
-    def update_label(self, label_id: uuid.UUID, request: LabelUpdateRequest) -> LabelResponse:
+    def update_label(
+        self, label_id: uuid.UUID, request: LabelUpdateRequest, actor_id: uuid.UUID
+    ) -> LabelResponse:
         label = self._taxonomy.get_label(label_id)
         if label is None:
             raise NotFoundError("label")
         self._apply_ordered_update(label, request.name, request.order, request.is_active)
         self._taxonomy.flush()
+        self._audit_change(actor_id, AuditAction.UPDATE, label.id, self._ordered_changes(request))
         return LabelResponse.model_validate(label)
 
-    def create_sub_label(self, request: SubLabelCreateRequest) -> SubLabelResponse:
+    def create_sub_label(
+        self, request: SubLabelCreateRequest, actor_id: uuid.UUID
+    ) -> SubLabelResponse:
         if self._taxonomy.get_label(request.label_id) is None:
             raise NotFoundError("label")
         sub_label = SubLabel(
@@ -55,19 +84,23 @@ class TaxonomyService:
             order=self._taxonomy.next_sub_label_order(request.label_id),
         )
         self._taxonomy.add_sub_label(sub_label)
+        self._audit_change(actor_id, AuditAction.CREATE, sub_label.id, ["name"])
         return SubLabelResponse.model_validate(sub_label)
 
     def update_sub_label(
-        self, sub_label_id: uuid.UUID, request: SubLabelUpdateRequest
+        self, sub_label_id: uuid.UUID, request: SubLabelUpdateRequest, actor_id: uuid.UUID
     ) -> SubLabelResponse:
         sub_label = self._taxonomy.get_sub_label(sub_label_id)
         if sub_label is None:
             raise NotFoundError("sub_label")
         self._apply_ordered_update(sub_label, request.name, request.order, request.is_active)
         self._taxonomy.flush()
+        self._audit_change(
+            actor_id, AuditAction.UPDATE, sub_label.id, self._ordered_changes(request)
+        )
         return SubLabelResponse.model_validate(sub_label)
 
-    def create_skill(self, request: SkillCreateRequest) -> SkillResponse:
+    def create_skill(self, request: SkillCreateRequest, actor_id: uuid.UUID) -> SkillResponse:
         if self._taxonomy.get_sub_label(request.sub_label_id) is None:
             raise NotFoundError("sub_label")
         skill = Skill(
@@ -76,34 +109,45 @@ class TaxonomyService:
             order=self._taxonomy.next_skill_order(request.sub_label_id),
         )
         self._taxonomy.add_skill(skill)
+        self._audit_change(actor_id, AuditAction.CREATE, skill.id, ["name"])
         return SkillResponse.model_validate(skill)
 
-    def update_skill(self, skill_id: uuid.UUID, request: SkillUpdateRequest) -> SkillResponse:
+    def update_skill(
+        self, skill_id: uuid.UUID, request: SkillUpdateRequest, actor_id: uuid.UUID
+    ) -> SkillResponse:
         skill = self._taxonomy.get_skill(skill_id)
         if skill is None:
             raise NotFoundError("skill")
         self._apply_ordered_update(skill, request.name, request.order, request.is_active)
         self._taxonomy.flush()
+        self._audit_change(actor_id, AuditAction.UPDATE, skill.id, self._ordered_changes(request))
         return SkillResponse.model_validate(skill)
 
-    def create_solution(self, request: SolutionCreateRequest) -> SolutionResponse:
+    def create_solution(
+        self, request: SolutionCreateRequest, actor_id: uuid.UUID
+    ) -> SolutionResponse:
         if self._taxonomy.get_skill(request.skill_id) is None:
             raise NotFoundError("skill")
         solution = Solution(skill_id=request.skill_id, text=request.text)
         self._taxonomy.add_solution(solution)
+        self._audit_change(actor_id, AuditAction.CREATE, solution.id, ["text"])
         return SolutionResponse.model_validate(solution)
 
     def update_solution(
-        self, solution_id: uuid.UUID, request: SolutionUpdateRequest
+        self, solution_id: uuid.UUID, request: SolutionUpdateRequest, actor_id: uuid.UUID
     ) -> SolutionResponse:
         solution = self._taxonomy.get_solution(solution_id)
         if solution is None:
             raise NotFoundError("solution")
+        changes: list[str] = []
         if request.text is not None:
             solution.text = request.text
+            changes.append("text")
         if request.is_active is not None:
             solution.is_active = request.is_active
+            changes.append("is_active")
         self._taxonomy.flush()
+        self._audit_change(actor_id, AuditAction.UPDATE, solution.id, changes)
         return SolutionResponse.model_validate(solution)
 
     def active_tree(self) -> list[LabelTreeNode]:
@@ -158,3 +202,16 @@ class TaxonomyService:
             node.order = order
         if is_active is not None:
             node.is_active = is_active
+
+    def _ordered_changes(
+        self, request: LabelUpdateRequest | SubLabelUpdateRequest | SkillUpdateRequest
+    ) -> list[str]:
+        return [
+            field
+            for field, value in (
+                ("name", request.name),
+                ("order", request.order),
+                ("is_active", request.is_active),
+            )
+            if value is not None
+        ]

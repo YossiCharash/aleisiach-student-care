@@ -175,8 +175,9 @@ manager *is* the social worker; every manager may write it).
   a student → student screen.
 - **Student screen (tabs):**
   - Tab 1 — **Program**: strength areas + areas to strengthen (including the path to a solution).
-    **Derived automatically** from the latest team meeting (not stored, not manually edited):
-    green → strengths; yellow/red → areas to strengthen, with the chosen solutions as the path.
+    **Derived automatically** as the latest rating per skill across the student's team meetings
+    (not stored, not manually edited): green → strengths; yellow/red → areas to strengthen, with
+    the chosen solutions as the path.
   - Tab 2 — **Team meetings**: organized by months, an "Add monthly meeting" button → a long
     accordion form (label → sub-label → skill → choose red/yellow/green = dependent/supervised/
     independent; on red/yellow a "solutions" field opens, sourced from Settings). Save = summary
@@ -209,8 +210,8 @@ manager *is* the social worker; every manager may write it).
       blocked** (decided).
 - [x] Social-worker status — **no separate role; all managers write Tab 3** (manager = social
       worker) (decided). Roles are exactly three.
-- [x] Tab 1 update rule — **derived automatically from the latest meeting** (not stored/edited)
-      (decided).
+- [x] Tab 1 update rule — **derived automatically as the latest rating per skill across meetings**
+      (not stored/edited) (decided; per-skill-latest confirmed).
 - [x] Deletion & audit — **archive-only (manager); audit log records changes only** (decided).
       Retention period is a config value, number TBD.
 - [x] Stack — **LOCKED** (Vite React SPA + FastAPI/Pydantic + PostgreSQL; pnpm, uv, GitHub

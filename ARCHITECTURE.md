@@ -209,10 +209,11 @@ erDiagram
 ```
 
 ### Model notes
-- **Tab 1 (Program) is NOT stored** — it is a **derived read-model** computed from the student's
-  **latest** team meeting (decided): each skill's most recent rating decides its bucket —
-  green → strengths (מוקדי כח); yellow/red → areas to strengthen (מוקדים לחיזוק) with that
-  entry's chosen solutions as the "path to solution". No `PROGRAM` table, no manual editing.
+- **Tab 1 (Program) is NOT stored** — it is a **derived read-model**: the **latest rating per
+  skill across all** the student's team meetings (decided). For each skill ever assessed, the most
+  recent meeting that rated it decides its bucket — green → strengths (מוקדי כח); yellow/red →
+  areas to strengthen (מוקדים לחיזוק) with that entry's chosen solutions as the "path to solution".
+  No `PROGRAM` table, no manual editing.
 - **The taxonomy (Label → SubLabel → Skill → Solution)** is the dynamic core. It is managed on
   the Settings page and feeds the Tab 2 form. Do not hard-code it.
 - **`MEETING_ENTRY.rating`**: green=independent, yellow=supervised, red=dependent. On yellow/red
@@ -255,7 +256,8 @@ flowchart TD
 **Implementation rules:**
 - Validation: cannot save while any skill rated yellow/red has no chosen solution.
 - **Tab 1 derivation (decided):** green → strengths; yellow/red → areas to strengthen, with the
-  entry's chosen solutions as the "path to solution". Computed from the latest meeting per skill.
+  entry's chosen solutions as the "path to solution". Computed as the latest rating **per skill
+  across all** the student's meetings (newest-first, first rating seen per skill wins).
 - Save must be atomic (transaction): meeting + all entries + solution links.
 
 ---
@@ -360,7 +362,7 @@ flowchart LR
 - Login/student-screen design variation choice.
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
-only, managers write Tab 3; Tab 1 is a derived read-model from the latest meeting; Tab 4 extra
+only, managers write Tab 3; Tab 1 is a derived read-model (latest rating per skill across meetings); Tab 4 extra
 sections = normalized tables; taxonomy history = snapshot + soft-delete; students archive-only
 (manager); audit log records changes only; stack locked (Vite SPA + FastAPI); auth =
 username/password with email invite + reset._
