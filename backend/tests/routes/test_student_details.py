@@ -147,3 +147,31 @@ def test_details_require_authentication(
     student_id = seed_student(class_id)
 
     assert api.get(f"/students/{student_id}/details").status_code == 401
+
+
+def test_manager_downloads_details_pdf(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
+
+    pdf = api.get(f"/students/{student_id}/details/pdf", headers=headers)
+    assert pdf.status_code == 200
+    assert pdf.headers["content-type"] == "application/pdf"
+    assert pdf.content.startswith(b"%PDF")
+
+
+def test_details_pdf_requires_authentication(
+    api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
+) -> None:
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id)
+
+    assert api.get(f"/students/{student_id}/details/pdf").status_code == 401

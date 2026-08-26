@@ -16,7 +16,7 @@ from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
-from backend.app.routes.meetings import get_pdf_renderer
+from backend.app.routes.pdf import get_pdf_renderer
 from backend.app.utils.service.password_hasher import PasswordHasher
 
 
