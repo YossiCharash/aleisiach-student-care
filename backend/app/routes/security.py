@@ -67,3 +67,14 @@ def require_content_writer(user: CurrentUser) -> User:
 
 
 ContentWriter = Annotated[User, Depends(require_content_writer)]
+
+_SOCIAL_NOTE_READER_ROLES = frozenset({UserRole.MANAGER, UserRole.INSTRUCTOR})
+
+
+def require_social_note_reader(user: CurrentUser) -> User:
+    if user.role not in _SOCIAL_NOTE_READER_ROLES:
+        raise AuthorizationError
+    return user
+
+
+SocialNoteReader = Annotated[User, Depends(require_social_note_reader)]
