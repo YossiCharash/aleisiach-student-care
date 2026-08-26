@@ -14,3 +14,7 @@ class StudentAccessPolicy:
         if user.role in _ALL_CLASS_ROLES:
             return StudentAccessScope(all_classes=True)
         raise AuthorizationError
+
+    @staticmethod
+    def can_see_sensitive(user: User) -> bool:
+        return user.role != UserRole.PROFESSIONAL_TEACHER
