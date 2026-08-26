@@ -32,7 +32,7 @@ class StudentService:
 
     def get(self, student_id: uuid.UUID, scope: StudentAccessScope) -> StudentResponse:
         student = self._require(student_id)
-        if not scope.all_classes and student.class_id != scope.class_id:
+        if not scope.permits(student.class_id):
             raise NotFoundError("student")
         return StudentResponse.model_validate(student)
 
