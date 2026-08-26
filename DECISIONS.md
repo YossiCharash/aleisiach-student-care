@@ -117,15 +117,21 @@ anywhere; no Settings.
 **Consequences:** Enforced server-side in the service layer via a per-role authorization policy.
 
 ## ADR-010 — Tab 1 (Program) is a derived read-model
-**Status:** Accepted · 2026-08-24
+**Status:** Accepted · 2026-08-24 · **revised 2026-08-26** (per-skill latest, confirmed with the user)
 **Context:** Saving a team meeting must "automatically update" Tab 1; storing Tab 1 separately
-risks drift between it and the meetings.
-**Decision:** Tab 1 is **not stored** — it is computed from the student's **latest** team meeting:
-per skill, green → strengths (מוקדי כח); yellow/red → areas to strengthen (מוקדים לחיזוק) with
-that entry's chosen solutions as the "path to solution". No manual editing.
-**Alternatives:** An editable snapshot; full historical accumulation. Rejected as more complex and
-prone to inconsistency.
-**Consequences:** No `PROGRAM` table; Tab 1 is a query over meeting entries.
+risks drift between it and the meetings. The original wording ("the student's latest team meeting")
+was ambiguous about skills that the newest meeting did not re-assess.
+**Decision:** Tab 1 is **not stored** — it is the **latest rating per skill across all** the
+student's team meetings: for each skill ever assessed, the most recent meeting that rated it
+decides its bucket — green → strengths (מוקדי כח); yellow/red → areas to strengthen (מוקדים
+לחיזוק) with that entry's chosen solutions as the "path to solution". Each item also carries the
+year/month it was last assessed. No manual editing.
+**Alternatives:** **Single-latest-meeting only** — rejected, it would drop skills the newest
+meeting happens not to cover, losing the accumulated picture. An editable stored snapshot —
+rejected, risks drift.
+**Consequences:** No `PROGRAM` table; Tab 1 is a query that walks the student's meetings
+newest-first and keeps the first rating seen per skill (a final `id` tiebreaker keeps same-month
+ties deterministic).
 
 ## ADR-011 — Tab 4 extra sections as normalized tables
 **Status:** Accepted · 2026-08-24
