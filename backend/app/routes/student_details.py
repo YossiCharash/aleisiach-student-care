@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
@@ -12,16 +13,21 @@ from backend.app.schema.routes.student_details_response import StudentDetailsRes
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
 )
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_details_service import StudentDetailsService
+from backend.app.utils.service.clock import Clock
 
 
 def get_student_details_service(
     session: Annotated[Session, Depends(get_session)],
 ) -> StudentDetailsService:
     return StudentDetailsService(
-        StudentDetailsRepository(session), StudentAccessGuard(StudentRepository(session))
+        StudentDetailsRepository(session),
+        StudentAccessGuard(StudentRepository(session)),
+        AuditLogger(AuditLogRepository(session)),
+        Clock(),
     )
 
 
@@ -48,4 +54,4 @@ def upsert_details(
     service: ServiceDep,
     writer: ContentWriter,
 ) -> StudentDetailsResponse:
-    return service.upsert(student_id, request, StudentAccessPolicy.scope_for(writer))
+    return service.upsert(student_id, request, StudentAccessPolicy.scope_for(writer), writer.id)

@@ -10,6 +10,8 @@ from sqlalchemy.pool import StaticPool
 from backend.app.client.database.provider import get_session
 from backend.app.main import create_app
 from backend.app.models.base import Base
+from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
@@ -72,6 +74,28 @@ def seed_user(db_session: Session) -> Callable[..., User]:
         db_session.add(user)
         db_session.flush()
         return user
+
+    return _seed
+
+
+@pytest.fixture
+def seed_class(db_session: Session) -> Callable[..., uuid.UUID]:
+    def _seed(name: str = "Aleph") -> uuid.UUID:
+        entity = ClassEntity(name=name)
+        db_session.add(entity)
+        db_session.flush()
+        return entity.id
+
+    return _seed
+
+
+@pytest.fixture
+def seed_student(db_session: Session) -> Callable[..., uuid.UUID]:
+    def _seed(class_id: uuid.UUID, full_name: str = "Dana") -> uuid.UUID:
+        student = Student(full_name=full_name, class_id=class_id)
+        db_session.add(student)
+        db_session.flush()
+        return student.id
 
     return _seed
 
