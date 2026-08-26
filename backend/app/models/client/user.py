@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Enum, ForeignKey, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
@@ -24,4 +25,9 @@ class User(Base):
         Enum(UserStatus, native_enum=False, length=16),
         default=UserStatus.INVITED,
         nullable=False,
+    )
+    failed_login_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_reset_request_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )

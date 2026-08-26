@@ -15,6 +15,9 @@ class UserRepository:
         self._session.flush()
         return user
 
+    def commit(self) -> None:
+        self._session.commit()
+
     def get(self, user_id: uuid.UUID) -> User | None:
         return self._session.get(User, user_id)
 

@@ -1,3 +1,5 @@
+from datetime import UTC, datetime, timedelta
+
 from sqlalchemy.orm import Session
 
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
@@ -10,13 +12,27 @@ from backend.app.models.client.user_status import UserStatus
 from backend.app.service.auth.password_reset_service import PasswordResetService
 from backend.app.service.auth.token_consumer import TokenConsumer
 from backend.app.service.auth.token_issuer import TokenIssuer
+from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
 from backend.app.utils.service.token_factory import TokenFactory
 from backend.tests.service.capturing_email_sender import CapturingEmailSender
 
+_BASE = datetime(2026, 8, 27, 9, 0, tzinfo=UTC)
+
+
+class _FakeClock(Clock):
+    def __init__(self, moment: datetime) -> None:
+        self.moment = moment
+
+    def now(self) -> datetime:
+        return self.moment
+
 
 def _service(
-    session: Session, hasher: PasswordHasher, sender: CapturingEmailSender
+    session: Session,
+    hasher: PasswordHasher,
+    sender: CapturingEmailSender,
+    clock: Clock | None = None,
 ) -> PasswordResetService:
     tokens = AuthTokenRepository(session)
     factory = TokenFactory()
@@ -28,6 +44,7 @@ def _service(
         sender,
         AuthSettings(),
         EmailSettings(),
+        clock or _FakeClock(_BASE),
     )
 
 
@@ -70,3 +87,22 @@ def test_request_unknown_email_sends_nothing(db_session: Session) -> None:
     service.request("nobody@example.com")
 
     assert sender.reset_link is None
+
+
+def test_repeated_request_is_throttled(db_session: Session) -> None:
+    hasher = PasswordHasher()
+    sender = CapturingEmailSender()
+    _seed_active_user(db_session, hasher)
+    clock = _FakeClock(_BASE)
+    service = _service(db_session, hasher, sender, clock)
+
+    service.request("m@example.com")
+    assert sender.reset_link is not None
+    sender.reset_link = None
+
+    service.request("m@example.com")
+    assert sender.reset_link is None
+
+    clock.moment = _BASE + timedelta(minutes=AuthSettings().reset_request_interval_minutes + 1)
+    service.request("m@example.com")
+    assert sender.reset_link is not None

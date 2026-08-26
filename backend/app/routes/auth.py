@@ -46,7 +46,12 @@ def get_invitation_service(session: SessionDep, bootstrap: BootstrapDep) -> Invi
 def get_authentication_service(
     session: SessionDep, bootstrap: BootstrapDep
 ) -> AuthenticationService:
-    return AuthenticationService(UserRepository(session), bootstrap.password_hasher)
+    return AuthenticationService(
+        UserRepository(session),
+        bootstrap.password_hasher,
+        bootstrap.settings.auth,
+        bootstrap.clock,
+    )
 
 
 def get_password_reset_service(
@@ -61,6 +66,7 @@ def get_password_reset_service(
         bootstrap.email_sender,
         bootstrap.settings.auth,
         bootstrap.settings.email,
+        bootstrap.clock,
     )
 
 
