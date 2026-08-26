@@ -23,3 +23,11 @@ class StudentRepository:
             select(Student).where(Student.is_archived.is_(False)).order_by(Student.full_name)
         )
         return list(self._session.scalars(statement).all())
+
+    def list_active_by_class(self, class_id: uuid.UUID) -> list[Student]:
+        statement = (
+            select(Student)
+            .where(Student.is_archived.is_(False), Student.class_id == class_id)
+            .order_by(Student.full_name)
+        )
+        return list(self._session.scalars(statement).all())

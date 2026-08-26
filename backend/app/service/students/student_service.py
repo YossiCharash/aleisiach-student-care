@@ -7,6 +7,7 @@ from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.student import Student
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.schema.service.student_access_scope import StudentAccessScope
 
 
 class StudentService:
@@ -25,12 +26,22 @@ class StudentService:
         self._students.add(student)
         return StudentResponse.model_validate(student)
 
-    def list_active(self) -> list[StudentResponse]:
-        return [StudentResponse.model_validate(student) for student in self._students.list_active()]
+    def list_active(self, scope: StudentAccessScope) -> list[StudentResponse]:
+        students = self._students_in_scope(scope)
+        return [StudentResponse.model_validate(student) for student in students]
 
-    def get(self, student_id: uuid.UUID) -> StudentResponse:
+    def get(self, student_id: uuid.UUID, scope: StudentAccessScope) -> StudentResponse:
         student = self._require(student_id)
+        if not scope.all_classes and student.class_id != scope.class_id:
+            raise NotFoundError("student")
         return StudentResponse.model_validate(student)
+
+    def _students_in_scope(self, scope: StudentAccessScope) -> list[Student]:
+        if scope.all_classes:
+            return self._students.list_active()
+        if scope.class_id is None:
+            return []
+        return self._students.list_active_by_class(scope.class_id)
 
     def archive(
         self, student_id: uuid.UUID, archived_by: uuid.UUID | None = None
