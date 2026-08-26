@@ -19,6 +19,7 @@ from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.program.program_service import ProgramService
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 _ALL = StudentAccessScope(all_classes=True)
 _AUTHOR = uuid.uuid4()
@@ -61,10 +62,9 @@ def _setup(session: Session) -> _Bundle:
     solution_b = Solution(skill_id=skill_b.id, text="תרגול יומי")
     session.add(solution_b)
     session.flush()
-    meetings = MeetingService(
-        MeetingRepository(session), StudentRepository(session), TaxonomyRepository(session)
-    )
-    program = ProgramService(MeetingRepository(session), StudentRepository(session))
+    guard = StudentAccessGuard(StudentRepository(session))
+    meetings = MeetingService(MeetingRepository(session), guard, TaxonomyRepository(session))
+    program = ProgramService(MeetingRepository(session), guard)
     return _Bundle(meetings, program, student.id, skill_a.id, skill_b.id, solution_b.id)
 
 
@@ -129,6 +129,29 @@ def test_accumulates_skills_and_exposes_solution_path(db_session: Session) -> No
     assert area.skill_id == bundle.skill_b
     assert area.rating == MeetingRating.YELLOW
     assert area.solutions == ["תרגול יומי"]
+
+
+def test_single_meeting_splits_into_both_buckets(db_session: Session) -> None:
+    bundle = _setup(db_session)
+    _meeting(
+        bundle,
+        2026,
+        8,
+        [
+            MeetingEntryRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
+            MeetingEntryRequest(
+                skill_id=bundle.skill_b,
+                rating=MeetingRating.YELLOW,
+                solution_ids=[bundle.solution_b],
+            ),
+        ],
+    )
+
+    program = bundle.program.get_for_student(bundle.student_id, _ALL)
+
+    assert [strength.skill_id for strength in program.strengths] == [bundle.skill_a]
+    assert [area.skill_id for area in program.areas_to_strengthen] == [bundle.skill_b]
+    assert program.areas_to_strengthen[0].solutions == ["תרגול יומי"]
 
 
 def test_no_meetings_yields_empty_program(db_session: Session) -> None:

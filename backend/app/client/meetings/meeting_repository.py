@@ -27,6 +27,7 @@ class MeetingRepository:
                 TeamMeeting.year.desc(),
                 TeamMeeting.month.desc(),
                 TeamMeeting.created_at.desc(),
+                TeamMeeting.id.desc(),
             )
             .options(selectinload(TeamMeeting.entries).selectinload(MeetingEntry.solutions))
         )

@@ -12,6 +12,7 @@ from backend.app.routes.security import CurrentUser, MeetingWriter
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.service.meetings.meeting_service import MeetingService
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 
 
@@ -20,7 +21,7 @@ def get_meeting_service(
 ) -> MeetingService:
     return MeetingService(
         MeetingRepository(session),
-        StudentRepository(session),
+        StudentAccessGuard(StudentRepository(session)),
         TaxonomyRepository(session),
     )
 

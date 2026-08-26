@@ -19,6 +19,7 @@ from backend.app.schema.routes.meeting_create_request import MeetingCreateReques
 from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.meetings.meeting_service import MeetingService
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 _ALL = StudentAccessScope(all_classes=True)
 
@@ -62,7 +63,9 @@ def _setup(session: Session) -> _Fixture:
     session.add_all([solution, other_solution])
     session.flush()
     service = MeetingService(
-        MeetingRepository(session), StudentRepository(session), TaxonomyRepository(session)
+        MeetingRepository(session),
+        StudentAccessGuard(StudentRepository(session)),
+        TaxonomyRepository(session),
     )
     return _Fixture(service, student.id, skill.id, other_skill.id, solution.id, other_solution.id)
 

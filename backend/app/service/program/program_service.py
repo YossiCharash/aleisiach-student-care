@@ -1,8 +1,6 @@
 import uuid
 
 from backend.app.client.meetings.meeting_repository import MeetingRepository
-from backend.app.client.students.student_repository import StudentRepository
-from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.team_meeting import TeamMeeting
@@ -10,19 +8,18 @@ from backend.app.schema.routes.program_area import ProgramArea
 from backend.app.schema.routes.program_response import ProgramResponse
 from backend.app.schema.routes.program_strength import ProgramStrength
 from backend.app.schema.service.student_access_scope import StudentAccessScope
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 
 class ProgramService:
     def __init__(
-        self,
-        meeting_repository: MeetingRepository,
-        student_repository: StudentRepository,
+        self, meeting_repository: MeetingRepository, access_guard: StudentAccessGuard
     ) -> None:
         self._meetings = meeting_repository
-        self._students = student_repository
+        self._guard = access_guard
 
     def get_for_student(self, student_id: uuid.UUID, scope: StudentAccessScope) -> ProgramResponse:
-        self._require_student(student_id, scope)
+        self._guard.require(student_id, scope)
         strengths: list[ProgramStrength] = []
         areas: list[ProgramArea] = []
         seen: set[uuid.UUID] = set()
@@ -31,40 +28,28 @@ class ProgramService:
                 if entry.skill_id in seen:
                     continue
                 seen.add(entry.skill_id)
-                self._place(entry, meeting, strengths, areas)
+                if entry.rating == MeetingRating.GREEN:
+                    strengths.append(self._strength(entry, meeting))
+                else:
+                    areas.append(self._area(entry, meeting))
         return ProgramResponse(
             student_id=student_id, strengths=strengths, areas_to_strengthen=areas
         )
 
-    def _place(
-        self,
-        entry: MeetingEntry,
-        meeting: TeamMeeting,
-        strengths: list[ProgramStrength],
-        areas: list[ProgramArea],
-    ) -> None:
-        if entry.rating == MeetingRating.GREEN:
-            strengths.append(
-                ProgramStrength(
-                    skill_id=entry.skill_id,
-                    skill_name=entry.skill_name_snapshot,
-                    year=meeting.year,
-                    month=meeting.month,
-                )
-            )
-            return
-        areas.append(
-            ProgramArea(
-                skill_id=entry.skill_id,
-                skill_name=entry.skill_name_snapshot,
-                rating=entry.rating,
-                solutions=[solution.solution_text_snapshot for solution in entry.solutions],
-                year=meeting.year,
-                month=meeting.month,
-            )
+    def _strength(self, entry: MeetingEntry, meeting: TeamMeeting) -> ProgramStrength:
+        return ProgramStrength(
+            skill_id=entry.skill_id,
+            skill_name=entry.skill_name_snapshot,
+            year=meeting.year,
+            month=meeting.month,
         )
 
-    def _require_student(self, student_id: uuid.UUID, scope: StudentAccessScope) -> None:
-        student = self._students.get(student_id)
-        if student is None or not scope.permits(student.class_id):
-            raise NotFoundError("student")
+    def _area(self, entry: MeetingEntry, meeting: TeamMeeting) -> ProgramArea:
+        return ProgramArea(
+            skill_id=entry.skill_id,
+            skill_name=entry.skill_name_snapshot,
+            rating=entry.rating,
+            solutions=[solution.solution_text_snapshot for solution in entry.solutions],
+            year=meeting.year,
+            month=meeting.month,
+        )

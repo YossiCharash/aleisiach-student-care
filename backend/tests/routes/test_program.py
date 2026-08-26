@@ -83,6 +83,20 @@ def test_instructor_cannot_read_other_class_program(
     assert response.status_code == 404
 
 
+def test_professional_teacher_can_read_program(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
+    headers = auth_headers(api, "prof")
+
+    response = api.get(f"/students/{domain.student_id}/program", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["strengths"] == []
+
+
 def test_program_requires_authentication(api: TestClient, db_session: Session) -> None:
     class_id = _seed_class(db_session, "Aleph")
     domain = _seed_domain(db_session, class_id)

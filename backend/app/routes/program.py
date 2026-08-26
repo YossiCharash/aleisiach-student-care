@@ -10,13 +10,16 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.security import CurrentUser
 from backend.app.schema.routes.program_response import ProgramResponse
 from backend.app.service.program.program_service import ProgramService
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 
 
 def get_program_service(
     session: Annotated[Session, Depends(get_session)],
 ) -> ProgramService:
-    return ProgramService(MeetingRepository(session), StudentRepository(session))
+    return ProgramService(
+        MeetingRepository(session), StudentAccessGuard(StudentRepository(session))
+    )
 
 
 ServiceDep = Annotated[ProgramService, Depends(get_program_service)]

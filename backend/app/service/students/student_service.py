@@ -8,6 +8,7 @@ from backend.app.models.client.student import Student
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
 from backend.app.schema.service.student_access_scope import StudentAccessScope
+from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 
 class StudentService:
@@ -15,9 +16,11 @@ class StudentService:
         self,
         student_repository: StudentRepository,
         class_repository: ClassRepository,
+        access_guard: StudentAccessGuard,
     ) -> None:
         self._students = student_repository
         self._classes = class_repository
+        self._guard = access_guard
 
     def create(self, request: StudentCreateRequest) -> StudentResponse:
         if not self._classes.exists(request.class_id):
@@ -31,9 +34,7 @@ class StudentService:
         return [StudentResponse.model_validate(student) for student in students]
 
     def get(self, student_id: uuid.UUID, scope: StudentAccessScope) -> StudentResponse:
-        student = self._require(student_id)
-        if not scope.permits(student.class_id):
-            raise NotFoundError("student")
+        student = self._guard.require(student_id, scope)
         return StudentResponse.model_validate(student)
 
     def _students_in_scope(self, scope: StudentAccessScope) -> list[Student]:
