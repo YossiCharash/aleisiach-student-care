@@ -4,6 +4,7 @@ from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.errors.service.invalid_meeting_error import InvalidMeetingError
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
 from backend.app.models.client.meeting_rating import MeetingRating
@@ -13,10 +14,13 @@ from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
+from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.schema.service.student_access_scope import StudentAccessScope
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 _RATINGS_REQUIRING_SOLUTION = frozenset({MeetingRating.YELLOW, MeetingRating.RED})
+_ENTITY_TYPE = "team_meeting"
 
 
 class MeetingService:
@@ -25,10 +29,12 @@ class MeetingService:
         meeting_repository: MeetingRepository,
         access_guard: StudentAccessGuard,
         taxonomy_repository: TaxonomyRepository,
+        audit_logger: AuditLogger,
     ) -> None:
         self._meetings = meeting_repository
         self._guard = access_guard
         self._taxonomy = taxonomy_repository
+        self._audit = audit_logger
 
     def create(
         self,
@@ -49,6 +55,15 @@ class MeetingService:
             self._build_entry(position, entry) for position, entry in enumerate(request.entries)
         ]
         self._meetings.add(meeting)
+        self._audit.record(
+            AuditEntry(
+                actor_id=author_id,
+                action=AuditAction.CREATE,
+                entity_type=_ENTITY_TYPE,
+                entity_id=meeting.id,
+                changes=["year", "month", "entries"],
+            )
+        )
         return MeetingResponse.model_validate(meeting)
 
     def list_for_student(

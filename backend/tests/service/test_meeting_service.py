@@ -1,13 +1,17 @@
 import uuid
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.errors.service.invalid_meeting_error import InvalidMeetingError
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.models.client.audit_action import AuditAction
+from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
@@ -18,6 +22,7 @@ from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 
@@ -66,6 +71,7 @@ def _setup(session: Session) -> _Fixture:
         MeetingRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         TaxonomyRepository(session),
+        AuditLogger(AuditLogRepository(session)),
     )
     return _Fixture(service, student.id, skill.id, other_skill.id, solution.id, other_solution.id)
 
@@ -88,6 +94,23 @@ def test_create_captures_snapshots(db_session: Session) -> None:
 
     assert meeting.entries[0].skill_name_snapshot == "רחיצת ידיים"
     assert meeting.entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
+
+
+def test_create_is_audited(db_session: Session) -> None:
+    fx = _setup(db_session)
+    author = uuid.uuid4()
+    request = MeetingCreateRequest(
+        year=2026,
+        month=8,
+        entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
+    )
+
+    fx.service.create(fx.student_id, request, _ALL, author)
+
+    log = db_session.scalars(select(AuditLog)).one()
+    assert log.action == AuditAction.CREATE
+    assert log.entity_type == "team_meeting"
+    assert log.actor_id == author
 
 
 def test_yellow_without_solution_is_rejected(db_session: Session) -> None:

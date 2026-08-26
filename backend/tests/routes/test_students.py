@@ -2,7 +2,11 @@ import uuid
 from collections.abc import Callable
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from backend.app.models.client.audit_action import AuditAction
+from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 
@@ -142,3 +146,28 @@ def test_only_manager_archives_and_it_hides_student(
     assert archived.status_code == 200
     assert archived.json()["is_archived"] is True
     assert api.get("/students", headers=manager_headers).json() == []
+
+
+def test_create_and_archive_are_audited(
+    api: TestClient,
+    db_session: Session,
+    seed_class: SeedClass,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    boss_id = seed_user("boss", UserRole.MANAGER).id
+    headers = auth_headers(api, "boss")
+
+    created = api.post(
+        "/students", headers=headers, json={"full_name": "Dana", "class_id": str(class_id)}
+    )
+    student_id = created.json()["id"]
+    api.post(f"/students/{student_id}/archive", headers=headers)
+
+    logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
+    actions = [log.action for log in logs]
+    assert AuditAction.CREATE in actions
+    assert AuditAction.ARCHIVE in actions
+    assert all(log.actor_id == boss_id for log in logs)
+    assert all(log.entity_type == "student" for log in logs)

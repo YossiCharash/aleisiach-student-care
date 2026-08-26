@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
@@ -11,6 +12,7 @@ from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.routes.security import ContentWriter, CurrentUser
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
@@ -23,6 +25,7 @@ def get_meeting_service(
         MeetingRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         TaxonomyRepository(session),
+        AuditLogger(AuditLogRepository(session)),
     )
 
 

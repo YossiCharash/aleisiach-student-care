@@ -3,6 +3,7 @@ import uuid
 import pytest
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
@@ -17,6 +18,7 @@ from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.program.program_service import ProgramService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
@@ -63,7 +65,12 @@ def _setup(session: Session) -> _Bundle:
     session.add(solution_b)
     session.flush()
     guard = StudentAccessGuard(StudentRepository(session))
-    meetings = MeetingService(MeetingRepository(session), guard, TaxonomyRepository(session))
+    meetings = MeetingService(
+        MeetingRepository(session),
+        guard,
+        TaxonomyRepository(session),
+        AuditLogger(AuditLogRepository(session)),
+    )
     program = ProgramService(MeetingRepository(session), guard)
     return _Bundle(meetings, program, student.id, skill_a.id, skill_b.id, solution_b.id)
 
