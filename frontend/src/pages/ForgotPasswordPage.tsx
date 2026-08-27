@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 
 const NEUTRAL_MESSAGE =
-  "אם קיימת כתובת דוא\"ל תואמת במערכת, נשלח אליה קישור לאיפוס סיסמה.";
+  'אם קיימת כתובת דוא"ל תואמת במערכת, נשלח אליה קישור לאיפוס סיסמה.';
 
 export function ForgotPasswordPage(): ReactNode {
   const [email, setEmail] = useState("");
@@ -33,7 +33,10 @@ export function ForgotPasswordPage(): ReactNode {
       {submitted ? (
         <div className="space-y-4">
           <Alert tone="success">{NEUTRAL_MESSAGE}</Alert>
-          <Link to="/login" className="block text-center text-sm text-brand hover:underline">
+          <Link
+            to="/login"
+            className="block text-center text-sm text-brand hover:underline"
+          >
             חזרה לכניסה
           </Link>
         </div>
@@ -54,7 +57,10 @@ export function ForgotPasswordPage(): ReactNode {
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? "שולח…" : "שליחת קישור לאיפוס"}
           </Button>
-          <Link to="/login" className="block text-center text-sm text-brand hover:underline">
+          <Link
+            to="/login"
+            className="block text-center text-sm text-brand hover:underline"
+          >
             חזרה לכניסה
           </Link>
         </form>

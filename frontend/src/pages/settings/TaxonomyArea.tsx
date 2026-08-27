@@ -244,7 +244,8 @@ function InactiveLabels(): ReactNode {
               ))
             ))}
           <p className="text-xs text-ink-muted">
-            הפעלה מחדש של תת-תוויות, כישורים ופתרונות תתאפשר כשיתווסף שירות שליפה בצד השרת.
+            הפעלה מחדש של תת-תוויות, כישורים ופתרונות תתאפשר כשיתווסף שירות שליפה בצד
+            השרת.
           </p>
         </div>
       )}
@@ -342,7 +343,12 @@ function NodeName({
           >
             השבתה
           </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => setConfirming(false)}
+          >
             ביטול
           </Button>
         </div>

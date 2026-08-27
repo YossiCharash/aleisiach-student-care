@@ -20,7 +20,7 @@ uv run uvicorn backend.app.main:app --reload --app-dir ..
 
 > Code is imported as `backend.app.*` (import root = repo root).
 
-Quality gates (also enforced in CI and via pre-commit):
+Quality gates (enforced in **CI**; run locally for fast feedback before pushing):
 
 ```bash
 cd backend
@@ -46,12 +46,12 @@ Seeds one user per role (`mor` / `dana` / `yoav`, password `demo1234`), two clas
 three students, a full taxonomy tree, and a sample meeting + details + social note for
 student "נועה כהן". Re-running detects existing data and does nothing.
 
-## Git hooks
+## Checks run in CI
 
-```bash
-uv tool install pre-commit
-pre-commit install --hook-type pre-commit --hook-type pre-push
-```
+All checks run in **GitHub Actions** on every push and PR — backend (ruff · black · mypy · pytest)
+and frontend (lint · typecheck · Vitest · build · Playwright E2E). There are **no local git hooks**;
+CI is the enforcement point. Run the quality-gate command above (and `pnpm test` / `pnpm typecheck`
+in `frontend/`) yourself when you want fast local feedback.
 
 ## Frontend (`frontend/`)
 

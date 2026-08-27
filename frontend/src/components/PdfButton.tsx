@@ -15,7 +15,9 @@ export function PdfButton({ url, label }: { url: string; label: string }): React
     try {
       await openAuthedPdf(url);
     } catch (caught) {
-      setError(caught instanceof Error && caught.message ? caught.message : DEFAULT_ERROR);
+      setError(
+        caught instanceof Error && caught.message ? caught.message : DEFAULT_ERROR
+      );
     } finally {
       setLoading(false);
     }

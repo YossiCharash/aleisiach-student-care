@@ -9,7 +9,12 @@ interface Props {
   required?: boolean;
 }
 
-export function ClassIdField({ id, value, onChange, required = false }: Props): ReactNode {
+export function ClassIdField({
+  id,
+  value,
+  onChange,
+  required = false,
+}: Props): ReactNode {
   return (
     <div>
       <Label htmlFor={id}>מזהה כיתה</Label>
@@ -20,7 +25,9 @@ export function ClassIdField({ id, value, onChange, required = false }: Props): 
         placeholder="UUID של הכיתה"
         required={required}
       />
-      <p className="mt-1 text-xs text-ink-muted">זמני — עד להוספת ניהול כיתות בצד השרת.</p>
+      <p className="mt-1 text-xs text-ink-muted">
+        זמני — עד להוספת ניהול כיתות בצד השרת.
+      </p>
     </div>
   );
 }

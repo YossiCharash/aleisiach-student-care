@@ -22,8 +22,8 @@
 - [ ] בחירת גרסת עיצוב לכניסה / מסך תלמיד
 
 ## 1. תשתית ו-DevOps
-- [x] ריפו פרטי ב-GitHub + Git hooks (pre-commit/pre-push)
-- [x] CI (GitHub Actions): ruff + black + mypy(strict) + pytest
+- [x] ריפו פרטי ב-GitHub. **הבדיקות רצות ב-CI בלבד** — ה-git hooks המקומיים הוסרו
+- [x] CI (GitHub Actions): backend — ruff + black + mypy(strict) + pytest · frontend — lint + typecheck + vitest + build + Playwright E2E
 - [x] מבנה שכבות מחייב (routes/service/client/schema/models/configuration/errors/utils)
 - [x] Bootstrap composition-root (סינגלטונים נוצרים פעם אחת)
 - [x] נתיב יבוא `backend.app`
@@ -48,7 +48,7 @@
 ## 3. Backend — דומיינים
 - [x] Students: יצירה / רשימה / שליפה / ארכוב (soft-delete) + טסטים
 - [x] **סינון הרשאות על students**: מדריך→כיתתו · מורה מקצועי→read-only · `archived_by` למשתמש הנוכחי
-- [x] ניהול כיתות (Class) — כרגע רק מודל
+- [x] ניהול כיתות (Class) — CRUD מלא: רשימה (כל משתמש מאומת) + יצירה/שינוי-שם (מנהל) + audit
 - [x] Taxonomy: Label→SubLabel→Skill→Solution + CRUD בהגדרות + `is_active` (soft-delete)
 - [x] Tab 2 — ישיבות צוות: meeting + entries + בחירת צבע + פתרונות + snapshot + שמירה אטומית
 - [x] Tab 1 — תוכנית (נגזר: דירוג אחרון לכל כישור חוצה כל הישיבות)
@@ -71,7 +71,7 @@
 - [~] הגדרות אישיות: "שינוי סיסמה" דרך שליחת קישור איפוס לדוא"ל (חסר endpoint ייעודי מאומת בשרת)
 - [x] בדיקות: Vitest + RTL — 26 טסטים + Playwright E2E (עשן: כניסה/ניתוב/שכחתי-סיסמה/404, ב-CI)
 - [ ] כותרות טאב 4 בהגדרות — חסום על שמות הכותרות (כמו ב-backend)
-- [ ] **חסם: אין endpoint לרשימת כיתות** — יצירת תלמיד/הזמנת מדריך משתמשים כרגע ב-`class_id` ידני (זמני)
+- [ ] **חיווט בורר כיתה** — ה-endpoint `GET /classes` קיים; להחליף את שדה `class_id` הידני בבורר ב-CreateStudentDialog/InviteUserDialog
 
 ## 5. איכות ונתונים
 - [x] בדיקות יחידה לכל רכיב backend חדש (test-with-code) — 123 טסטים
@@ -82,8 +82,11 @@
 ---
 
 ### הבא בתור (מומלץ)
-1. **Endpoint לרשימת כיתות** (Class CRUD) — פותח את בורר הכיתה ביצירת תלמיד/הזמנה במקום UUID ידני.
-2. **נתוני דמו + seed** (§5) — מאפשר הרצה מקצה-לקצה ופיתוח frontend מול נתונים אמיתיים.
-3. **בדיקות E2E (Playwright)** — כניסה→רשימה→תלמיד→ישיבה, לכל תפקיד.
-4. **endpoint שינוי סיסמה מאומת** — משלים את "הגדרות אישיות".
-5. חסומים על קלט: כותרות טאב 4, ספק מייל, בחירת גופן.
+1. ~~**Endpoint לרשימת כיתות** (Class CRUD)~~ — **בוצע** (PR #25).
+2. ~~**נתוני דמו + seed**~~ — **בוצע** (PR #28): `python -m backend.app.seed`.
+3. **endpoint שינוי סיסמה מאומת** — משלים את "הגדרות אישיות".
+4. **שחזור/רשימת תלמידים מאורכבים** (unarchive + list-archived) — משלים מחזור-חיים.
+5. **list-inactive לתת-תוויות/כישורים/פתרונות** — משלים הפעלה-מחדש בטקסונומיה.
+6. **חיווט frontend**: בורר כיתה, שינוי סיסמה, תצוגת ארכיון.
+7. **בדיקות E2E (Playwright)** מאחורי כניסה — כעת אפשריות עם ה-seed.
+8. חסומים על קלט: כותרות טאב 4, ספק מייל, בחירת גופן.
