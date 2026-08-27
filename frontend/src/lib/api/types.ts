@@ -113,6 +113,16 @@ export interface SolutionResponse {
   is_active: boolean;
 }
 
+export interface NamedTaxonomyUpdate {
+  name?: string;
+  is_active?: boolean;
+}
+
+export interface SolutionUpdate {
+  text?: string;
+  is_active?: boolean;
+}
+
 export interface MeetingEntrySolutionResponse {
   id: string;
   solution_id: string;

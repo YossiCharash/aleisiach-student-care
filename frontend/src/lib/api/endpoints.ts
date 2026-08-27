@@ -7,11 +7,13 @@ import type {
   LoginResponse,
   MeetingCreateRequest,
   MeetingResponse,
+  NamedTaxonomyUpdate,
   ProgramResponse,
   SkillResponse,
   SocialNoteResponse,
   SocialNoteUpsertRequest,
   SolutionResponse,
+  SolutionUpdate,
   StudentCreateRequest,
   StudentDetailsResponse,
   StudentDetailsUpsertRequest,
@@ -98,4 +100,12 @@ export const taxonomyApi = {
     apiClient.post<SkillResponse>("/taxonomy/skills", { sub_label_id: subLabelId, name }),
   createSolution: (skillId: string, text: string): Promise<SolutionResponse> =>
     apiClient.post<SolutionResponse>("/taxonomy/solutions", { skill_id: skillId, text }),
+  updateLabel: (labelId: string, body: NamedTaxonomyUpdate): Promise<LabelResponse> =>
+    apiClient.patch<LabelResponse>(`/taxonomy/labels/${labelId}`, body),
+  updateSubLabel: (subLabelId: string, body: NamedTaxonomyUpdate): Promise<SubLabelResponse> =>
+    apiClient.patch<SubLabelResponse>(`/taxonomy/sub-labels/${subLabelId}`, body),
+  updateSkill: (skillId: string, body: NamedTaxonomyUpdate): Promise<SkillResponse> =>
+    apiClient.patch<SkillResponse>(`/taxonomy/skills/${skillId}`, body),
+  updateSolution: (solutionId: string, body: SolutionUpdate): Promise<SolutionResponse> =>
+    apiClient.patch<SolutionResponse>(`/taxonomy/solutions/${solutionId}`, body),
 };
