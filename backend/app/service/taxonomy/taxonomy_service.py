@@ -73,6 +73,14 @@ class TaxonomyService:
         self._audit_change(actor_id, AuditAction.UPDATE, label.id, self._ordered_changes(request))
         return LabelResponse.model_validate(label)
 
+    def list_sub_labels(
+        self, label_id: uuid.UUID, include_inactive: bool
+    ) -> list[SubLabelResponse]:
+        if self._taxonomy.get_label(label_id) is None:
+            raise NotFoundError("label")
+        sub_labels = self._taxonomy.list_sub_labels(label_id, include_inactive)
+        return [SubLabelResponse.model_validate(sub_label) for sub_label in sub_labels]
+
     def create_sub_label(
         self, request: SubLabelCreateRequest, actor_id: uuid.UUID
     ) -> SubLabelResponse:
@@ -100,6 +108,12 @@ class TaxonomyService:
         )
         return SubLabelResponse.model_validate(sub_label)
 
+    def list_skills(self, sub_label_id: uuid.UUID, include_inactive: bool) -> list[SkillResponse]:
+        if self._taxonomy.get_sub_label(sub_label_id) is None:
+            raise NotFoundError("sub_label")
+        skills = self._taxonomy.list_skills(sub_label_id, include_inactive)
+        return [SkillResponse.model_validate(skill) for skill in skills]
+
     def create_skill(self, request: SkillCreateRequest, actor_id: uuid.UUID) -> SkillResponse:
         if self._taxonomy.get_sub_label(request.sub_label_id) is None:
             raise NotFoundError("sub_label")
@@ -122,6 +136,12 @@ class TaxonomyService:
         self._taxonomy.flush()
         self._audit_change(actor_id, AuditAction.UPDATE, skill.id, self._ordered_changes(request))
         return SkillResponse.model_validate(skill)
+
+    def list_solutions(self, skill_id: uuid.UUID, include_inactive: bool) -> list[SolutionResponse]:
+        if self._taxonomy.get_skill(skill_id) is None:
+            raise NotFoundError("skill")
+        solutions = self._taxonomy.list_solutions(skill_id, include_inactive)
+        return [SolutionResponse.model_validate(solution) for solution in solutions]
 
     def create_solution(
         self, request: SolutionCreateRequest, actor_id: uuid.UUID

@@ -62,6 +62,13 @@ def update_label(
     return service.update_label(label_id, request, manager.id)
 
 
+@router.get("/sub-labels", response_model=list[SubLabelResponse])
+def list_sub_labels(
+    label_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
+) -> list[SubLabelResponse]:
+    return service.list_sub_labels(label_id, include_inactive)
+
+
 @router.post("/sub-labels", response_model=SubLabelResponse, status_code=status.HTTP_201_CREATED)
 def create_sub_label(
     request: SubLabelCreateRequest, service: ServiceDep, manager: Manager
@@ -79,6 +86,13 @@ def update_sub_label(
     return service.update_sub_label(sub_label_id, request, manager.id)
 
 
+@router.get("/skills", response_model=list[SkillResponse])
+def list_skills(
+    sub_label_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
+) -> list[SkillResponse]:
+    return service.list_skills(sub_label_id, include_inactive)
+
+
 @router.post("/skills", response_model=SkillResponse, status_code=status.HTTP_201_CREATED)
 def create_skill(
     request: SkillCreateRequest, service: ServiceDep, manager: Manager
@@ -91,6 +105,13 @@ def update_skill(
     skill_id: uuid.UUID, request: SkillUpdateRequest, service: ServiceDep, manager: Manager
 ) -> SkillResponse:
     return service.update_skill(skill_id, request, manager.id)
+
+
+@router.get("/solutions", response_model=list[SolutionResponse])
+def list_solutions(
+    skill_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
+) -> list[SolutionResponse]:
+    return service.list_solutions(skill_id, include_inactive)
 
 
 @router.post("/solutions", response_model=SolutionResponse, status_code=status.HTTP_201_CREATED)

@@ -49,7 +49,7 @@
 - [x] Students: יצירה / רשימה / שליפה / ארכוב (soft-delete) / **שחזור + רשימת מאורכבים** (מנהל בלבד) + טסטים
 - [x] **סינון הרשאות על students**: מדריך→כיתתו · מורה מקצועי→read-only · `archived_by` למשתמש הנוכחי
 - [x] ניהול כיתות (Class) — CRUD מלא: רשימה (כל משתמש מאומת) + יצירה/שינוי-שם (מנהל) + audit
-- [x] Taxonomy: Label→SubLabel→Skill→Solution + CRUD בהגדרות + `is_active` (soft-delete)
+- [x] Taxonomy: Label→SubLabel→Skill→Solution + CRUD בהגדרות + `is_active` (soft-delete) + **list-inactive לכל הרמות** (`GET /taxonomy/sub-labels|skills|solutions?...&include_inactive=`) — מאפשר הפעלה-מחדש
 - [x] Tab 2 — ישיבות צוות: meeting + entries + בחירת צבע + פתרונות + snapshot + שמירה אטומית
 - [x] Tab 1 — תוכנית (נגזר: דירוג אחרון לכל כישור חוצה כל הישיבות)
 - [x] Tab 3 — הערת עו"ס (מנהל כותב, מדריך קורא, מורה מקצועי חסום)
@@ -86,7 +86,7 @@
 2. ~~**נתוני דמו + seed**~~ — **בוצע** (PR #28): `python -m backend.app.seed`.
 3. ~~**endpoint שינוי סיסמה מאומת**~~ — **בוצע**: `POST /auth/password/change`. נותר: חיווט frontend.
 4. ~~**שחזור/רשימת תלמידים מאורכבים**~~ — **בוצע**: `GET /students/archived` + `POST /students/{id}/restore` (מנהל). נותר: תצוגת ארכיון ב-frontend.
-5. **list-inactive לתת-תוויות/כישורים/פתרונות** — משלים הפעלה-מחדש בטקסונומיה.
+5. ~~**list-inactive לתת-תוויות/כישורים/פתרונות**~~ — **בוצע**: `GET /taxonomy/{sub-labels,skills,solutions}?…&include_inactive=`. נותר: חיווט הפעלה-מחדש ב-frontend.
 6. **חיווט frontend**: בורר כיתה, שינוי סיסמה, תצוגת ארכיון.
 7. **בדיקות E2E (Playwright)** מאחורי כניסה — כעת אפשריות עם ה-seed.
 8. חסומים על קלט: כותרות טאב 4, ספק מייל, בחירת גופן.
