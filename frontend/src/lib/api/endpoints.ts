@@ -1,5 +1,6 @@
 import { apiClient, buildPdfUrl } from "@/lib/api/client";
 import type {
+  ClassResponse,
   InvitationCommand,
   LabelResponse,
   LabelTreeNode,
@@ -49,6 +50,14 @@ export const usersApi = {
     apiClient.post<UserResponse>(`/users/${userId}/disable`),
   enable: (userId: string): Promise<UserResponse> =>
     apiClient.post<UserResponse>(`/users/${userId}/enable`),
+};
+
+export const classesApi = {
+  list: (): Promise<ClassResponse[]> => apiClient.get<ClassResponse[]>("/classes"),
+  create: (name: string): Promise<ClassResponse> =>
+    apiClient.post<ClassResponse>("/classes", { name }),
+  rename: (classId: string, name: string): Promise<ClassResponse> =>
+    apiClient.patch<ClassResponse>(`/classes/${classId}`, { name }),
 };
 
 export const studentsApi = {
