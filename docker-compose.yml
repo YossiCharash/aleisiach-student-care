@@ -1,0 +1,47 @@
+# Full local stack: PostgreSQL + FastAPI backend + nginx-served SPA.
+# Open the app at http://localhost:8080 (the SPA proxies /api to the backend).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: aleisiach
+      POSTGRES_PASSWORD: aleisiach
+      POSTGRES_DB: aleisiach
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aleisiach"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://aleisiach:aleisiach@db:5432/aleisiach
+      APP_ENVIRONMENT: local
+      APP_CORS_ORIGINS: http://localhost:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    # Local convenience: migrate + seed demo data, then serve. (Do not seed in production.)
+    command:
+      - sh
+      - -c
+      - "alembic upgrade head && python -m backend.app.seed && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
