@@ -8,6 +8,9 @@ export const queryKeys = {
   socialNote: (studentId: string) => ["students", studentId, "social-note"] as const,
   taxonomyTree: ["taxonomy", "tree"] as const,
   taxonomyLabels: ["taxonomy", "labels"] as const,
+  taxonomySubLabels: (labelId: string) => ["taxonomy", "sub-labels", labelId] as const,
+  taxonomySkills: (subLabelId: string) => ["taxonomy", "skills", subLabelId] as const,
+  taxonomySolutions: (skillId: string) => ["taxonomy", "solutions", skillId] as const,
   users: ["users"] as const,
   classes: ["classes"] as const,
 };

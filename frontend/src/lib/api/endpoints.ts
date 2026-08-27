@@ -123,6 +123,24 @@ export const taxonomyApi = {
     ),
   createLabel: (name: string): Promise<LabelResponse> =>
     apiClient.post<LabelResponse>("/taxonomy/labels", { name }),
+  listSubLabels: (
+    labelId: string,
+    includeInactive = false
+  ): Promise<SubLabelResponse[]> =>
+    apiClient.get<SubLabelResponse[]>(
+      `/taxonomy/sub-labels?label_id=${labelId}&include_inactive=${includeInactive}`
+    ),
+  listSkills: (subLabelId: string, includeInactive = false): Promise<SkillResponse[]> =>
+    apiClient.get<SkillResponse[]>(
+      `/taxonomy/skills?sub_label_id=${subLabelId}&include_inactive=${includeInactive}`
+    ),
+  listSolutions: (
+    skillId: string,
+    includeInactive = false
+  ): Promise<SolutionResponse[]> =>
+    apiClient.get<SolutionResponse[]>(
+      `/taxonomy/solutions?skill_id=${skillId}&include_inactive=${includeInactive}`
+    ),
   createSubLabel: (labelId: string, name: string): Promise<SubLabelResponse> =>
     apiClient.post<SubLabelResponse>("/taxonomy/sub-labels", { label_id: labelId, name }),
   createSkill: (subLabelId: string, name: string): Promise<SkillResponse> =>
