@@ -8,6 +8,7 @@ class AppSettings(BaseSettings):
     name: str = "Aleisiach Student Care"
     environment: str = "local"
     cors_origins: list[str] = ["http://localhost:5173"]
+    hsts_max_age_seconds: int = 31536000
 
     @field_validator("cors_origins", mode="before")
     @classmethod
