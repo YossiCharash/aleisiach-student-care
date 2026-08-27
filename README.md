@@ -35,6 +35,17 @@ uv run alembic revision --autogenerate -m "message"
 uv run alembic upgrade head
 ```
 
+Demo seed (idempotent — dev/E2E only, never real data):
+
+```bash
+uv run alembic upgrade head        # tables must exist first
+uv run python -m backend.app.seed  # run from the repo root
+```
+
+Seeds one user per role (`mor` / `dana` / `yoav`, password `demo1234`), two classes,
+three students, a full taxonomy tree, and a sample meeting + details + social note for
+student "נועה כהן". Re-running detects existing data and does nothing.
+
 ## Git hooks
 
 ```bash
