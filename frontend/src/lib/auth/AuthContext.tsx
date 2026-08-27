@@ -33,13 +33,16 @@ function initialUser(): UserResponse | null {
 export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const [user, setUser] = useState<UserResponse | null>(initialUser);
 
-  const login = useCallback(async (username: string, password: string): Promise<UserResponse> => {
-    const response: LoginResponse = await authApi.login({ username, password });
-    setToken(response.token);
-    setStoredUser(response.user);
-    setUser(response.user);
-    return response.user;
-  }, []);
+  const login = useCallback(
+    async (username: string, password: string): Promise<UserResponse> => {
+      const response: LoginResponse = await authApi.login({ username, password });
+      setToken(response.token);
+      setStoredUser(response.user);
+      setUser(response.user);
+      return response.user;
+    },
+    []
+  );
 
   useEffect(() => {
     return onUnauthorized(() => {

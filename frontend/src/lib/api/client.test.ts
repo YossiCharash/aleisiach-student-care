@@ -46,7 +46,9 @@ describe("apiClient", () => {
 
   it("clears the token on a 401 response", async () => {
     setToken("expired");
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse({ message: "unauthorized" }, 401));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({ message: "unauthorized" }, 401)
+    );
     await expect(apiClient.get("/secure")).rejects.toBeInstanceOf(ApiError);
     expect(getToken()).toBeNull();
   });

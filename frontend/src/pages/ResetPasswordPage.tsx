@@ -39,7 +39,10 @@ export function ResetPasswordPage(): ReactNode {
     return (
       <AuthLayout title="איפוס סיסמה">
         <Alert tone="error">קישור האיפוס חסר או שגוי.</Alert>
-        <Link to="/login" className="mt-4 block text-center text-sm text-brand hover:underline">
+        <Link
+          to="/login"
+          className="mt-4 block text-center text-sm text-brand hover:underline"
+        >
           חזרה לכניסה
         </Link>
       </AuthLayout>

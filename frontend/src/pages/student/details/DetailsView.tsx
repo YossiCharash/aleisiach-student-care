@@ -16,7 +16,10 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <Field label="תעודת זהות" value={details.national_id} />
             <Field label="תאריך לידה" value={formatDate(details.date_of_birth)} />
-            <Field label="גיל" value={details.age !== null ? String(details.age) : null} />
+            <Field
+              label="גיל"
+              value={details.age !== null ? String(details.age) : null}
+            />
             <Field label="שפת בית" value={details.home_language} />
             <div className="col-span-2">
               <Field label="כתובת" value={details.address} />

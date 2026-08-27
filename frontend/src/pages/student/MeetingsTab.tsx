@@ -42,7 +42,11 @@ export function MeetingsTab({ studentId }: { studentId: string }): ReactNode {
       {query.data && <MeetingList studentId={studentId} meetings={query.data} />}
 
       {canWrite && (
-        <AddMeetingDialog studentId={studentId} open={addOpen} onOpenChange={setAddOpen} />
+        <AddMeetingDialog
+          studentId={studentId}
+          open={addOpen}
+          onOpenChange={setAddOpen}
+        />
       )}
     </div>
   );
@@ -72,14 +76,22 @@ function MeetingList({
         <Card key={meeting.id}>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>{formatMonthYear(meeting.year, meeting.month)}</CardTitle>
-            <PdfButton url={meetingsApi.pdfUrl(studentId, meeting.id)} label="ייצוא PDF" />
+            <PdfButton
+              url={meetingsApi.pdfUrl(studentId, meeting.id)}
+              label="ייצוא PDF"
+            />
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {meeting.entries.map((entry) => (
-                <li key={entry.id} className="rounded-lg border border-slate-100 px-3 py-2">
+                <li
+                  key={entry.id}
+                  className="rounded-lg border border-slate-100 px-3 py-2"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-ink">{entry.skill_name_snapshot}</span>
+                    <span className="font-medium text-ink">
+                      {entry.skill_name_snapshot}
+                    </span>
                     <RatingPill rating={entry.rating} />
                   </div>
                   {entry.solutions.length > 0 && (

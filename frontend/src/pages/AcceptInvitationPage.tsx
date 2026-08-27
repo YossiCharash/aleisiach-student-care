@@ -40,7 +40,10 @@ export function AcceptInvitationPage(): ReactNode {
     return (
       <AuthLayout title="הזמנה למערכת">
         <Alert tone="error">קישור ההזמנה חסר או שגוי.</Alert>
-        <Link to="/login" className="mt-4 block text-center text-sm text-brand hover:underline">
+        <Link
+          to="/login"
+          className="mt-4 block text-center text-sm text-brand hover:underline"
+        >
           חזרה לכניסה
         </Link>
       </AuthLayout>

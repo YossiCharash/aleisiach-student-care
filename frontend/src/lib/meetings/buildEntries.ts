@@ -5,7 +5,9 @@ export interface EntryDraft {
   solutionIds: string[];
 }
 
-export function draftsToEntries(drafts: Record<string, EntryDraft>): MeetingEntryRequest[] {
+export function draftsToEntries(
+  drafts: Record<string, EntryDraft>
+): MeetingEntryRequest[] {
   return Object.entries(drafts)
     .filter(([, draft]) => draft.rating !== null)
     .map(([skillId, draft]) => ({

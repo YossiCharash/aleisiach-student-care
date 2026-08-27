@@ -22,9 +22,15 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-async function parseErrorMessage(response: Response): Promise<{ code: string | null; message: string }> {
+async function parseErrorMessage(
+  response: Response
+): Promise<{ code: string | null; message: string }> {
   try {
-    const payload = (await response.json()) as { code?: string; message?: string; error?: string };
+    const payload = (await response.json()) as {
+      code?: string;
+      message?: string;
+      error?: string;
+    };
     return {
       code: payload.code ?? null,
       message: payload.message ?? payload.error ?? response.statusText,
@@ -34,7 +40,10 @@ async function parseErrorMessage(response: Response): Promise<{ code: string | n
   }
 }
 
-async function request<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
+async function request<TResponse>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<TResponse> {
   const { method = "GET", body, auth = true, signal } = options;
   const headers: Record<string, string> = {};
 
