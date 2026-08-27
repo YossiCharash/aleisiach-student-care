@@ -6,5 +6,6 @@ export const queryKeys = {
   details: (studentId: string) => ["students", studentId, "details"] as const,
   socialNote: (studentId: string) => ["students", studentId, "social-note"] as const,
   taxonomyTree: ["taxonomy", "tree"] as const,
+  taxonomyLabels: ["taxonomy", "labels"] as const,
   users: ["users"] as const,
 };

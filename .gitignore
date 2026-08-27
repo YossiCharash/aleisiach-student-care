@@ -21,6 +21,9 @@ dist/
 .vite/
 *.local
 *.tsbuildinfo
+playwright-report/
+test-results/
+.playwright/
 
 # Editors / OS
 .idea/
