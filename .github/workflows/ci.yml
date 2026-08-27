@@ -75,6 +75,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql+psycopg://aleisiach:aleisiach@localhost:5432/aleisiach
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
