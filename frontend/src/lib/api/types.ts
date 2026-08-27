@@ -39,6 +39,11 @@ export interface InvitationCommand {
   class_id: string | null;
 }
 
+export interface PasswordChangeRequest {
+  current_password: string;
+  new_password: string;
+}
+
 export interface PasswordResetRequest {
   email: string;
 }
