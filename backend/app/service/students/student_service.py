@@ -76,6 +76,26 @@ class StudentService:
         )
         return StudentResponse.model_validate(student)
 
+    def list_archived(self) -> list[StudentResponse]:
+        students = self._students.list_archived()
+        return [StudentResponse.model_validate(student) for student in students]
+
+    def restore(self, student_id: uuid.UUID, actor_id: uuid.UUID) -> StudentResponse:
+        student = self._require(student_id)
+        student.is_archived = False
+        student.archived_at = None
+        student.archived_by = None
+        self._audit.record(
+            AuditEntry(
+                actor_id=actor_id,
+                action=AuditAction.UPDATE,
+                entity_type=_ENTITY_TYPE,
+                entity_id=student.id,
+                changes=["is_archived"],
+            )
+        )
+        return StudentResponse.model_validate(student)
+
     def _require(self, student_id: uuid.UUID) -> Student:
         student = self._students.get(student_id)
         if student is None:

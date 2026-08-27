@@ -46,7 +46,7 @@
 - [ ] אזור משתמשים: רשימת/השבתת/הסרת משתמשים (מעבר ל-invite)
 
 ## 3. Backend — דומיינים
-- [x] Students: יצירה / רשימה / שליפה / ארכוב (soft-delete) + טסטים
+- [x] Students: יצירה / רשימה / שליפה / ארכוב (soft-delete) / **שחזור + רשימת מאורכבים** (מנהל בלבד) + טסטים
 - [x] **סינון הרשאות על students**: מדריך→כיתתו · מורה מקצועי→read-only · `archived_by` למשתמש הנוכחי
 - [x] ניהול כיתות (Class) — CRUD מלא: רשימה (כל משתמש מאומת) + יצירה/שינוי-שם (מנהל) + audit
 - [x] Taxonomy: Label→SubLabel→Skill→Solution + CRUD בהגדרות + `is_active` (soft-delete)
@@ -85,7 +85,7 @@
 1. ~~**Endpoint לרשימת כיתות** (Class CRUD)~~ — **בוצע** (PR #25).
 2. ~~**נתוני דמו + seed**~~ — **בוצע** (PR #28): `python -m backend.app.seed`.
 3. ~~**endpoint שינוי סיסמה מאומת**~~ — **בוצע**: `POST /auth/password/change`. נותר: חיווט frontend.
-4. **שחזור/רשימת תלמידים מאורכבים** (unarchive + list-archived) — משלים מחזור-חיים.
+4. ~~**שחזור/רשימת תלמידים מאורכבים**~~ — **בוצע**: `GET /students/archived` + `POST /students/{id}/restore` (מנהל). נותר: תצוגת ארכיון ב-frontend.
 5. **list-inactive לתת-תוויות/כישורים/פתרונות** — משלים הפעלה-מחדש בטקסונומיה.
 6. **חיווט frontend**: בורר כיתה, שינוי סיסמה, תצוגת ארכיון.
 7. **בדיקות E2E (Playwright)** מאחורי כניסה — כעת אפשריות עם ה-seed.

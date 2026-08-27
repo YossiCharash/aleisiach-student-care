@@ -45,6 +45,11 @@ def list_students(service: ServiceDep, user: CurrentUser) -> list[StudentRespons
     return service.list_active(StudentAccessPolicy.scope_for(user))
 
 
+@router.get("/archived", response_model=list[StudentResponse])
+def list_archived_students(service: ServiceDep, _: Manager) -> list[StudentResponse]:
+    return service.list_archived()
+
+
 @router.get("/{student_id}", response_model=StudentResponse)
 def get_student(student_id: uuid.UUID, service: ServiceDep, user: CurrentUser) -> StudentResponse:
     return service.get(student_id, StudentAccessPolicy.scope_for(user))
@@ -55,3 +60,10 @@ def archive_student(
     student_id: uuid.UUID, service: ServiceDep, manager: Manager
 ) -> StudentResponse:
     return service.archive(student_id, manager.id)
+
+
+@router.post("/{student_id}/restore", response_model=StudentResponse)
+def restore_student(
+    student_id: uuid.UUID, service: ServiceDep, manager: Manager
+) -> StudentResponse:
+    return service.restore(student_id, manager.id)
