@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { AcceptInvitationPage } from "@/pages/AcceptInvitationPage";
 import { StudentsPage } from "@/pages/StudentsPage";
+import { ArchivedStudentsPage } from "@/pages/ArchivedStudentsPage";
 import { StudentPage } from "@/pages/StudentPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { PersonalSettingsPage } from "@/pages/PersonalSettingsPage";
@@ -27,6 +28,7 @@ export function AppRoutes(): ReactNode {
           <Route path="/settings/personal" element={<PersonalSettingsPage />} />
           <Route element={<ManagerRoute />}>
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/students/archived" element={<ArchivedStudentsPage />} />
           </Route>
         </Route>
       </Route>

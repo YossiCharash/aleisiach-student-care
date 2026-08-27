@@ -1,5 +1,6 @@
 export const queryKeys = {
   students: ["students"] as const,
+  archivedStudents: ["students", "archived"] as const,
   student: (studentId: string) => ["students", studentId] as const,
   program: (studentId: string) => ["students", studentId, "program"] as const,
   meetings: (studentId: string) => ["students", studentId, "meetings"] as const,

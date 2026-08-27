@@ -71,6 +71,10 @@ export const studentsApi = {
     apiClient.post<StudentResponse>("/students", body),
   archive: (studentId: string): Promise<StudentResponse> =>
     apiClient.post<StudentResponse>(`/students/${studentId}/archive`),
+  listArchived: (): Promise<StudentResponse[]> =>
+    apiClient.get<StudentResponse[]>("/students/archived"),
+  restore: (studentId: string): Promise<StudentResponse> =>
+    apiClient.post<StudentResponse>(`/students/${studentId}/restore`),
 };
 
 export const programApi = {
