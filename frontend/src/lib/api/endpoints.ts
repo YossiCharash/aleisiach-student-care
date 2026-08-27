@@ -9,6 +9,7 @@ import type {
   MeetingCreateRequest,
   MeetingResponse,
   NamedTaxonomyUpdate,
+  PasswordChangeRequest,
   ProgramResponse,
   SkillResponse,
   SocialNoteResponse,
@@ -42,6 +43,8 @@ export const authApi = {
     }),
   createInvitation: (body: InvitationCommand): Promise<UserResponse> =>
     apiClient.post<UserResponse>("/auth/invitations", body),
+  changePassword: (body: PasswordChangeRequest): Promise<void> =>
+    apiClient.post<void>("/auth/password/change", body),
 };
 
 export const usersApi = {

@@ -1,31 +1,22 @@
-import { useState, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { authApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
+import { errorMessage } from "@/components/ui/ErrorState";
+
+const MIN_PASSWORD_LENGTH = 8;
 
 export function PersonalSettingsPage(): ReactNode {
   const { user } = useAuth();
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
 
   if (!user) {
     return null;
-  }
-
-  async function requestReset(): Promise<void> {
-    if (!user) {
-      return;
-    }
-    setSending(true);
-    try {
-      await authApi.requestPasswordReset(user.email);
-    } finally {
-      setSending(false);
-      setSent(true);
-    }
   }
 
   return (
@@ -62,21 +53,91 @@ export function PersonalSettingsPage(): ReactNode {
         <CardHeader>
           <CardTitle>שינוי סיסמה</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {sent ? (
-            <Alert tone="success">נשלח קישור לאיפוס סיסמה לכתובת הדוא״ל שלך.</Alert>
-          ) : (
-            <>
-              <p className="text-sm text-ink-muted">
-                נשלח אליך קישור מאובטח לאיפוס הסיסמה בדוא״ל.
-              </p>
-              <Button onClick={requestReset} disabled={sending}>
-                {sending ? "שולח…" : "שליחת קישור לשינוי סיסמה"}
-              </Button>
-            </>
-          )}
+        <CardContent>
+          <ChangePasswordForm />
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function ChangePasswordForm(): ReactNode {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      authApi.changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    onSuccess: () => {
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setDone(true);
+    },
+  });
+
+  function handleSubmit(event: FormEvent): void {
+    event.preventDefault();
+    setDone(false);
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setValidationError(`הסיסמה החדשה חייבת להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים.`);
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setValidationError("הסיסמאות אינן תואמות.");
+      return;
+    }
+    setValidationError(null);
+    mutation.mutate();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {done && <Alert tone="success">הסיסמה שונתה בהצלחה.</Alert>}
+      {validationError && <Alert tone="error">{validationError}</Alert>}
+      {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+      <div>
+        <Label htmlFor="current-password">סיסמה נוכחית</Label>
+        <Input
+          id="current-password"
+          type="password"
+          autoComplete="current-password"
+          value={currentPassword}
+          onChange={(event) => setCurrentPassword(event.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="new-password">סיסמה חדשה</Label>
+        <Input
+          id="new-password"
+          type="password"
+          autoComplete="new-password"
+          value={newPassword}
+          onChange={(event) => setNewPassword(event.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="confirm-password">אימות סיסמה חדשה</Label>
+        <Input
+          id="confirm-password"
+          type="password"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          required
+        />
+      </div>
+      <Button type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? "שומר…" : "שינוי סיסמה"}
+      </Button>
+    </form>
   );
 }
