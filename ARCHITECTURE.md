@@ -339,9 +339,8 @@ flowchart LR
 flowchart LR
     A["New session / topic"] --> B["Create branch\nfeature/<topic> or bug/<topic>"]
     B --> C["Write code (OOP/SOLID)\n+ its unit test together"]
-    C --> D["Commit → pre-commit hook:\nlint + type-check + tests"]
-    D -->|red| C
-    D -->|green| E["Push → CI runs full suite"]
+    C --> D["Commit + push\n(run checks locally for fast feedback)"]
+    D --> E["CI: full suite (backend & frontend)\nlint + type-check + tests"]
     E -->|red| C
     E -->|green| F["Open PR / merge to main"]
 ```
@@ -350,8 +349,9 @@ flowchart LR
   (`feature/<topic>`, `bug/<topic>` / `fix/<topic>`). No direct commits to `main`.
 - **Test-with-code:** each new component (route/service/client/util) is created together with its
   unit test. Tests mirror the layer/domain structure under `tests/`.
-- **Green-before-upload:** a pre-commit/pre-push git hook runs lint + `mypy` + the test suite;
-  CI re-runs the full suite on every push. A red suite blocks the merge.
+- **Green-in-CI:** GitHub Actions runs lint + `mypy` + the full suite (backend **and** frontend) on
+  every push and PR; a red suite blocks the merge. CI is the single enforcement point — there are no
+  local git hooks, so run the checks yourself before pushing when you want fast feedback.
 
 ---
 
