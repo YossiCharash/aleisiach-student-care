@@ -27,7 +27,7 @@
 - [x] מבנה שכבות מחייב (routes/service/client/schema/models/configuration/errors/utils)
 - [x] Bootstrap composition-root (סינגלטונים נוצרים פעם אחת)
 - [x] נתיב יבוא `backend.app`
-- [ ] `.gitattributes` לנרמול שורות (LF) — מבטל אזהרות CRLF
+- [x] `.gitattributes` לנרמול שורות (LF) — מבטל אזהרות CRLF (renormalize היה no-op; הריפו כבר LF)
 - [ ] אירוח: frontend (סטטי/CDN), backend (קונטיינר עם ספריות WeasyPrint), PostgreSQL מנוהל
 - [ ] ניהול סודות אמיתי (.env → סוד בסביבה)
 
