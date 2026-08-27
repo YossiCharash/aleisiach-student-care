@@ -8,3 +8,8 @@ class EmailSettings(BaseSettings):
     from_address: str = "no-reply@aleisiach.local"
     invite_base_url: str = "http://localhost:5173/invite"
     reset_base_url: str = "http://localhost:5173/reset-password"
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = True
