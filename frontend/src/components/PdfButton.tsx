@@ -3,17 +3,19 @@ import { FileDown } from "lucide-react";
 import { openAuthedPdf } from "@/lib/api/pdf";
 import { Button } from "@/components/ui/Button";
 
+const DEFAULT_ERROR = "שגיאה בהפקת ה-PDF.";
+
 export function PdfButton({ url, label }: { url: string; label: string }): ReactNode {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleClick(): Promise<void> {
-    setError(false);
+    setError(null);
     setLoading(true);
     try {
       await openAuthedPdf(url);
-    } catch {
-      setError(true);
+    } catch (caught) {
+      setError(caught instanceof Error && caught.message ? caught.message : DEFAULT_ERROR);
     } finally {
       setLoading(false);
     }
@@ -25,7 +27,7 @@ export function PdfButton({ url, label }: { url: string; label: string }): React
         <FileDown className="h-4 w-4" />
         {loading ? "מפיק…" : label}
       </Button>
-      {error && <span className="text-xs text-rating-red">שגיאה בהפקת ה-PDF.</span>}
+      {error && <span className="text-xs text-rating-red">{error}</span>}
     </div>
   );
 }

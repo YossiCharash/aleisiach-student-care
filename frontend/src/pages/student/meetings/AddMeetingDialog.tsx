@@ -4,6 +4,7 @@ import { meetingsApi, taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode } from "@/lib/api/types";
 import { draftsToEntries, type EntryDraft } from "@/lib/meetings/buildEntries";
+import { monthName } from "@/lib/utils/hebrew";
 import {
   Dialog,
   DialogContent,
@@ -24,8 +25,6 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const now = new Date();
 
 export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): ReactNode {
   return (
@@ -51,8 +50,8 @@ function AddMeetingForm({
   onDone: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
   const [drafts, setDrafts] = useState<Record<string, EntryDraft>>({});
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -112,7 +111,7 @@ function AddMeetingForm({
           >
             {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => (
               <option key={value} value={value}>
-                {value}
+                {monthName(value)}
               </option>
             ))}
           </select>

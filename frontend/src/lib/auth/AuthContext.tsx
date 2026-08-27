@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { authApi } from "@/lib/api/endpoints";
 import type { LoginResponse, UserResponse } from "@/lib/api/types";
 import { clearToken, getToken, setToken } from "@/lib/auth/tokenStorage";
@@ -7,6 +15,7 @@ import {
   getStoredUser,
   setStoredUser,
 } from "@/lib/auth/sessionUserStorage";
+import { onUnauthorized } from "@/lib/auth/sessionEvents";
 
 interface AuthContextValue {
   user: UserResponse | null;
@@ -30,6 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     setStoredUser(response.user);
     setUser(response.user);
     return response.user;
+  }, []);
+
+  useEffect(() => {
+    return onUnauthorized(() => {
+      clearToken();
+      clearStoredUser();
+      setUser(null);
+    });
   }, []);
 
   const logout = useCallback(async (): Promise<void> => {

@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
+import { ClassIdField } from "@/components/ClassIdField";
 
 interface Props {
   open: boolean;
@@ -97,19 +98,12 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
             </select>
           </div>
           {role === "instructor" && (
-            <div>
-              <Label htmlFor="invite-class">מזהה כיתה</Label>
-              <Input
-                id="invite-class"
-                value={classId}
-                onChange={(event) => setClassId(event.target.value)}
-                placeholder="UUID של הכיתה"
-                required
-              />
-              <p className="mt-1 text-xs text-ink-muted">
-                זמני — עד להוספת ניהול כיתות בצד השרת.
-              </p>
-            </div>
+            <ClassIdField
+              id="invite-class"
+              value={classId}
+              onChange={setClassId}
+              required
+            />
           )}
           <div className="flex justify-start gap-2">
             <Button type="submit" disabled={mutation.isPending}>

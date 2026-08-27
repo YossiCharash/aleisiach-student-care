@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,7 @@ import { errorMessage } from "@/components/ui/ErrorState";
 export function LoginPage(): ReactNode {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +23,9 @@ export function LoginPage(): ReactNode {
     setSubmitting(true);
     try {
       await login(username, password);
-      navigate("/", { replace: true });
+      const from = (location.state as { from?: string } | null)?.from;
+      const target = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
+      navigate(target, { replace: true });
     } catch (caught) {
       setError(errorMessage(caught, "שם המשתמש או הסיסמה שגויים."));
     } finally {

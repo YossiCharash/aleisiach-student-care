@@ -1,4 +1,5 @@
 import { getToken, clearToken } from "@/lib/auth/tokenStorage";
+import { notifyUnauthorized } from "@/lib/auth/sessionEvents";
 
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
@@ -57,6 +58,7 @@ async function request<TResponse>(path: string, options: RequestOptions = {}): P
 
   if (response.status === 401 && auth) {
     clearToken();
+    notifyUnauthorized();
   }
 
   if (!response.ok) {
