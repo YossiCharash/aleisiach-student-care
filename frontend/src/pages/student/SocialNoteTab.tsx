@@ -53,12 +53,16 @@ export function SocialNoteTab({ studentId }: { studentId: string }): ReactNode {
       </CardHeader>
       <CardContent className="space-y-4">
         {note?.updated_at && (
-          <p className="text-xs text-ink-muted">עודכן לאחרונה: {formatDate(note.updated_at)}</p>
+          <p className="text-xs text-ink-muted">
+            עודכן לאחרונה: {formatDate(note.updated_at)}
+          </p>
         )}
 
         {canWrite ? (
           <>
-            {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+            {mutation.isError && (
+              <Alert tone="error">{errorMessage(mutation.error)}</Alert>
+            )}
             {saved && !mutation.isPending && <Alert tone="success">ההערה נשמרה.</Alert>}
             <Textarea
               value={draft}

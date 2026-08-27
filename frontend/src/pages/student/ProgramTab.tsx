@@ -30,7 +30,8 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
   return (
     <div className="space-y-6">
       <p className="text-sm text-ink-muted">
-        התוכנית נגזרת אוטומטית מהדירוג האחרון של כל כישור בישיבות הצוות. אין לערוך כאן ידנית.
+        התוכנית נגזרת אוטומטית מהדירוג האחרון של כל כישור בישיבות הצוות. אין לערוך כאן
+        ידנית.
       </p>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

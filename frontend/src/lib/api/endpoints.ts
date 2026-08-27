@@ -26,7 +26,11 @@ export const authApi = {
   login: (body: LoginRequest): Promise<LoginResponse> =>
     apiClient.postPublic<LoginResponse>("/auth/login", body),
   logout: (): Promise<void> => apiClient.post<void>("/auth/logout"),
-  acceptInvitation: (body: { token: string; username: string; password: string }): Promise<UserResponse> =>
+  acceptInvitation: (body: {
+    token: string;
+    username: string;
+    password: string;
+  }): Promise<UserResponse> =>
     apiClient.postPublic<UserResponse>("/auth/invitations/accept", body),
   requestPasswordReset: (email: string): Promise<void> =>
     apiClient.postPublic<void>("/auth/password-reset/request", { email }),
@@ -76,22 +80,31 @@ export const meetingsApi = {
 export const detailsApi = {
   get: (studentId: string): Promise<StudentDetailsResponse> =>
     apiClient.get<StudentDetailsResponse>(`/students/${studentId}/details`),
-  upsert: (studentId: string, body: StudentDetailsUpsertRequest): Promise<StudentDetailsResponse> =>
+  upsert: (
+    studentId: string,
+    body: StudentDetailsUpsertRequest
+  ): Promise<StudentDetailsResponse> =>
     apiClient.put<StudentDetailsResponse>(`/students/${studentId}/details`, body),
-  pdfUrl: (studentId: string): string => buildPdfUrl(`/students/${studentId}/details/pdf`),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/details/pdf`),
 };
 
 export const socialNoteApi = {
   get: (studentId: string): Promise<SocialNoteResponse> =>
     apiClient.get<SocialNoteResponse>(`/students/${studentId}/social-note`),
-  upsert: (studentId: string, body: SocialNoteUpsertRequest): Promise<SocialNoteResponse> =>
+  upsert: (
+    studentId: string,
+    body: SocialNoteUpsertRequest
+  ): Promise<SocialNoteResponse> =>
     apiClient.put<SocialNoteResponse>(`/students/${studentId}/social-note`, body),
 };
 
 export const taxonomyApi = {
   tree: (): Promise<LabelTreeNode[]> => apiClient.get<LabelTreeNode[]>("/taxonomy/tree"),
   listLabels: (includeInactive = false): Promise<LabelResponse[]> =>
-    apiClient.get<LabelResponse[]>(`/taxonomy/labels?include_inactive=${includeInactive}`),
+    apiClient.get<LabelResponse[]>(
+      `/taxonomy/labels?include_inactive=${includeInactive}`
+    ),
   createLabel: (name: string): Promise<LabelResponse> =>
     apiClient.post<LabelResponse>("/taxonomy/labels", { name }),
   createSubLabel: (labelId: string, name: string): Promise<SubLabelResponse> =>
@@ -102,7 +115,10 @@ export const taxonomyApi = {
     apiClient.post<SolutionResponse>("/taxonomy/solutions", { skill_id: skillId, text }),
   updateLabel: (labelId: string, body: NamedTaxonomyUpdate): Promise<LabelResponse> =>
     apiClient.patch<LabelResponse>(`/taxonomy/labels/${labelId}`, body),
-  updateSubLabel: (subLabelId: string, body: NamedTaxonomyUpdate): Promise<SubLabelResponse> =>
+  updateSubLabel: (
+    subLabelId: string,
+    body: NamedTaxonomyUpdate
+  ): Promise<SubLabelResponse> =>
     apiClient.patch<SubLabelResponse>(`/taxonomy/sub-labels/${subLabelId}`, body),
   updateSkill: (skillId: string, body: NamedTaxonomyUpdate): Promise<SkillResponse> =>
     apiClient.patch<SkillResponse>(`/taxonomy/skills/${skillId}`, body),

@@ -24,7 +24,9 @@ export function Header(): ReactNode {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold text-brand">עלי שיח</span>
-          <span className="hidden text-sm text-ink-muted sm:inline">מערכת ניהול תלמידים</span>
+          <span className="hidden text-sm text-ink-muted sm:inline">
+            מערכת ניהול תלמידים
+          </span>
         </Link>
 
         <div className="flex items-center gap-3">

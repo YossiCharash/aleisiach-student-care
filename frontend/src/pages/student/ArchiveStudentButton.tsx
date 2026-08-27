@@ -44,7 +44,11 @@ export function ArchiveStudentButton({ studentId }: { studentId: string }): Reac
           </DialogHeader>
           {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
           <div className="mt-4 flex justify-start gap-2">
-            <Button variant="danger" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+            <Button
+              variant="danger"
+              onClick={() => mutation.mutate()}
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? "מעביר…" : "העברה לארכיון"}
             </Button>
             <Button variant="ghost" onClick={() => setOpen(false)}>

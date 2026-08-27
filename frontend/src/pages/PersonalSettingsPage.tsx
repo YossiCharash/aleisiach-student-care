@@ -64,9 +64,7 @@ export function PersonalSettingsPage(): ReactNode {
         </CardHeader>
         <CardContent className="space-y-3">
           {sent ? (
-            <Alert tone="success">
-              נשלח קישור לאיפוס סיסמה לכתובת הדוא״ל שלך.
-            </Alert>
+            <Alert tone="success">נשלח קישור לאיפוס סיסמה לכתובת הדוא״ל שלך.</Alert>
           ) : (
             <>
               <p className="text-sm text-ink-muted">

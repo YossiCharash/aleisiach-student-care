@@ -1,10 +1,19 @@
 import type { ReactNode } from "react";
-import { useForm, useFieldArray, type Control, type UseFormRegister } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  type Control,
+  type UseFormRegister,
+} from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { detailsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { LegalStatus, StudentDetailsResponse, StudentDetailsUpsertRequest } from "@/lib/api/types";
+import type {
+  LegalStatus,
+  StudentDetailsResponse,
+  StudentDetailsUpsertRequest,
+} from "@/lib/api/types";
 import { legalStatusLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -62,7 +71,10 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     legal_status: values.legal_status === "" ? null : values.legal_status,
     medical_diagnoses: values.medical_diagnoses
       .filter((diagnosis) => diagnosis.name.trim() !== "")
-      .map((diagnosis) => ({ name: diagnosis.name.trim(), notes: emptyToNull(diagnosis.notes) })),
+      .map((diagnosis) => ({
+        name: diagnosis.name.trim(),
+        notes: emptyToNull(diagnosis.notes),
+      })),
     emergency_contacts: values.emergency_contacts
       .filter((contact) => contact.full_name.trim() !== "")
       .map((contact) => ({
@@ -102,7 +114,10 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
   });
 
   return (
-    <form onSubmit={handleSubmit((values) => mutation.mutate(values))} className="space-y-6">
+    <form
+      onSubmit={handleSubmit((values) => mutation.mutate(values))}
+      className="space-y-6"
+    >
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
       <Card>
@@ -189,7 +204,10 @@ function DiagnosisArray({
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
 }): ReactNode {
-  const { fields, append, remove } = useFieldArray({ control, name: "medical_diagnoses" });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "medical_diagnoses",
+  });
 
   return (
     <Card>
@@ -200,10 +218,21 @@ function DiagnosisArray({
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-start gap-2">
             <div className="grid flex-1 gap-2 sm:grid-cols-2">
-              <Input placeholder="שם האבחנה" {...register(`medical_diagnoses.${index}.name`)} />
-              <Input placeholder="הערות" {...register(`medical_diagnoses.${index}.notes`)} />
+              <Input
+                placeholder="שם האבחנה"
+                {...register(`medical_diagnoses.${index}.name`)}
+              />
+              <Input
+                placeholder="הערות"
+                {...register(`medical_diagnoses.${index}.notes`)}
+              />
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => remove(index)}
+            >
               <Trash2 className="h-4 w-4 text-rating-red" />
             </Button>
           </div>

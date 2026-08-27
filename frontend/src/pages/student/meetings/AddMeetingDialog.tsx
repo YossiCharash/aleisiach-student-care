@@ -36,7 +36,9 @@ export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): Reac
             בחרו חודש, ולכל כישור קבעו דירוג. באדום/צהוב ניתן לבחור פתרונות.
           </DialogDescription>
         </DialogHeader>
-        {open && <AddMeetingForm studentId={studentId} onDone={() => onOpenChange(false)} />}
+        {open && (
+          <AddMeetingForm studentId={studentId} onDone={() => onOpenChange(false)} />
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -55,7 +57,10 @@ function AddMeetingForm({
   const [drafts, setDrafts] = useState<Record<string, EntryDraft>>({});
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const treeQuery = useQuery({ queryKey: queryKeys.taxonomyTree, queryFn: taxonomyApi.tree });
+  const treeQuery = useQuery({
+    queryKey: queryKeys.taxonomyTree,
+    queryFn: taxonomyApi.tree,
+  });
 
   const entries = useMemo(() => draftsToEntries(drafts), [drafts]);
 
@@ -137,7 +142,12 @@ function AddMeetingForm({
           <EmptyState>לא הוגדרה טקסונומיה. יש להגדיר בהגדרות תחילה.</EmptyState>
         ) : (
           tree.map((label) => (
-            <LabelAccordion key={label.id} label={label} drafts={drafts} setDraft={setDraft} />
+            <LabelAccordion
+              key={label.id}
+              label={label}
+              drafts={drafts}
+              setDraft={setDraft}
+            />
           ))
         )}
       </div>
@@ -168,7 +178,9 @@ function LabelAccordion({
 }): ReactNode {
   return (
     <details className="rounded-lg border border-slate-200 bg-white">
-      <summary className="cursor-pointer px-4 py-2.5 font-medium text-ink">{label.name}</summary>
+      <summary className="cursor-pointer px-4 py-2.5 font-medium text-ink">
+        {label.name}
+      </summary>
       <div className="space-y-2 border-t border-slate-100 p-3">
         {label.sub_labels.map((subLabel) => (
           <div key={subLabel.id} className="rounded-lg bg-slate-50 p-3">
