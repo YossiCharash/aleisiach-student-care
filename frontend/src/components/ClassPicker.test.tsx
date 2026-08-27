@@ -45,8 +45,6 @@ describe("ClassPicker", () => {
 
     renderWithClient(<ClassPicker id="class" value="" onChange={() => {}} />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/יש ליצור כיתה/)).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText(/יש ליצור כיתה/)).toBeInTheDocument());
   });
 });
