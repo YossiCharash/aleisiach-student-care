@@ -71,7 +71,7 @@
 - [~] הגדרות אישיות: "שינוי סיסמה" — ה-endpoint המאומת `POST /auth/password/change` קיים בשרת; נותר לחווט את ה-frontend אליו (במקום שליחת קישור איפוס)
 - [x] בדיקות: Vitest + RTL — 26 טסטים + Playwright E2E (עשן: כניסה/ניתוב/שכחתי-סיסמה/404, ב-CI)
 - [ ] כותרות טאב 4 בהגדרות — חסום על שמות הכותרות (כמו ב-backend)
-- [ ] **חיווט בורר כיתה** — ה-endpoint `GET /classes` קיים; להחליף את שדה `class_id` הידני בבורר ב-CreateStudentDialog/InviteUserDialog
+- [x] **בורר כיתה** — `ClassPicker` נטען מ-`GET /classes`, מחליף את שדה `class_id` הידני ב-CreateStudentDialog/InviteUserDialog; `ClassIdField` הוסר. נוסף אזור "כיתות" בהגדרות (יצירה/שינוי-שם דרך `POST`/`PATCH /classes`)
 
 ## 5. איכות ונתונים
 - [x] בדיקות יחידה לכל רכיב backend חדש (test-with-code) — 123 טסטים

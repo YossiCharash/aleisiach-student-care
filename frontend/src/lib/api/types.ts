@@ -48,6 +48,11 @@ export interface PasswordResetConfirmRequest {
   new_password: string;
 }
 
+export interface ClassResponse {
+  id: string;
+  name: string;
+}
+
 export interface StudentResponse {
   id: string;
   class_id: string;

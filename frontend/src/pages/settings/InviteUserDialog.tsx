@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassIdField } from "@/components/ClassIdField";
+import { ClassPicker } from "@/components/ClassPicker";
 
 interface Props {
   open: boolean;
@@ -98,7 +98,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
             </select>
           </div>
           {role === "instructor" && (
-            <ClassIdField
+            <ClassPicker
               id="invite-class"
               value={classId}
               onChange={setClassId}

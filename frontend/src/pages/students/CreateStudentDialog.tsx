@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassIdField } from "@/components/ClassIdField";
+import { ClassPicker } from "@/components/ClassPicker";
 
 interface Props {
   open: boolean;
@@ -60,7 +60,7 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
               autoFocus
             />
           </div>
-          <ClassIdField
+          <ClassPicker
             id="student-class"
             value={classId}
             onChange={setClassId}

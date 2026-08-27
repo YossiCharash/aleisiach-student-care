@@ -8,4 +8,5 @@ export const queryKeys = {
   taxonomyTree: ["taxonomy", "tree"] as const,
   taxonomyLabels: ["taxonomy", "labels"] as const,
   users: ["users"] as const,
+  classes: ["classes"] as const,
 };
