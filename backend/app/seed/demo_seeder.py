@@ -143,12 +143,12 @@ class DemoSeeder:
                 date_of_birth=date(2015, 3, 12),
                 address="רחוב הדגמה 1, עיר הדגמה",
                 home_language="עברית",
-                medical_diagnoses=[{"name": "אבחנה לדוגמה", "issued_by": "מכון הדגמה"}],
+                medical_diagnoses=[{"name": "אבחנה לדוגמה", "notes": "הונפקה במכון הדגמה"}],
                 emergency_contacts=[
-                    {"name": "הורה לדוגמה", "relation": "אם", "phone": "050-0000000"}
+                    {"full_name": "הורה לדוגמה", "relationship": "אם", "phone": "050-0000000"}
                 ],
                 legal_status=LegalStatus.PARENTS_ARE_GUARDIANS,
-                guardians=[{"name": "הורה לדוגמה", "relation": "אם"}],
+                guardians=[{"full_name": "הורה לדוגמה", "relationship": "אם"}],
             )
         )
         self._session.flush()
