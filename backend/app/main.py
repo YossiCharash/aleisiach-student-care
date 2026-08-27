@@ -18,6 +18,7 @@ from backend.app.routes.student_extra_sections import (
 from backend.app.routes.students import router as students_router
 from backend.app.routes.taxonomy import router as taxonomy_router
 from backend.app.routes.users import router as users_router
+from backend.app.utils.routes.security_headers_middleware import SecurityHeadersMiddleware
 
 
 def create_app() -> FastAPI:
@@ -25,6 +26,13 @@ def create_app() -> FastAPI:
     app = FastAPI(title=bootstrap.settings.app.name)
     app.state.bootstrap = bootstrap
 
+    is_production = bootstrap.settings.app.environment == "production"
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        hsts_max_age_seconds=(
+            bootstrap.settings.app.hsts_max_age_seconds if is_production else None
+        ),
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=bootstrap.settings.app.cors_origins,

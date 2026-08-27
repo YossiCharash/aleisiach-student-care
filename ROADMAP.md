@@ -30,6 +30,7 @@
 - [x] `.gitattributes` לנרמול שורות (LF) — מבטל אזהרות CRLF (renormalize היה no-op; הריפו כבר LF)
 - [ ] אירוח: frontend (סטטי/CDN), backend (קונטיינר עם ספריות WeasyPrint), PostgreSQL מנוהל
 - [ ] ניהול סודות אמיתי (.env → סוד בסביבה)
+- [x] כותרות אבטחה (`SecurityHeadersMiddleware`): `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `CSP frame-ancestors`, `COOP`; `HSTS` בפרודקשן בלבד (config-first)
 
 ## 2. Backend — אימות והרשאות
 - [x] Hashing סיסמאות (argon2) + טוקנים מאובטחים (hash-only, חד-פעמי, תפוגה)
