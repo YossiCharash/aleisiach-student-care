@@ -5,11 +5,21 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.errors.service.app_error import AppError
-from backend.app.schema.routes.error_response import ErrorResponse, FieldError
+from backend.app.schema.routes.error_response import ErrorResponse
+from backend.app.schema.routes.field_error import FieldError
 from backend.app.service.alerts.error_alert_service import ErrorAlertService
 
 _UNEXPECTED_MESSAGE = "אירעה שגיאה בלתי צפויה. הצוות קיבל התראה. אנא נסו שוב מאוחר יותר."
 _VALIDATION_MESSAGE = "הנתונים שנשלחו אינם תקינים."
+_HTTP_MESSAGES: dict[int, str] = {
+    400: "הבקשה אינה תקינה.",
+    401: "נדרשת התחברות.",
+    403: "אין לך הרשאה לפעולה זו.",
+    404: "המשאב המבוקש לא נמצא.",
+    405: "הפעולה אינה נתמכת.",
+    409: "הפעולה מתנגשת עם המצב הקיים.",
+}
+_HTTP_FALLBACK_MESSAGE = "הבקשה נכשלה."
 
 
 def _json(status_code: int, body: ErrorResponse) -> JSONResponse:
@@ -30,7 +40,7 @@ async def handle_validation_error(request: Request, error: RequestValidationErro
 
 
 async def handle_http_exception(request: Request, error: StarletteHTTPException) -> JSONResponse:
-    message = error.detail if isinstance(error.detail, str) else _UNEXPECTED_MESSAGE
+    message = _HTTP_MESSAGES.get(error.status_code, _HTTP_FALLBACK_MESSAGE)
     return _json(error.status_code, ErrorResponse(code="http_error", message=message))
 
 

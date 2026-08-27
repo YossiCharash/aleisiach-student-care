@@ -39,7 +39,6 @@ def client(notifier: _CapturingNotifier) -> TestClient:
         clock=Clock(),
         environment="test",
         enabled=True,
-        message_max_length=600,
     )
     app.state.bootstrap = bootstrap
     register_error_handlers(app)
@@ -93,4 +92,16 @@ def test_validation_error_returns_field_envelope(
     body = response.json()
     assert body["code"] == "validation_error"
     assert body["fields"]
+    assert notifier.alerts == []
+
+
+def test_unknown_route_returns_hebrew_not_found_message(
+    client: TestClient, notifier: _CapturingNotifier
+) -> None:
+    response = client.get("/no-such-route")
+
+    assert response.status_code == 404
+    body = response.json()
+    assert body["code"] == "http_error"
+    assert body["message"] == "המשאב המבוקש לא נמצא."
     assert notifier.alerts == []

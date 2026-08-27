@@ -17,15 +17,12 @@ class _FailingNotifier(WhatsAppNotifier):
         raise RuntimeError("notifier down")
 
 
-def _service(
-    notifier: WhatsAppNotifier, enabled: bool = True, message_max_length: int = 600
-) -> ErrorAlertService:
+def _service(notifier: WhatsAppNotifier, enabled: bool = True) -> ErrorAlertService:
     return ErrorAlertService(
         notifier=notifier,
         clock=Clock(),
         environment="test",
         enabled=enabled,
-        message_max_length=message_max_length,
     )
 
 
@@ -39,7 +36,6 @@ def test_report_returns_reference_and_dispatches_alert() -> None:
     alert = notifier.alerts[0]
     assert alert.reference == reference
     assert alert.error_type == "ValueError"
-    assert alert.message == "bad input"
     assert alert.method == "POST"
     assert alert.path == "/students"
 
@@ -59,10 +55,12 @@ def test_notifier_failure_does_not_propagate() -> None:
     assert reference
 
 
-def test_message_is_truncated_to_configured_length() -> None:
+def test_alert_carries_no_free_text_exception_detail() -> None:
     notifier = _CapturingNotifier()
+    secret = "123456789"
 
-    _service(notifier, message_max_length=10).report(RuntimeError("x" * 50), "GET", "/x")
+    _service(notifier).report(ValueError(f"national id {secret}"), "POST", "/students")
 
-    assert len(notifier.alerts[0].message) == 10
-    assert notifier.alerts[0].message.endswith("…")
+    dumped = notifier.alerts[0].model_dump_json()
+    assert secret not in dumped
+    assert "message" not in notifier.alerts[0].model_dump()

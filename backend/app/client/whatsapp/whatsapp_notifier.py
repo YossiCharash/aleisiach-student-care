@@ -16,7 +16,6 @@ class WhatsAppNotifier(ABC):
             f"מזהה תקלה: {alert.reference}",
             f"בקשה: {alert.method} {alert.path}",
             f"סוג: {alert.error_type}",
-            f"פירוט: {alert.message}",
             f"זמן: {occurred_at}",
         ]
         return "\n".join(lines)

@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 
-
-class FieldError(BaseModel):
-    field: str
-    message: str
+from backend.app.schema.routes.field_error import FieldError
 
 
 class ErrorResponse(BaseModel):

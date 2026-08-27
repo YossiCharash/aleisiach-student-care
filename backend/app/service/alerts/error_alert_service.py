@@ -15,13 +15,11 @@ class ErrorAlertService:
         clock: Clock,
         environment: str,
         enabled: bool,
-        message_max_length: int,
     ) -> None:
         self._notifier = notifier
         self._clock = clock
         self._environment = environment
         self._enabled = enabled
-        self._message_max_length = message_max_length
 
     def report(self, error: Exception, method: str, path: str) -> str:
         reference = uuid.uuid4().hex[:12]
@@ -34,7 +32,6 @@ class ErrorAlertService:
         return ErrorAlert(
             reference=reference,
             error_type=type(error).__name__,
-            message=self._truncate(str(error) or type(error).__name__),
             method=method,
             path=path,
             environment=self._environment,
@@ -46,8 +43,3 @@ class ErrorAlertService:
             self._notifier.notify(alert)
         except Exception:
             logger.exception("WhatsApp notifier failed for alert %s", alert.reference)
-
-    def _truncate(self, text: str) -> str:
-        if len(text) <= self._message_max_length:
-            return text
-        return text[: self._message_max_length - 1] + "…"
