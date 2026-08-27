@@ -61,5 +61,24 @@ def test_instructor_reads_but_cannot_write_types(
     assert forbidden.status_code == 403
 
 
+def test_manager_updates_type_and_deactivation_hides_it(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    heading = api.post("/extra-section-types", headers=headers, json={"name": "ישן"}).json()
+
+    updated = api.patch(
+        f"/extra-section-types/{heading['id']}",
+        headers=headers,
+        json={"name": "חדש", "is_active": False},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["name"] == "חדש"
+    assert updated.json()["is_active"] is False
+
+    assert api.get("/extra-section-types/tree", headers=headers).json() == []
+
+
 def test_types_require_authentication(api: TestClient) -> None:
     assert api.get("/extra-section-types/tree").status_code == 401

@@ -94,6 +94,59 @@ def test_instructor_cannot_write_other_class(
     assert response.status_code == 404
 
 
+def test_content_update_replaces_previous(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    type_id = _seed_type(api, headers, "רקע")
+
+    api.put(
+        f"/students/{student_id}/extra-sections/{type_id}",
+        headers=headers,
+        json={"content": "ראשון"},
+    )
+    second = api.put(
+        f"/students/{student_id}/extra-sections/{type_id}",
+        headers=headers,
+        json={"content": "שני"},
+    )
+    assert second.status_code == 200
+    assert second.json()["content"] == "שני"
+
+    entries = {
+        row["section_type_id"]: row
+        for row in api.get(f"/students/{student_id}/extra-sections", headers=headers).json()
+    }
+    assert entries[type_id]["content"] == "שני"
+
+
+def test_set_unknown_section_type_returns_404(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    student_id = seed_student(class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    response = api.put(
+        f"/students/{student_id}/extra-sections/{uuid.uuid4()}",
+        headers=headers,
+        json={"content": "x"},
+    )
+    assert response.status_code == 404
+
+
 def test_sections_require_authentication(
     api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
 ) -> None:
