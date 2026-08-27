@@ -31,7 +31,6 @@ class Bootstrap:
             clock=self.clock,
             environment=settings.app.environment,
             enabled=settings.whatsapp.enabled,
-            message_max_length=settings.whatsapp.message_max_length,
         )
 
     @staticmethod

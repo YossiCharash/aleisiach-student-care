@@ -11,7 +11,6 @@ def _alert() -> ErrorAlert:
     return ErrorAlert(
         reference="abc123",
         error_type="RuntimeError",
-        message="boom",
         method="POST",
         path="/students",
         environment="production",

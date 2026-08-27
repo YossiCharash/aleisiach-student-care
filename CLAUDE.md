@@ -186,9 +186,10 @@ manager *is* the social worker; every manager may write it).
 25. **Every unexpected error fires a WhatsApp alert** via `ErrorAlertService` → the
     `WhatsAppNotifier` abstraction (`client/whatsapp/`, Strategy: `console` default /
     `webhook` prod, selected in `Bootstrap`, configured under `configuration/notifications/`).
-    The alert carries **metadata only** (reference · error type · truncated message · method ·
-    path · environment · timestamp) — never request bodies or PII. **Alerting must never mask the
-    original error:** notifier failures are caught and logged, not propagated.
+    The alert carries **metadata only** (reference · error type · method · path · environment ·
+    timestamp) — never the exception's free-text message, request bodies, or PII; the full
+    exception + traceback stays in server-side logs, retrievable by `reference`. **Alerting must
+    never mask the original error:** notifier failures are caught and logged, not propagated.
 
 ---
 
