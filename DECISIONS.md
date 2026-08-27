@@ -76,7 +76,7 @@ comments, no commented-out code. (b) **Full typing** — every argument, variabl
 return type on every function; mypy must pass. (c) **DTO rule** — any group of 3+ values used
 together more than once becomes a dedicated Pydantic DTO in `schema/`. (d) **One class per file /
 one model per file.**
-**Consequences:** Enforced by Ruff + Black + mypy in pre-commit/CI (ADR-007).
+**Consequences:** Enforced by Ruff + Black + mypy in CI (ADR-007).
 
 ## ADR-006 — Configuration-first, minimal hard-coding
 **Status:** Accepted · 2026-08-24
@@ -91,8 +91,10 @@ should never change.
 **Context:** Solo/small-team development that must stay releasable.
 **Decision:** (a) Every session starts on a new branch named for its topic — `feature/<topic>` or
 `bug/<topic>`/`fix/<topic>`; never commit to `main`. (b) Every new component ships with its unit
-test, created together (pytest, also runs `unittest.TestCase`). (c) A pre-commit/pre-push hook and
-GitHub Actions CI run lint + mypy + the full suite; a red suite blocks upload/merge.
+test, created together (pytest, also runs `unittest.TestCase`). (c) GitHub Actions CI runs lint +
+mypy + the full suite (backend and frontend) on every push/PR; a red suite blocks upload/merge.
+**Update (2026-08-27):** local pre-commit/pre-push git hooks were removed — CI is the single
+enforcement point for all checks.
 **Consequences:** Main stays green; tests mirror the layer/domain structure under `tests/`.
 
 ## ADR-008 — Exactly three roles; no separate social-worker role

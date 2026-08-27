@@ -22,8 +22,8 @@
 - [ ] בחירת גרסת עיצוב לכניסה / מסך תלמיד
 
 ## 1. תשתית ו-DevOps
-- [x] ריפו פרטי ב-GitHub + Git hooks (pre-commit/pre-push)
-- [x] CI (GitHub Actions): ruff + black + mypy(strict) + pytest
+- [x] ריפו פרטי ב-GitHub. **הבדיקות רצות ב-CI בלבד** — ה-git hooks המקומיים הוסרו
+- [x] CI (GitHub Actions): backend — ruff + black + mypy(strict) + pytest · frontend — lint + typecheck + vitest + build + Playwright E2E
 - [x] מבנה שכבות מחייב (routes/service/client/schema/models/configuration/errors/utils)
 - [x] Bootstrap composition-root (סינגלטונים נוצרים פעם אחת)
 - [x] נתיב יבוא `backend.app`

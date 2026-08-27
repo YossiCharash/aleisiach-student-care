@@ -62,8 +62,10 @@ Design source: Claude Design — file `Student Care System.dc.html`.
 - **Lint / format:** Frontend — ESLint + Prettier · Backend — Ruff + Black + mypy (type checking).
 - **Testing:** Backend — **unit tests for every new component** (pytest runner, which also runs
   `unittest.TestCase` classes); Frontend — Vitest + React Testing Library; Playwright for E2E.
-- **CI/CD:** **GitHub Actions** — **every push runs the test suite; a red suite blocks merge.**
-- **Git hooks:** pre-commit/pre-push runs lint + tests locally before every upload.
+- **CI/CD:** **GitHub Actions is the single source of truth for checks** — every push and PR runs
+  the full suite for **both** backend (ruff · black · mypy · pytest) and frontend (lint · typecheck ·
+  Vitest · build · Playwright E2E); a red suite blocks merge. **No local git hooks** — checks run in
+  CI, not on developer machines.
 - **Hosting:** frontend — static host (Vercel/Netlify/any static/CDN); backend — **containerized
   FastAPI** (Railway / Fly.io / any container host); PostgreSQL — managed instance.
 
@@ -152,8 +154,9 @@ manager *is* the social worker; every manager may write it).
     commit directly to the main branch.
 15. **Every new component ships with a unit test**, created together with the code. No new
     service/route/util without its test.
-16. **Tests must pass on every upload.** Before each commit/push the full suite runs (git hook +
-    CI); a failing suite blocks the upload/merge.
+16. **Tests must pass in CI on every upload.** GitHub Actions runs the full suite on every push and
+    PR; a failing suite blocks the merge. CI is the enforcement point — there are no local git hooks,
+    so run the relevant checks yourself before pushing when you want fast feedback.
 17. **Clean, readable code is a top priority.** Express intent through clear names and small
     functions — **no comments except where there is no other choice** (e.g. a non-obvious
     workaround). No commented-out code, no narrating comments.
