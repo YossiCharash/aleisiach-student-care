@@ -13,3 +13,4 @@ class EmailSettings(BaseSettings):
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_starttls: bool = True
+    smtp_timeout_seconds: float = 10.0

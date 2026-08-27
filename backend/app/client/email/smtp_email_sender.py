@@ -29,7 +29,11 @@ class SmtpEmailSender(EmailSender):
         return message
 
     def _deliver(self, message: EmailMessage) -> None:
-        with smtplib.SMTP(self._settings.smtp_host, self._settings.smtp_port) as smtp:
+        with smtplib.SMTP(
+            self._settings.smtp_host,
+            self._settings.smtp_port,
+            timeout=self._settings.smtp_timeout_seconds,
+        ) as smtp:
             if self._settings.smtp_starttls:
                 smtp.starttls()
             if self._settings.smtp_username:
