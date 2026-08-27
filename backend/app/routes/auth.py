@@ -9,10 +9,16 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
-from backend.app.routes.security import CredentialsDep, Manager, build_session_service
+from backend.app.routes.security import (
+    CredentialsDep,
+    CurrentUser,
+    Manager,
+    build_session_service,
+)
 from backend.app.schema.routes.invitation_accept_request import InvitationAcceptRequest
 from backend.app.schema.routes.login_request import LoginRequest
 from backend.app.schema.routes.login_response import LoginResponse
+from backend.app.schema.routes.password_change_request import PasswordChangeRequest
 from backend.app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
 from backend.app.schema.routes.password_reset_request import PasswordResetRequest
 from backend.app.schema.routes.user_response import UserResponse
@@ -20,6 +26,7 @@ from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.service.auth.invitation_service import InvitationService
+from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.service.auth.password_reset_service import PasswordResetService
 from backend.app.service.auth.session_service import SessionService
 from backend.app.service.auth.token_consumer import TokenConsumer
@@ -54,6 +61,12 @@ def get_authentication_service(
     )
 
 
+def get_password_change_service(
+    session: SessionDep, bootstrap: BootstrapDep
+) -> PasswordChangeService:
+    return PasswordChangeService(UserRepository(session), bootstrap.password_hasher)
+
+
 def get_password_reset_service(
     session: SessionDep, bootstrap: BootstrapDep
 ) -> PasswordResetService:
@@ -76,6 +89,7 @@ def get_session_service(session: SessionDep, bootstrap: BootstrapDep) -> Session
 
 InvitationDep = Annotated[InvitationService, Depends(get_invitation_service)]
 AuthenticationDep = Annotated[AuthenticationService, Depends(get_authentication_service)]
+PasswordChangeDep = Annotated[PasswordChangeService, Depends(get_password_change_service)]
 PasswordResetDep = Annotated[PasswordResetService, Depends(get_password_reset_service)]
 SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
 
@@ -107,6 +121,13 @@ def create_invitation(
 @router.post("/invitations/accept", response_model=UserResponse)
 def accept_invitation(request: InvitationAcceptRequest, service: InvitationDep) -> UserResponse:
     return service.accept(request.token, request.username, request.password)
+
+
+@router.post("/password/change", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    request: PasswordChangeRequest, service: PasswordChangeDep, user: CurrentUser
+) -> None:
+    service.change(user.id, request.current_password, request.new_password)
 
 
 @router.post("/password-reset/request", status_code=status.HTTP_202_ACCEPTED)
