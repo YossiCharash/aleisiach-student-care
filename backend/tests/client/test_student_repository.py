@@ -46,3 +46,14 @@ def test_list_active_by_class_filters_to_one_class(db_session: Session) -> None:
     names = [student.full_name for student in repository.list_active_by_class(class_a)]
 
     assert names == ["InA"]
+
+
+def test_list_archived_returns_only_archived(db_session: Session) -> None:
+    class_id = _seed_class(db_session)
+    repository = StudentRepository(db_session)
+    repository.add(Student(full_name="Active", class_id=class_id))
+    repository.add(Student(full_name="Archived", class_id=class_id, is_archived=True))
+
+    names = [student.full_name for student in repository.list_archived()]
+
+    assert names == ["Archived"]

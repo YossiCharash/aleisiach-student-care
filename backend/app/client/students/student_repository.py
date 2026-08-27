@@ -31,3 +31,7 @@ class StudentRepository:
             .order_by(Student.full_name)
         )
         return list(self._session.scalars(statement).all())
+
+    def list_archived(self) -> list[Student]:
+        statement = select(Student).where(Student.is_archived.is_(True)).order_by(Student.full_name)
+        return list(self._session.scalars(statement).all())
