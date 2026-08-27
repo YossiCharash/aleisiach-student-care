@@ -28,7 +28,7 @@
 - [x] Bootstrap composition-root (סינגלטונים נוצרים פעם אחת)
 - [x] נתיב יבוא `backend.app`
 - [x] `.gitattributes` לנרמול שורות (LF) — מבטל אזהרות CRLF (renormalize היה no-op; הריפו כבר LF)
-- [ ] אירוח: frontend (סטטי/CDN), backend (קונטיינר עם ספריות WeasyPrint), PostgreSQL מנוהל
+- [~] אירוח: **קונטיינרים מוכנים** — `backend/Dockerfile` (עם ספריות WeasyPrint + פונט עברי), `frontend/Dockerfile` (nginx מגיש SPA + proxy `/api`), ו-`docker-compose.yml` למחסנית מלאה מקומית (Postgres+backend+frontend). נותר: בחירת ספק אירוח/פריסה בפועל
 - [ ] ניהול סודות אמיתי (.env → סוד בסביבה)
 - [x] כותרות אבטחה (`SecurityHeadersMiddleware`): `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `CSP frame-ancestors`, `COOP`; `HSTS` בפרודקשן בלבד (config-first)
 
