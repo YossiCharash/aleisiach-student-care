@@ -51,6 +51,10 @@ Design source: Claude Design — file `Student Care System.dc.html`.
   (Tab 2) and student details — consistent, RTL-correct Hebrew output. (Hebrew font choice: §6.)
 - **Auth:** see section 3 — **username + password** for all users, manager-provisioned via email
   invitation, with password change and forgot-password reset. Requires an email-sending service.
+- **Error handling & alerting:** central typed-error handling with a consistent Hebrew
+  `ErrorResponse` envelope; every **unexpected** error is logged with a `reference` id and pushes a
+  **WhatsApp alert** (metadata only, no PII) via a pluggable `WhatsAppNotifier` (`console` default /
+  `webhook` prod). See §4 rules 22–25 and `ARCHITECTURE.md`.
 
 ### Tooling
 - **Frontend package manager:** **pnpm**.
@@ -163,6 +167,29 @@ manager *is* the social worker; every manager may write it).
     `configuration/`, organized into folders by area. Avoid hard-coded values in the code —
     the only exception is a value that should **never** change (a true constant). Anything that
     could vary by environment, deployment, or business decision is configuration.
+
+### Error handling & alerting rules (binding)
+22. **Typed exceptions only — never bare `Exception`/`raise ValueError` across a boundary.** Every
+    expected failure is a dedicated subclass of `AppError` (in `errors/service/`, one class per
+    file) carrying a stable machine `code`, an HTTP `status_code`, and a clear **Hebrew** end-user
+    `message`. Services raise these; routes never build error responses by hand.
+23. **Every error crosses the HTTP boundary as the `ErrorResponse` envelope** (`schema/routes/`):
+    `{ code, message, reference?, fields? }`. All error responses go through the central handlers
+    in `errors/routes/error_handlers.py` — `AppError`, `RequestValidationError` (→ `fields`),
+    `HTTPException`, and a catch-all `Exception`. No route returns an ad-hoc error dict.
+24. **Unexpected errors are safe, traceable, and never leak internals.** The catch-all handler
+    returns HTTP 500 with a generic Hebrew message **plus a short `reference` id**; the full
+    exception + traceback is logged server-side under that id. Never expose stack traces, SQL,
+    internal messages, or sensitive values (national IDs / diagnoses / guardianship) in a response
+    **or** in an alert — see rule 7. Business errors (`AppError`, 4xx) are expected and are **not**
+    alerted; only unexpected 500s are.
+25. **Every unexpected error fires a WhatsApp alert** via `ErrorAlertService` → the
+    `WhatsAppNotifier` abstraction (`client/whatsapp/`, Strategy: `console` default /
+    `webhook` prod, selected in `Bootstrap`, configured under `configuration/notifications/`).
+    The alert carries **metadata only** (reference · error type · method · path · environment ·
+    timestamp) — never the exception's free-text message, request bodies, or PII; the full
+    exception + traceback stays in server-side logs, retrievable by `reference`. **Alerting must
+    never mask the original error:** notifier failures are caught and logged, not propagated.
 
 ---
 

@@ -5,6 +5,7 @@ from backend.app.configuration.app.app_settings import AppSettings
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.configuration.database.database_settings import DatabaseSettings
 from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.configuration.notifications.whatsapp_settings import WhatsAppSettings
 
 
 class Settings(BaseSettings):
@@ -14,3 +15,4 @@ class Settings(BaseSettings):
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     auth: AuthSettings = Field(default_factory=AuthSettings)
     email: EmailSettings = Field(default_factory=EmailSettings)
+    whatsapp: WhatsAppSettings = Field(default_factory=WhatsAppSettings)
