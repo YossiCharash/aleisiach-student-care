@@ -22,7 +22,7 @@
 | [ADR-013](#adr-013--student-deletion--archive-only-audit-log--changes-only) | Student deletion = archive-only; audit = changes only | Accepted |
 | [ADR-014](#adr-014--authentication--username--password-with-email-invitation) | Authentication = username + password with email invitation | Accepted |
 | [ADR-015](#adr-015--pdf-export--server-side-weasyprint) | PDF export = server-side WeasyPrint | Accepted |
-| [ADR-016](#adr-016--branding-font--colors-from-aleisiachorg) | Branding: font + colors from aleisiach.org | Font Deferred |
+| [ADR-016](#adr-016--branding-font--colors-from-aleisiachorg) | Branding: font + colors from aleisiach.org | Accepted |
 
 ---
 
@@ -179,8 +179,11 @@ message (no enumeration). Passwords hashed (argon2/bcrypt); invite/reset tokens 
 time-expiring, and stored hashed; rate-limit + lockout on login and reset.
 **Alternatives:** Keep national ID (+hardening); passwords for managers only. Rejected — weak
 factor and worse UX/security.
-**Consequences:** Adds `USER.email/status` and an `AUTH_TOKEN` table; **requires an email-sending
-provider** (TBD). The design's "conditional manager password" login is obsolete.
+**Consequences:** Adds `USER.email/status` and an `AUTH_TOKEN` table. The design's "conditional
+manager password" login is obsolete. **Email provider (decided 2026-08-27): Gmail SMTP** —
+`SmtpEmailSender` (stdlib `smtplib`, STARTTLS) selected via `EMAIL_PROVIDER=smtp` with
+`EMAIL_SMTP_USERNAME`/`EMAIL_SMTP_PASSWORD` (a Gmail app password); dev defaults to the console
+sender. Rate-limit + lockout on login and reset are implemented (per-account).
 
 ## ADR-015 — PDF export = server-side WeasyPrint
 **Status:** Accepted · 2026-08-24
@@ -193,18 +196,21 @@ ReportLab — heavier for HTML-style layouts.
 **Consequences:** One rendering path; RTL/font issues solved once on the server.
 
 ## ADR-016 — Branding: font + colors from aleisiach.org
-**Status:** Colors Accepted · Font **Deferred** · 2026-08-24
+**Status:** Accepted · 2026-08-24 · **font decided 2026-08-27**
 **Context:** Rule 5 requires matching Aleisiach branding, not generic defaults. Live inspection of
 aleisiach.org found font **Tubic** (commercial, Fontef) and it also loads **Heebo** (OFL).
-**Decision:** **Colors accepted** as theme tokens — primary raspberry/magenta `#CC3366`, secondary
-green `#85C441`, neutrals black/white + grays `#333333`/`#5C5C5C`. **Font deferred**: choose later
-between licensing **Tubic** (exact match) or free **Heebo** (embeddable in WeasyPrint) for UI+PDF.
-**Consequences:** UI theme can start now on colors; font swap is localized when decided.
+**Decision:** **Colors** as theme tokens — primary raspberry/magenta `#CC3366`, secondary green
+`#85C441`, neutrals black/white + grays `#333333`/`#5C5C5C`. **Font = default (Heebo, OFL)** — the
+free, embeddable Hebrew sans, used as the CSS default (`'Heebo', sans-serif`) in the PDF documents
+and to be the UI default; licensing **Tubic** for an exact match stays a later, localized swap.
+**Consequences:** No font licensing needed now; Heebo embeds in WeasyPrint and is installed in the
+backend container for PDF rendering.
 
 ---
 
 ## Open / deferred items (not yet ADRs)
-- **Exact Tab 4 heading names (5+)** — structure decided (ADR-011); names to be supplied.
-- **Hebrew font choice** — Tubic vs Heebo (ADR-016), deferred by the user.
-- **Email-sending provider** — required by ADR-014; provider TBD (configured under `configuration/`).
-- **Login/student-screen design variation** — pick among the design's variations.
+- **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
+  (ADR-011 mechanism implemented); no fixed names needed.
+- **Login/student-screen design variation** — pick among the design's variations (frontend).
+
+_Resolved: Hebrew font = **Heebo** default (ADR-016); email provider = **Gmail SMTP** (ADR-014)._
