@@ -15,6 +15,8 @@ from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis import Diagnosis
 from backend.app.seed.demo_credentials import ALL_ACCOUNTS, DEMO_PASSWORD, INSTRUCTOR
 from backend.app.seed.demo_seeder import DemoSeeder
 from backend.app.utils.service.password_hasher import PasswordHasher
@@ -89,6 +91,17 @@ def test_seeds_details_and_social_note(db_session: Session) -> None:
 
     assert _count(db_session, StudentDetails) == 1
     assert _count(db_session, SocialNote) == 1
+
+
+def test_seeded_details_deserialize_through_response_schemas(db_session: Session) -> None:
+    _seed(db_session)
+
+    details = db_session.scalars(select(StudentDetails)).one()
+    contacts = [ContactInfo(**item) for item in [*details.emergency_contacts, *details.guardians]]
+    diagnoses = [Diagnosis(**item) for item in details.medical_diagnoses]
+
+    assert all(contact.full_name for contact in contacts)
+    assert all(diagnosis.name for diagnosis in diagnoses)
 
 
 def test_run_is_idempotent(db_session: Session) -> None:
