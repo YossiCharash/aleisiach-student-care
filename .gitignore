@@ -15,6 +15,9 @@ htmlcov/
 .env.*
 !.env.example
 
+# Local SQLite databases (e.g. local E2E runs)
+*.db
+
 # Node / frontend
 node_modules/
 dist/
