@@ -56,7 +56,66 @@ jobs:
         run: pnpm test
       - name: Build
         run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: aleisiach
+          POSTGRES_PASSWORD: aleisiach
+          POSTGRES_DB: aleisiach
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aleisiach"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://aleisiach:aleisiach@localhost:5432/aleisiach
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --all-extras --dev
+      - name: Run migrations
+        working-directory: backend
+        run: uv run alembic upgrade head
+      - name: Seed demo data
+        working-directory: backend
+        run: uv run python -m backend.app.seed
+      - name: Start backend
+        working-directory: backend
+        run: |
+          uv run uvicorn backend.app.main:app --app-dir .. --port 8000 --log-level warning > /tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/health && break; sleep 1; done
+          curl -sf http://localhost:8000/health
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
       - name: Install Playwright browser
+        working-directory: frontend
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E
+        working-directory: frontend
         run: pnpm test:e2e
+      - name: Backend log on failure
+        if: failure()
+        run: cat /tmp/uvicorn.log
