@@ -16,8 +16,7 @@ function useTreeMutation<TArgs>(
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.taxonomyTree });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.taxonomyLabels });
+      void queryClient.invalidateQueries({ queryKey: ["taxonomy"] });
     },
   });
   return mutation.mutateAsync;
@@ -54,7 +53,14 @@ export function TaxonomyArea(): ReactNode {
           </div>
         ))}
 
-      <InactiveLabels />
+      <InactiveNodeList
+        heading="תוויות מושבתות"
+        emptyLabel="אין תוויות מושבתות."
+        queryKey={queryKeys.taxonomyLabels}
+        queryFn={() => taxonomyApi.listLabels(true)}
+        getLabel={(label) => label.name}
+        onReactivate={(id) => taxonomyApi.updateLabel(id, { is_active: true })}
+      />
     </div>
   );
 }
@@ -98,6 +104,14 @@ function LabelNode({ label }: { label: LabelTreeNode }): ReactNode {
           {label.sub_labels.map((subLabel) => (
             <SubLabelNode key={subLabel.id} subLabel={subLabel} />
           ))}
+          <InactiveNodeList
+            heading="תת-תוויות מושבתות"
+            emptyLabel="אין תת-תוויות מושבתות."
+            queryKey={queryKeys.taxonomySubLabels(label.id)}
+            queryFn={() => taxonomyApi.listSubLabels(label.id, true)}
+            getLabel={(subLabel) => subLabel.name}
+            onReactivate={(id) => taxonomyApi.updateSubLabel(id, { is_active: true })}
+          />
         </div>
       )}
     </div>
@@ -132,6 +146,14 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
         {subLabel.skills.map((skill) => (
           <SkillNode key={skill.id} skill={skill} />
         ))}
+        <InactiveNodeList
+          heading="כישורים מושבתים"
+          emptyLabel="אין כישורים מושבתים."
+          queryKey={queryKeys.taxonomySkills(subLabel.id)}
+          queryFn={() => taxonomyApi.listSkills(subLabel.id, true)}
+          getLabel={(skill) => skill.name}
+          onReactivate={(id) => taxonomyApi.updateSkill(id, { is_active: true })}
+        />
       </div>
     </div>
   );
@@ -168,6 +190,16 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
           ))}
         </ul>
       )}
+      <div className="mt-2">
+        <InactiveNodeList
+          heading="פתרונות מושבתים"
+          emptyLabel="אין פתרונות מושבתים."
+          queryKey={queryKeys.taxonomySolutions(skill.id)}
+          queryFn={() => taxonomyApi.listSolutions(skill.id, true)}
+          getLabel={(solution) => solution.text}
+          onReactivate={(id) => taxonomyApi.updateSolution(id, { is_active: true })}
+        />
+      </div>
     </div>
   );
 }
@@ -193,29 +225,42 @@ function SolutionRow({ id, text }: { id: string; text: string }): ReactNode {
   );
 }
 
-function InactiveLabels(): ReactNode {
-  const [open, setOpen] = useState(false);
-  const query = useQuery({
-    queryKey: queryKeys.taxonomyLabels,
-    queryFn: () => taxonomyApi.listLabels(true),
-    enabled: open,
-  });
-  const reactivate = useTreeMutation((labelId: string) =>
-    taxonomyApi.updateLabel(labelId, { is_active: true })
-  );
+interface InactiveNode {
+  id: string;
+  is_active: boolean;
+}
 
-  const inactive = (query.data ?? []).filter((label) => !label.is_active);
+function InactiveNodeList<T extends InactiveNode>({
+  heading,
+  emptyLabel,
+  queryKey,
+  queryFn,
+  getLabel,
+  onReactivate,
+}: {
+  heading: string;
+  emptyLabel: string;
+  queryKey: readonly unknown[];
+  queryFn: () => Promise<T[]>;
+  getLabel: (item: T) => string;
+  onReactivate: (id: string) => Promise<unknown>;
+}): ReactNode {
+  const [open, setOpen] = useState(false);
+  const query = useQuery({ queryKey, queryFn, enabled: open });
+  const reactivate = useTreeMutation(onReactivate);
+
+  const inactive = (query.data ?? []).filter((item) => !item.is_active);
 
   return (
-    <div className="border-t border-slate-100 pt-3">
+    <div className="border-t border-slate-100 pt-2">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink"
+        className="flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink"
         aria-expanded={open}
       >
-        <ChevronDown className={`h-4 w-4 ${open ? "" : "-rotate-90"}`} />
-        תוויות מושבתות
+        <ChevronDown className={`h-3.5 w-3.5 ${open ? "" : "-rotate-90"}`} />
+        {heading}
       </button>
       {open && (
         <div className="mt-2 space-y-2">
@@ -223,19 +268,19 @@ function InactiveLabels(): ReactNode {
           {query.isError && <ErrorState error={query.error} />}
           {query.data &&
             (inactive.length === 0 ? (
-              <EmptyState>אין תוויות מושבתות.</EmptyState>
+              <EmptyState>{emptyLabel}</EmptyState>
             ) : (
-              inactive.map((label) => (
+              inactive.map((item) => (
                 <div
-                  key={label.id}
+                  key={item.id}
                   className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
                 >
-                  <span className="text-sm text-ink-muted">{label.name}</span>
+                  <span className="text-sm text-ink-muted">{getLabel(item)}</span>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
-                    onClick={() => void reactivate(label.id)}
+                    onClick={() => void reactivate(item.id)}
                   >
                     <RotateCcw className="h-4 w-4" />
                     הפעלה מחדש
@@ -243,10 +288,6 @@ function InactiveLabels(): ReactNode {
                 </div>
               ))
             ))}
-          <p className="text-xs text-ink-muted">
-            הפעלה מחדש של תת-תוויות, כישורים ופתרונות תתאפשר כשיתווסף שירות שליפה בצד
-            השרת.
-          </p>
         </div>
       )}
     </div>
