@@ -26,9 +26,10 @@ Design source: Claude Design — file `Student Care System.dc.html`.
 - **Typography:** aleisiach.org uses **Tubic** (commercial Hebrew font, Fontef). Free fallback
   **Heebo** (OFL, already loaded by the site, similar geometric Hebrew sans). Final choice for
   UI + PDF embedding is deferred (see §6).
-- **Brand colors (from aleisiach.org):** primary raspberry/magenta `#CC3366`, secondary green
-  `#85C441`, neutrals black/white + grays `#333333` / `#5C5C5C`. Use these as the Tailwind theme
-  tokens — not generic defaults.
+- **Brand colors:** primary **green** `#3F8420` (deep, white-text-safe; light-lime `#85C441`
+  kept as the positive/secondary accent), neutrals black/white + grays `#333333` / `#5C5C5C`.
+  Use these as the Tailwind theme tokens — not generic defaults. (Changed 2026-08-30 per user
+  decision: green is now the primary color, replacing the original raspberry/magenta `#CC3366`.)
 
 ### Backend / Data — **Python (FastAPI)**
 - **Language:** Python 3.12+ , fully **OOP**, following **SOLID** and appropriate **design patterns**

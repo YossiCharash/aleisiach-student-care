@@ -58,6 +58,7 @@ describe("TaxonomyArea — reactivation", () => {
 
     renderWithClient(<TaxonomyArea />);
 
+    await userEvent.click(await screen.findByRole("button", { name: "הצג מושבתים" }));
     await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
     await userEvent.click(
       await screen.findByRole("button", { name: /תת-תוויות מושבתות/ })
@@ -77,8 +78,24 @@ describe("TaxonomyArea — reactivation", () => {
 
     expect(api.listLabels).not.toHaveBeenCalled();
 
+    await userEvent.click(screen.getByRole("button", { name: "הצג מושבתים" }));
+    expect(api.listLabels).not.toHaveBeenCalled();
+
     await userEvent.click(screen.getByRole("button", { name: "תוויות מושבתות" }));
 
     await waitFor(() => expect(api.listLabels).toHaveBeenCalledWith(true));
+  });
+
+  it("hides the disabled sections until 'show disabled' is toggled on", async () => {
+    renderWithClient(<TaxonomyArea />);
+    await screen.findByText("תווית פעילה");
+
+    expect(
+      screen.queryByRole("button", { name: "תוויות מושבתות" })
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "הצג מושבתים" }));
+
+    expect(screen.getByRole("button", { name: "תוויות מושבתות" })).toBeInTheDocument();
   });
 });

@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class AppSettings(BaseSettings):
@@ -7,7 +9,7 @@ class AppSettings(BaseSettings):
 
     name: str = "Aleisiach Student Care"
     environment: str = "local"
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:8080"]
     hsts_max_age_seconds: int = 31536000
 
     @field_validator("cors_origins", mode="before")
