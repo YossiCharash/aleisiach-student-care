@@ -1,6 +1,15 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, Eye, EyeOff, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Pencil,
+  Plus,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, SkillTreeNode, SubLabelTreeNode } from "@/lib/api/types";
@@ -107,7 +116,9 @@ function CollapseToggle({
       aria-label={open ? "כווץ" : "הרחב"}
       aria-expanded={open}
     >
-      <ChevronDown className={`h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}`} />
+      <ChevronDown
+        className={`h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}`}
+      />
     </button>
   );
 }

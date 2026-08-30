@@ -40,14 +40,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: [
-          "Heebo",
-          "system-ui",
-          "-apple-system",
-          "Segoe UI",
-          "Arial",
-          "sans-serif",
-        ],
+        sans: ["Heebo", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
       },
       borderRadius: {
         card: "0.75rem",

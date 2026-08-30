@@ -96,8 +96,6 @@ describe("TaxonomyArea — reactivation", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "הצג מושבתים" }));
 
-    expect(
-      screen.getByRole("button", { name: "תוויות מושבתות" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "תוויות מושבתות" })).toBeInTheDocument();
   });
 });

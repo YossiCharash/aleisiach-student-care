@@ -222,11 +222,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "שולח…" : submitLabel}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => handleOpenChange(false)}
-            >
+            <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
               ביטול
             </Button>
           </div>
