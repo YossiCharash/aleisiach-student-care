@@ -108,8 +108,8 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
   );
 
   return (
-    <div className="overflow-hidden rounded-card border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center gap-3 bg-slate-50/60 px-4 py-3">
+    <div className="overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm">
+      <div className="flex items-center gap-3 bg-brand-50/50 px-4 py-3">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-xs font-semibold text-brand-700">
           {index}
         </span>
@@ -160,8 +160,8 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
   );
 
   return (
-    <div className="ms-4 rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2.5">
+    <div className="ms-4 rounded-lg border border-s-4 border-slate-200 border-s-brand-300 bg-white">
+      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-3 py-2.5">
         <NodeName
           name={subLabel.name}
           className="text-sm font-semibold text-ink"
@@ -203,7 +203,7 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   );
 
   return (
-    <div className="ms-4 rounded-lg border border-slate-200 bg-slate-50/60">
+    <div className="ms-4 rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
       <div className="flex items-center gap-2 px-3 py-2">
         <NodeName
           name={skill.name}
