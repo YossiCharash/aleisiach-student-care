@@ -227,11 +227,7 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   );
 
   return (
-    <div
-      className={`rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white ${
-        open ? "col-span-2" : ""
-      }`}
-    >
+    <div className="rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
       <div className="flex items-center gap-2 px-3 py-2">
         <NodeName
           name={skill.name}
