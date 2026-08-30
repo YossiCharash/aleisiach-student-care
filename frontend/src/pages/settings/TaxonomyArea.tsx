@@ -124,11 +124,7 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
   );
 
   return (
-    <div
-      className={`overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm ${
-        open ? "col-span-2" : ""
-      }`}
-    >
+    <div className="overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm">
       <div className="flex items-center gap-3 bg-brand-50/50 px-4 py-3">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-xs font-semibold text-brand-700">
           {index}
@@ -198,7 +194,7 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
           onSubmit={(name) => taxonomyApi.createSkill(subLabel.id, name)}
         />
         {subLabel.skills.length > 0 && (
-          <div className="ms-4 grid grid-cols-2 items-start gap-2">
+          <div className="ms-4 space-y-2">
             {subLabel.skills.map((skill) => (
               <SkillNode key={skill.id} skill={skill} />
             ))}
