@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronDown, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { Check, ChevronDown, Eye, EyeOff, Pencil, Plus, RotateCcw, X } from "lucide-react";
 import { taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, SkillTreeNode, SubLabelTreeNode } from "@/lib/api/types";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+
+const ShowInactiveContext = createContext(false);
 
 function useTreeMutation<TArgs>(
   mutationFn: (args: TArgs) => Promise<unknown>
@@ -24,44 +26,58 @@ function useTreeMutation<TArgs>(
 
 export function TaxonomyArea(): ReactNode {
   const query = useQuery({ queryKey: queryKeys.taxonomyTree, queryFn: taxonomyApi.tree });
+  const [showInactive, setShowInactive] = useState(false);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-ink">טקסונומיה</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          תוויות ← תת-תוויות ← כישורים ← פתרונות. שינויים משתקפים מיד בטופס הישיבות.
-        </p>
-      </div>
-
-      <AddInline
-        placeholder="שם תווית חדשה"
-        buttonLabel="הוספת תווית"
-        onSubmit={(name) => taxonomyApi.createLabel(name)}
-      />
-
-      {query.isLoading && <LoadingState />}
-      {query.isError && <ErrorState error={query.error} />}
-      {query.data &&
-        (query.data.length === 0 ? (
-          <EmptyState>אין תוויות עדיין.</EmptyState>
-        ) : (
-          <div className="space-y-3">
-            {query.data.map((label, index) => (
-              <LabelNode key={label.id} label={label} index={index + 1} />
-            ))}
+    <ShowInactiveContext.Provider value={showInactive}>
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">טקסונומיה</h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              תוויות ← תת-תוויות ← כישורים ← פתרונות. שינויים משתקפים מיד בטופס הישיבות.
+            </p>
           </div>
-        ))}
+          <Button
+            type="button"
+            size="sm"
+            variant={showInactive ? "secondary" : "outline"}
+            onClick={() => setShowInactive((value) => !value)}
+          >
+            {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showInactive ? "הסתר מושבתים" : "הצג מושבתים"}
+          </Button>
+        </div>
 
-      <InactiveNodeList
-        heading="תוויות מושבתות"
-        emptyLabel="אין תוויות מושבתות."
-        queryKey={queryKeys.taxonomyLabels}
-        queryFn={() => taxonomyApi.listLabels(true)}
-        getLabel={(label) => label.name}
-        onReactivate={(id) => taxonomyApi.updateLabel(id, { is_active: true })}
-      />
-    </div>
+        <AddInline
+          placeholder="שם תווית חדשה"
+          buttonLabel="הוספת תווית"
+          onSubmit={(name) => taxonomyApi.createLabel(name)}
+        />
+
+        {query.isLoading && <LoadingState />}
+        {query.isError && <ErrorState error={query.error} />}
+        {query.data &&
+          (query.data.length === 0 ? (
+            <EmptyState>אין תוויות עדיין.</EmptyState>
+          ) : (
+            <div className="space-y-3">
+              {query.data.map((label, index) => (
+                <LabelNode key={label.id} label={label} index={index + 1} />
+              ))}
+            </div>
+          ))}
+
+        <InactiveNodeList
+          heading="תוויות מושבתות"
+          emptyLabel="אין תוויות מושבתות."
+          queryKey={queryKeys.taxonomyLabels}
+          queryFn={() => taxonomyApi.listLabels(true)}
+          getLabel={(label) => label.name}
+          onReactivate={(id) => taxonomyApi.updateLabel(id, { is_active: true })}
+        />
+      </div>
+    </ShowInactiveContext.Provider>
   );
 }
 
@@ -177,9 +193,13 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
           buttonLabel="הוספת כישור"
           onSubmit={(name) => taxonomyApi.createSkill(subLabel.id, name)}
         />
-        {subLabel.skills.map((skill) => (
-          <SkillNode key={skill.id} skill={skill} />
-        ))}
+        {subLabel.skills.length > 0 && (
+          <div className="ms-4 grid grid-cols-2 items-start gap-2">
+            {subLabel.skills.map((skill) => (
+              <SkillNode key={skill.id} skill={skill} />
+            ))}
+          </div>
+        )}
         <InactiveNodeList
           heading="כישורים מושבתים"
           emptyLabel="אין כישורים מושבתים."
@@ -203,7 +223,11 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   );
 
   return (
-    <div className="ms-4 rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
+    <div
+      className={`rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white ${
+        open ? "col-span-2" : ""
+      }`}
+    >
       <div className="flex items-center gap-2 px-3 py-2">
         <NodeName
           name={skill.name}
@@ -284,11 +308,16 @@ function InactiveNodeList<T extends InactiveNode>({
   getLabel: (item: T) => string;
   onReactivate: (id: string) => Promise<unknown>;
 }): ReactNode {
+  const showInactive = useContext(ShowInactiveContext);
   const [open, setOpen] = useState(false);
-  const query = useQuery({ queryKey, queryFn, enabled: open });
+  const query = useQuery({ queryKey, queryFn, enabled: open && showInactive });
   const reactivate = useTreeMutation(onReactivate);
 
   const inactive = (query.data ?? []).filter((item) => !item.is_active);
+
+  if (!showInactive) {
+    return null;
+  }
 
   return (
     <div className="border-t border-slate-100 pt-2">
