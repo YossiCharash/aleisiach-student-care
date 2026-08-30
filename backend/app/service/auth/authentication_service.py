@@ -27,6 +27,7 @@ class AuthenticationService:
     def authenticate(self, username: str, password: str) -> UserResponse:
         user = self._users.get_by_username(username)
         if user is None or user.status != UserStatus.ACTIVE or user.password_hash is None:
+            self._password_hasher.verify_dummy(password)
             raise AuthenticationError
         if self._is_locked(user):
             raise AccountLockedError

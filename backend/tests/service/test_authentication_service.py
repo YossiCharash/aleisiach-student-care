@@ -25,6 +25,16 @@ class _FakeClock(Clock):
         return self.moment
 
 
+class _CountingHasher(PasswordHasher):
+    def __init__(self) -> None:
+        super().__init__()
+        self.dummy_calls = 0
+
+    def verify_dummy(self, password: str) -> None:
+        self.dummy_calls += 1
+        super().verify_dummy(password)
+
+
 def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:
     session.add(
         User(
@@ -67,6 +77,16 @@ def test_authenticate_unknown_user_raises(db_session: Session) -> None:
 
     with pytest.raises(AuthenticationError):
         service.authenticate("ghost", "password123")
+
+
+def test_unknown_user_still_runs_a_verify_to_equalize_timing(db_session: Session) -> None:
+    hasher = _CountingHasher()
+    service = _service(db_session, hasher, _FakeClock(_BASE))
+
+    with pytest.raises(AuthenticationError):
+        service.authenticate("ghost", "password123")
+
+    assert hasher.dummy_calls == 1
 
 
 def test_locks_after_max_failed_attempts(db_session: Session) -> None:
