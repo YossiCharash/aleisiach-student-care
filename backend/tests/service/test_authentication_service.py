@@ -13,16 +13,9 @@ from backend.app.models.client.user_status import UserStatus
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.tests.support.fake_clock import FakeClock
 
 _BASE = datetime(2026, 8, 27, 9, 0, tzinfo=UTC)
-
-
-class _FakeClock(Clock):
-    def __init__(self, moment: datetime) -> None:
-        self.moment = moment
-
-    def now(self) -> datetime:
-        return self.moment
 
 
 class _CountingHasher(PasswordHasher):
@@ -56,7 +49,7 @@ def _service(session: Session, hasher: PasswordHasher, clock: Clock) -> Authenti
 def test_authenticate_success(db_session: Session) -> None:
     hasher = PasswordHasher()
     _seed_active_user(db_session, hasher)
-    service = _service(db_session, hasher, _FakeClock(_BASE))
+    service = _service(db_session, hasher, FakeClock(_BASE))
 
     result = service.authenticate("manager1", "password123")
 
@@ -66,14 +59,14 @@ def test_authenticate_success(db_session: Session) -> None:
 def test_authenticate_wrong_password_raises(db_session: Session) -> None:
     hasher = PasswordHasher()
     _seed_active_user(db_session, hasher)
-    service = _service(db_session, hasher, _FakeClock(_BASE))
+    service = _service(db_session, hasher, FakeClock(_BASE))
 
     with pytest.raises(AuthenticationError):
         service.authenticate("manager1", "wrong-password")
 
 
 def test_authenticate_unknown_user_raises(db_session: Session) -> None:
-    service = _service(db_session, PasswordHasher(), _FakeClock(_BASE))
+    service = _service(db_session, PasswordHasher(), FakeClock(_BASE))
 
     with pytest.raises(AuthenticationError):
         service.authenticate("ghost", "password123")
@@ -81,7 +74,7 @@ def test_authenticate_unknown_user_raises(db_session: Session) -> None:
 
 def test_unknown_user_still_runs_a_verify_to_equalize_timing(db_session: Session) -> None:
     hasher = _CountingHasher()
-    service = _service(db_session, hasher, _FakeClock(_BASE))
+    service = _service(db_session, hasher, FakeClock(_BASE))
 
     with pytest.raises(AuthenticationError):
         service.authenticate("ghost", "password123")
@@ -92,7 +85,7 @@ def test_unknown_user_still_runs_a_verify_to_equalize_timing(db_session: Session
 def test_locks_after_max_failed_attempts(db_session: Session) -> None:
     hasher = PasswordHasher()
     _seed_active_user(db_session, hasher)
-    service = _service(db_session, hasher, _FakeClock(_BASE))
+    service = _service(db_session, hasher, FakeClock(_BASE))
 
     for _ in range(AuthSettings().max_failed_logins):
         with pytest.raises(AuthenticationError):
@@ -105,7 +98,7 @@ def test_locks_after_max_failed_attempts(db_session: Session) -> None:
 def test_lockout_expires_after_window(db_session: Session) -> None:
     hasher = PasswordHasher()
     _seed_active_user(db_session, hasher)
-    clock = _FakeClock(_BASE)
+    clock = FakeClock(_BASE)
     service = _service(db_session, hasher, clock)
     for _ in range(AuthSettings().max_failed_logins):
         with pytest.raises(AuthenticationError):
@@ -120,7 +113,7 @@ def test_lockout_expires_after_window(db_session: Session) -> None:
 def test_success_resets_failed_count(db_session: Session) -> None:
     hasher = PasswordHasher()
     _seed_active_user(db_session, hasher)
-    service = _service(db_session, hasher, _FakeClock(_BASE))
+    service = _service(db_session, hasher, FakeClock(_BASE))
     with pytest.raises(AuthenticationError):
         service.authenticate("manager1", "wrong-password")
 

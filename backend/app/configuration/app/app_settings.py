@@ -11,6 +11,7 @@ class AppSettings(BaseSettings):
     environment: str = "local"
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:8080"]
     hsts_max_age_seconds: int = 31536000
+    trusted_proxy_count: int = 0
 
     @field_validator("cors_origins", mode="before")
     @classmethod

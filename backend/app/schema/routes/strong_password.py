@@ -2,9 +2,11 @@ from typing import Annotated
 
 from pydantic import AfterValidator
 
+from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.utils.service.password_policy import PasswordPolicy
 
-_policy = PasswordPolicy()
+_settings = AuthSettings()
+_policy = PasswordPolicy(_settings.password_min_length, _settings.password_max_length)
 
 
 def _enforce(value: str) -> str:

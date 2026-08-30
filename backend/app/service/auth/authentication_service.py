@@ -28,6 +28,7 @@ class AuthenticationService:
         user = self._users.get_by_username(username)
         if user is None or user.status != UserStatus.ACTIVE or user.password_hash is None:
             self._password_hasher.verify_dummy(password)
+            self._users.commit()
             raise AuthenticationError
         if self._is_locked(user):
             raise AccountLockedError
