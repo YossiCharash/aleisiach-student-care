@@ -61,7 +61,7 @@ export function TaxonomyArea(): ReactNode {
           (query.data.length === 0 ? (
             <EmptyState>אין תוויות עדיין.</EmptyState>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 items-start gap-3">
               {query.data.map((label, index) => (
                 <LabelNode key={label.id} label={label} index={index + 1} />
               ))}
@@ -124,7 +124,11 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
   );
 
   return (
-    <div className="overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm">
+    <div
+      className={`overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm ${
+        open ? "col-span-2" : ""
+      }`}
+    >
       <div className="flex items-center gap-3 bg-brand-50/50 px-4 py-3">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-xs font-semibold text-brand-700">
           {index}
