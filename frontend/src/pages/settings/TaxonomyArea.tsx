@@ -526,6 +526,7 @@ function AddInline({
   onSubmit: (value: string) => Promise<unknown>;
 }): ReactNode {
   const queryClient = useQueryClient();
+  const [adding, setAdding] = useState(false);
   const [value, setValue] = useState("");
 
   const mutation = useMutation({
@@ -533,12 +534,28 @@ function AddInline({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.taxonomyTree });
       setValue("");
+      setAdding(false);
     },
   });
+
+  function cancel(): void {
+    setValue("");
+    setAdding(false);
+  }
+
+  if (!adding) {
+    return (
+      <Button type="button" size="sm" variant="outline" onClick={() => setAdding(true)}>
+        <Plus className="h-4 w-4" />
+        {buttonLabel}
+      </Button>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
       <Input
+        autoFocus
         value={value}
         placeholder={placeholder}
         onChange={(event) => setValue(event.target.value)}
@@ -546,18 +563,22 @@ function AddInline({
           if (event.key === "Enter" && value.trim() !== "" && !mutation.isPending) {
             mutation.mutate();
           }
+          if (event.key === "Escape") {
+            cancel();
+          }
         }}
         className="h-9"
       />
       <Button
         type="button"
         size="sm"
-        variant="outline"
         disabled={value.trim() === "" || mutation.isPending}
         onClick={() => mutation.mutate()}
       >
-        <Plus className="h-4 w-4" />
-        {buttonLabel}
+        {mutation.isPending ? "שומר…" : "שמירה"}
+      </Button>
+      <Button type="button" size="sm" variant="ghost" onClick={cancel}>
+        ביטול
       </Button>
     </div>
   );
