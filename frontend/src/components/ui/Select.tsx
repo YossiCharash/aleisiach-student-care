@@ -8,7 +8,11 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-export const Select = SelectPrimitive.Root;
+export function Select(
+  props: ComponentPropsWithoutRef<typeof SelectPrimitive.Root>
+): ReactNode {
+  return <SelectPrimitive.Root dir="rtl" {...props} />;
+}
 export const SelectValue = SelectPrimitive.Value;
 
 export const SelectTrigger = forwardRef<

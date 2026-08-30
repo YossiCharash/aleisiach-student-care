@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2 } from "lucide-react";
 import { authApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { UserRole } from "@/lib/api/types";
@@ -23,93 +24,209 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+interface InviteRow {
+  key: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  classId: string;
+}
+
+interface RowFailure {
+  email: string;
+  message: string;
+}
+
+function newRow(): InviteRow {
+  return {
+    key: crypto.randomUUID(),
+    fullName: "",
+    email: "",
+    role: "instructor",
+    classId: "",
+  };
+}
+
 export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<UserRole>("instructor");
-  const [classId, setClassId] = useState("");
+  const [rows, setRows] = useState<InviteRow[]>([newRow()]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [failures, setFailures] = useState<RowFailure[]>([]);
 
-  const mutation = useMutation({
-    mutationFn: () =>
-      authApi.createInvitation({
-        full_name: fullName,
-        email,
-        role,
-        class_id: role === "instructor" ? classId || null : null,
-      }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.users });
-      setFullName("");
-      setEmail("");
-      setRole("instructor");
-      setClassId("");
-      onOpenChange(false);
-    },
-  });
-
-  function handleSubmit(event: FormEvent): void {
-    event.preventDefault();
-    mutation.mutate();
+  function reset(): void {
+    setRows([newRow()]);
+    setFailures([]);
   }
 
+  function updateRow(key: string, patch: Partial<InviteRow>): void {
+    setRows((current) =>
+      current.map((row) => (row.key === key ? { ...row, ...patch } : row))
+    );
+  }
+
+  function addRow(): void {
+    setRows((current) => [...current, newRow()]);
+  }
+
+  function removeRow(key: string): void {
+    setRows((current) =>
+      current.length === 1 ? current : current.filter((row) => row.key !== key)
+    );
+  }
+
+  async function handleSubmit(event: FormEvent): Promise<void> {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFailures([]);
+    const collected: RowFailure[] = [];
+    for (const row of rows) {
+      try {
+        await authApi.createInvitation({
+          full_name: row.fullName,
+          email: row.email,
+          role: row.role,
+          class_id: row.role === "instructor" ? row.classId || null : null,
+        });
+      } catch (error) {
+        collected.push({ email: row.email, message: errorMessage(error) });
+      }
+    }
+    setIsSubmitting(false);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.users });
+
+    if (collected.length === 0) {
+      reset();
+      onOpenChange(false);
+      return;
+    }
+    setFailures(collected);
+    setRows((current) =>
+      current.filter((row) => collected.some((failure) => failure.email === row.email))
+    );
+  }
+
+  function handleOpenChange(next: boolean): void {
+    if (!next) {
+      reset();
+    }
+    onOpenChange(next);
+  }
+
+  const submitLabel = rows.length > 1 ? "שליחת הזמנות" : "שליחת הזמנה";
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>הזמנת משתמש</DialogTitle>
-          <DialogDescription>ישלח קישור הזמנה לכתובת הדוא״ל.</DialogDescription>
+          <DialogTitle>הזמנת משתמשים</DialogTitle>
+          <DialogDescription>
+            ניתן להוסיף מספר משתמשים בבת אחת. יישלח קישור הזמנה לכל כתובת דוא״ל.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
-          <div>
-            <Label htmlFor="invite-name">שם מלא</Label>
-            <Input
-              id="invite-name"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              required
-              autoFocus
-            />
-          </div>
-          <div>
-            <Label htmlFor="invite-email">דוא״ל</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="invite-role">תפקיד</Label>
-            <select
-              id="invite-role"
-              value={role}
-              onChange={(event) => setRole(event.target.value as UserRole)}
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
-            >
-              {(Object.keys(roleLabels) as UserRole[]).map((value) => (
-                <option key={value} value={value}>
-                  {roleLabels[value]}
-                </option>
-              ))}
-            </select>
-          </div>
-          {role === "instructor" && (
-            <ClassPicker
-              id="invite-class"
-              value={classId}
-              onChange={setClassId}
-              required
-            />
+          {failures.length > 0 && (
+            <Alert tone="error">
+              חלק מההזמנות נכשלו — נותרו למטה לתיקון:
+              <ul className="mt-1 list-inside list-disc">
+                {failures.map((failure) => (
+                  <li key={failure.email}>
+                    {failure.email || "(ללא דוא״ל)"} — {failure.message}
+                  </li>
+                ))}
+              </ul>
+            </Alert>
           )}
-          <div className="flex justify-start gap-2">
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "שולח…" : "שליחת הזמנה"}
+
+          <div className="max-h-[55vh] space-y-3 overflow-y-auto">
+            {rows.map((row, index) => (
+              <div
+                key={row.key}
+                className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-ink-muted">
+                    משתמש {index + 1}
+                  </span>
+                  {rows.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeRow(row.key)}
+                      className="rounded-md p-1 text-slate-400 hover:bg-slate-200 hover:text-rating-red"
+                      aria-label="הסרת משתמש"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor={`invite-name-${row.key}`}>שם מלא</Label>
+                    <Input
+                      id={`invite-name-${row.key}`}
+                      value={row.fullName}
+                      onChange={(event) =>
+                        updateRow(row.key, { fullName: event.target.value })
+                      }
+                      required
+                      autoFocus={index === 0}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`invite-email-${row.key}`}>דוא״ל</Label>
+                    <Input
+                      id={`invite-email-${row.key}`}
+                      type="email"
+                      value={row.email}
+                      onChange={(event) =>
+                        updateRow(row.key, { email: event.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor={`invite-role-${row.key}`}>תפקיד</Label>
+                    <select
+                      id={`invite-role-${row.key}`}
+                      value={row.role}
+                      onChange={(event) =>
+                        updateRow(row.key, { role: event.target.value as UserRole })
+                      }
+                      className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
+                    >
+                      {(Object.keys(roleLabels) as UserRole[]).map((value) => (
+                        <option key={value} value={value}>
+                          {roleLabels[value]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {row.role === "instructor" && (
+                    <ClassPicker
+                      id={`invite-class-${row.key}`}
+                      value={row.classId}
+                      onChange={(value) => updateRow(row.key, { classId: value })}
+                      required
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button type="button" variant="ghost" onClick={addRow}>
+            <Plus className="h-4 w-4" />
+            הוספת משתמש נוסף
+          </Button>
+
+          <div className="flex justify-start gap-2 border-t border-slate-100 pt-4">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "שולח…" : submitLabel}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleOpenChange(false)}
+            >
               ביטול
             </Button>
           </div>

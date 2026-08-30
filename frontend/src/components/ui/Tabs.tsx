@@ -2,7 +2,13 @@ import { forwardRef, type ComponentPropsWithoutRef, type ElementRef } from "reac
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils/cn";
 
-export const Tabs = TabsPrimitive.Root;
+export const Tabs = forwardRef<
+  ElementRef<typeof TabsPrimitive.Root>,
+  ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ dir = "rtl", ...props }, ref) => (
+  <TabsPrimitive.Root ref={ref} dir={dir} {...props} />
+));
+Tabs.displayName = "Tabs";
 
 export const TabsList = forwardRef<
   ElementRef<typeof TabsPrimitive.List>,

@@ -22,7 +22,7 @@ export const DialogContent = forwardRef<
       ref={ref}
       dir="rtl"
       className={cn(
-        "fixed start-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card bg-white p-6 shadow-xl focus:outline-none",
+        "fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card bg-white p-6 shadow-xl focus:outline-none",
         className
       )}
       {...props}
