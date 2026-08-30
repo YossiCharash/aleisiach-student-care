@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
@@ -90,6 +96,25 @@ export function TaxonomyArea(): ReactNode {
   );
 }
 
+function headerToggleProps(toggle: () => void): {
+  role: "button";
+  tabIndex: number;
+  onClick: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void;
+} {
+  return {
+    role: "button",
+    tabIndex: 0,
+    onClick: toggle,
+    onKeyDown: (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggle();
+      }
+    },
+  };
+}
+
 function Chip({ children }: { children: ReactNode }): ReactNode {
   return (
     <span className="whitespace-nowrap rounded-md bg-slate-100 px-2 py-0.5 text-xs text-ink-muted">
@@ -141,7 +166,7 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
     <div className="overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm">
       <div
         className="flex cursor-pointer items-center gap-3 bg-brand-50/50 px-4 py-3"
-        onClick={() => setOpen((value) => !value)}
+        {...headerToggleProps(() => setOpen((value) => !value))}
       >
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-xs font-semibold text-brand-700">
           {index}
@@ -243,7 +268,7 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
     <div className="rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
       <div
         className="flex cursor-pointer items-center gap-2 px-3 py-2"
-        onClick={() => setOpen((value) => !value)}
+        {...headerToggleProps(() => setOpen((value) => !value))}
       >
         <NodeName
           name={skill.name}

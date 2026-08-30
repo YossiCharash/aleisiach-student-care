@@ -33,13 +33,17 @@ interface InviteRow {
 }
 
 interface RowFailure {
+  key: string;
   email: string;
   message: string;
 }
 
+let rowIdCounter = 0;
+
 function newRow(): InviteRow {
+  rowIdCounter += 1;
   return {
-    key: crypto.randomUUID(),
+    key: `invite-row-${rowIdCounter}`,
     fullName: "",
     email: "",
     role: "instructor",
@@ -88,7 +92,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
           class_id: row.role === "instructor" ? row.classId || null : null,
         });
       } catch (error) {
-        collected.push({ email: row.email, message: errorMessage(error) });
+        collected.push({ key: row.key, email: row.email, message: errorMessage(error) });
       }
     }
     setIsSubmitting(false);
@@ -101,7 +105,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
     }
     setFailures(collected);
     setRows((current) =>
-      current.filter((row) => collected.some((failure) => failure.email === row.email))
+      current.filter((row) => collected.some((failure) => failure.key === row.key))
     );
   }
 
