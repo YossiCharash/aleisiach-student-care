@@ -99,7 +99,10 @@ function CollapseToggle({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
       className="text-ink-muted hover:text-ink"
       aria-label={open ? "כווץ" : "הרחב"}
       aria-expanded={open}
@@ -125,7 +128,10 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
 
   return (
     <div className="overflow-hidden rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-white shadow-sm">
-      <div className="flex items-center gap-3 bg-brand-50/50 px-4 py-3">
+      <div
+        className="flex cursor-pointer items-center gap-3 bg-brand-50/50 px-4 py-3"
+        onClick={() => setOpen((value) => !value)}
+      >
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-50 text-xs font-semibold text-brand-700">
           {index}
         </span>
@@ -224,7 +230,10 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
 
   return (
     <div className="rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div
+        className="flex cursor-pointer items-center gap-2 px-3 py-2"
+        onClick={() => setOpen((value) => !value)}
+      >
         <NodeName
           name={skill.name}
           className="text-sm font-medium text-ink"
@@ -396,7 +405,10 @@ function NodeName({
 
   if (editing) {
     return (
-      <div className="flex flex-1 items-center gap-2">
+      <div
+        className="flex flex-1 items-center gap-2"
+        onClick={(event) => event.stopPropagation()}
+      >
         <Input
           autoFocus
           value={draft}
@@ -430,7 +442,10 @@ function NodeName({
     <div className="flex flex-1 items-center gap-2">
       <span className={className}>{name}</span>
       {extra}
-      <div className="flex flex-1 items-center justify-end gap-1">
+      <div
+        className="flex flex-1 items-center justify-end gap-1"
+        onClick={(event) => event.stopPropagation()}
+      >
         {confirming ? (
           <div className="flex items-center gap-2">
             <span className="text-xs text-ink-muted">{confirmLabel}</span>
