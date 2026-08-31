@@ -17,10 +17,15 @@ _BODY = {
     "national_id": "123456789",
     "date_of_birth": "2012-05-01",
     "home_language": "עברית",
-    "medical_diagnoses": [{"name": "ADHD"}],
+    "idd_severity": "mild",
+    "additional_diagnoses": ["ADHD"],
     "emergency_contacts": [{"full_name": "Mom", "phone": "050"}],
     "legal_status": "guardian_appointed",
     "guardians": [{"full_name": "Guardian", "relationship": "aunt"}],
+    "has_allergies_or_dietary": True,
+    "allergies_dietary": ["בוטנים"],
+    "emergency_protocol": "פרוטוקול חירום",
+    "assistive_devices": ["glasses"],
 }
 
 
@@ -94,8 +99,11 @@ def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     assert body["guardians"] == []
     assert body["sensitive_visible"] is False
     assert body["national_id"] == "123456789"
-    assert body["medical_diagnoses"][0]["name"] == "ADHD"
+    assert body["additional_diagnoses"][0] == "ADHD"
+    assert body["idd_severity"] == "mild"
     assert body["emergency_contacts"][0]["full_name"] == "Mom"
+    assert body["has_allergies_or_dietary"] is True
+    assert body["emergency_protocol"] == "פרוטוקול חירום"
 
     forbidden = api.put(f"/students/{student_id}/details", headers=prof_headers, json=_BODY)
     assert forbidden.status_code == 403
@@ -133,11 +141,12 @@ def test_upsert_writes_audit_row_for_the_acting_user(
 
     api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
 
-    logs = list(db_session.scalars(select(AuditLog)))
+    logs = [
+        log for log in db_session.scalars(select(AuditLog)) if log.entity_type == "student_details"
+    ]
     assert len(logs) == 1
     assert logs[0].actor_id == boss_id
     assert logs[0].entity_id == student_id
-    assert logs[0].entity_type == "student_details"
 
 
 def test_details_require_authentication(

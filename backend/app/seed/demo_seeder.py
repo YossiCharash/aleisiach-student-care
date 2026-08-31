@@ -4,9 +4,12 @@ from datetime import UTC, date, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.app.models.client.assistive_device import AssistiveDevice
 from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
+from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
 from backend.app.models.client.meeting_rating import MeetingRating
@@ -143,12 +146,20 @@ class DemoSeeder:
                 date_of_birth=date(2015, 3, 12),
                 address="רחוב הדגמה 1, עיר הדגמה",
                 home_language="עברית",
-                medical_diagnoses=[{"name": "אבחנה לדוגמה", "notes": "הונפקה במכון הדגמה"}],
+                idd_severity=IddSeverity.MILD,
+                additional_diagnoses=["הפרעת קשב וריכוז"],
                 emergency_contacts=[
                     {"full_name": "הורה לדוגמה", "relationship": "אם", "phone": "050-0000000"}
                 ],
                 legal_status=LegalStatus.PARENTS_ARE_GUARDIANS,
                 guardians=[{"full_name": "הורה לדוגמה", "relationship": "אם"}],
+                has_allergies_or_dietary=True,
+                allergies_dietary=["אלרגיה לבוטנים"],
+                takes_regular_medication=True,
+                medications=["ריטלין"],
+                medication_independence=MedicationIndependence.NEEDS_REMINDER,
+                emergency_protocol='במקרה חירום ליצור קשר עם ההורים ולהזעיק מד"א.',
+                assistive_devices=[AssistiveDevice.GLASSES.value],
             )
         )
         self._session.flush()

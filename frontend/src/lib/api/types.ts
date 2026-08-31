@@ -68,6 +68,8 @@ export interface StudentResponse {
 export interface StudentCreateRequest {
   full_name: string;
   class_id: string;
+  national_id?: string | null;
+  date_of_birth?: string | null;
 }
 
 export interface SolutionTreeNode {
@@ -191,9 +193,24 @@ export interface ProgramResponse {
   areas_to_strengthen: ProgramArea[];
 }
 
-export interface Diagnosis {
+export type IddSeverity = "mild" | "moderate" | "complex";
+
+export type MedicationIndependence = "not_alone" | "needs_reminder" | "independent";
+
+export type AssistiveDevice =
+  "glasses" | "hearing_aid" | "orthotics" | "crutches" | "walker" | "other";
+
+export interface DiagnosisCatalogResponse {
+  id: string;
   name: string;
-  notes: string | null;
+  order: number;
+  is_active: boolean;
+}
+
+export interface DiagnosisCatalogUpdate {
+  name?: string;
+  order?: number;
+  is_active?: boolean;
 }
 
 export interface ContactInfo {
@@ -209,10 +226,19 @@ export interface StudentDetailsResponse {
   age: number | null;
   address: string | null;
   home_language: string | null;
-  medical_diagnoses: Diagnosis[];
+  idd_severity: IddSeverity | null;
+  additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];
+  has_allergies_or_dietary: boolean;
+  allergies_dietary: string[];
+  takes_regular_medication: boolean;
+  medications: string[];
+  medication_independence: MedicationIndependence | null;
+  emergency_protocol: string | null;
+  assistive_devices: AssistiveDevice[];
+  assistive_device_other: string | null;
   sensitive_visible: boolean;
 }
 
@@ -221,10 +247,19 @@ export interface StudentDetailsUpsertRequest {
   date_of_birth: string | null;
   address: string | null;
   home_language: string | null;
-  medical_diagnoses: Diagnosis[];
+  idd_severity: IddSeverity | null;
+  additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];
+  has_allergies_or_dietary: boolean;
+  allergies_dietary: string[];
+  takes_regular_medication: boolean;
+  medications: string[];
+  medication_independence: MedicationIndependence | null;
+  emergency_protocol: string | null;
+  assistive_devices: AssistiveDevice[];
+  assistive_device_other: string | null;
 }
 
 export interface SocialNoteResponse {

@@ -3,9 +3,11 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from backend.app.models.client.assistive_device import AssistiveDevice
+from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.legal_status import LegalStatus
+from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.schema.routes.contact_info import ContactInfo
-from backend.app.schema.routes.diagnosis import Diagnosis
 
 
 class StudentDetailsResponse(BaseModel):
@@ -15,8 +17,17 @@ class StudentDetailsResponse(BaseModel):
     age: int | None = None
     address: str | None = None
     home_language: str | None = None
-    medical_diagnoses: list[Diagnosis] = Field(default_factory=list)
+    idd_severity: IddSeverity | None = None
+    additional_diagnoses: list[str] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)
     legal_status: LegalStatus | None = None
     guardians: list[ContactInfo] = Field(default_factory=list)
+    has_allergies_or_dietary: bool = False
+    allergies_dietary: list[str] = Field(default_factory=list)
+    takes_regular_medication: bool = False
+    medications: list[str] = Field(default_factory=list)
+    medication_independence: MedicationIndependence | None = None
+    emergency_protocol: str | None = None
+    assistive_devices: list[AssistiveDevice] = Field(default_factory=list)
+    assistive_device_other: str | None = None
     sensitive_visible: bool = True

@@ -2,35 +2,76 @@ import type { ReactNode } from "react";
 import {
   useForm,
   useFieldArray,
+  useWatch,
   type Control,
   type UseFormRegister,
 } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
-import { detailsApi } from "@/lib/api/endpoints";
+import { detailsApi, diagnosesApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type {
+  AssistiveDevice,
+  IddSeverity,
   LegalStatus,
+  MedicationIndependence,
   StudentDetailsResponse,
   StudentDetailsUpsertRequest,
 } from "@/lib/api/types";
-import { legalStatusLabels } from "@/lib/utils/hebrew";
+import {
+  assistiveDeviceLabels,
+  IDD_DIAGNOSIS_NAME,
+  iddSeverityLabels,
+  legalStatusLabels,
+  medicationIndependenceLabels,
+} from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Textarea } from "@/components/ui/Textarea";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
+
+interface TextItem {
+  value: string;
+}
+
+interface ContactItem {
+  full_name: string;
+  relationship: string;
+  phone: string;
+}
 
 interface FormValues {
   national_id: string;
   date_of_birth: string;
   address: string;
   home_language: string;
+  idd_severity: IddSeverity | "";
+  additional_diagnoses: TextItem[];
+  emergency_contacts: ContactItem[];
   legal_status: LegalStatus | "";
-  medical_diagnoses: { name: string; notes: string }[];
-  emergency_contacts: { full_name: string; relationship: string; phone: string }[];
-  guardians: { full_name: string; relationship: string; phone: string }[];
+  guardians: ContactItem[];
+  has_allergies_or_dietary: boolean;
+  allergies_dietary: TextItem[];
+  takes_regular_medication: boolean;
+  medications: TextItem[];
+  medication_independence: MedicationIndependence | "";
+  emergency_protocol: string;
+  assistive_devices: AssistiveDevice[];
+  assistive_device_other: string;
+}
+
+const selectClass =
+  "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400";
+
+function toContactItems(contacts: StudentDetailsResponse["guardians"]): ContactItem[] {
+  return contacts.map((contact) => ({
+    full_name: contact.full_name,
+    relationship: contact.relationship ?? "",
+    phone: contact.phone ?? "",
+  }));
 }
 
 function toFormValues(details: StudentDetailsResponse): FormValues {
@@ -39,21 +80,19 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     date_of_birth: details.date_of_birth ?? "",
     address: details.address ?? "",
     home_language: details.home_language ?? "",
+    idd_severity: details.idd_severity ?? "",
+    additional_diagnoses: details.additional_diagnoses.map((value) => ({ value })),
+    emergency_contacts: toContactItems(details.emergency_contacts),
     legal_status: details.legal_status ?? "",
-    medical_diagnoses: details.medical_diagnoses.map((diagnosis) => ({
-      name: diagnosis.name,
-      notes: diagnosis.notes ?? "",
-    })),
-    emergency_contacts: details.emergency_contacts.map((contact) => ({
-      full_name: contact.full_name,
-      relationship: contact.relationship ?? "",
-      phone: contact.phone ?? "",
-    })),
-    guardians: details.guardians.map((contact) => ({
-      full_name: contact.full_name,
-      relationship: contact.relationship ?? "",
-      phone: contact.phone ?? "",
-    })),
+    guardians: toContactItems(details.guardians),
+    has_allergies_or_dietary: details.has_allergies_or_dietary,
+    allergies_dietary: details.allergies_dietary.map((value) => ({ value })),
+    takes_regular_medication: details.takes_regular_medication,
+    medications: details.medications.map((value) => ({ value })),
+    medication_independence: details.medication_independence ?? "",
+    emergency_protocol: details.emergency_protocol ?? "",
+    assistive_devices: details.assistive_devices,
+    assistive_device_other: details.assistive_device_other ?? "",
   };
 }
 
@@ -62,33 +101,40 @@ function emptyToNull(value: string): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+function items(list: TextItem[]): string[] {
+  return list.map((item) => item.value.trim()).filter((value) => value !== "");
+}
+
+function toContacts(list: ContactItem[]): StudentDetailsResponse["guardians"] {
+  return list
+    .filter((contact) => contact.full_name.trim() !== "")
+    .map((contact) => ({
+      full_name: contact.full_name.trim(),
+      relationship: emptyToNull(contact.relationship),
+      phone: emptyToNull(contact.phone),
+    }));
+}
+
 function toRequest(values: FormValues): StudentDetailsUpsertRequest {
   return {
     national_id: emptyToNull(values.national_id),
     date_of_birth: emptyToNull(values.date_of_birth),
     address: emptyToNull(values.address),
     home_language: emptyToNull(values.home_language),
+    idd_severity: values.idd_severity === "" ? null : values.idd_severity,
+    additional_diagnoses: items(values.additional_diagnoses),
+    emergency_contacts: toContacts(values.emergency_contacts),
     legal_status: values.legal_status === "" ? null : values.legal_status,
-    medical_diagnoses: values.medical_diagnoses
-      .filter((diagnosis) => diagnosis.name.trim() !== "")
-      .map((diagnosis) => ({
-        name: diagnosis.name.trim(),
-        notes: emptyToNull(diagnosis.notes),
-      })),
-    emergency_contacts: values.emergency_contacts
-      .filter((contact) => contact.full_name.trim() !== "")
-      .map((contact) => ({
-        full_name: contact.full_name.trim(),
-        relationship: emptyToNull(contact.relationship),
-        phone: emptyToNull(contact.phone),
-      })),
-    guardians: values.guardians
-      .filter((contact) => contact.full_name.trim() !== "")
-      .map((contact) => ({
-        full_name: contact.full_name.trim(),
-        relationship: emptyToNull(contact.relationship),
-        phone: emptyToNull(contact.phone),
-      })),
+    guardians: toContacts(values.guardians),
+    has_allergies_or_dietary: values.has_allergies_or_dietary,
+    allergies_dietary: items(values.allergies_dietary),
+    takes_regular_medication: values.takes_regular_medication,
+    medications: items(values.medications),
+    medication_independence:
+      values.medication_independence === "" ? null : values.medication_independence,
+    emergency_protocol: emptyToNull(values.emergency_protocol),
+    assistive_devices: values.assistive_devices,
+    assistive_device_other: emptyToNull(values.assistive_device_other),
   };
 }
 
@@ -109,6 +155,7 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.details(studentId), data);
       void queryClient.invalidateQueries({ queryKey: queryKeys.program(studentId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.diagnoses });
       onDone();
     },
   });
@@ -134,7 +181,7 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
             <Input id="date_of_birth" type="date" {...register("date_of_birth")} />
           </div>
           <div>
-            <Label htmlFor="home_language">שפת בית</Label>
+            <Label htmlFor="home_language">שפת דיבור עיקרית בבית</Label>
             <Input id="home_language" {...register("home_language")} maxLength={100} />
           </div>
           <div className="sm:col-span-2">
@@ -144,7 +191,7 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
         </CardContent>
       </Card>
 
-      <DiagnosisArray control={control} register={register} />
+      <DiagnosesCard control={control} register={register} />
 
       <ContactArray
         title="אנשי קשר לחירום"
@@ -152,6 +199,8 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
         control={control}
         register={register}
       />
+
+      <MedicalProfileCard control={control} register={register} />
 
       {details.sensitive_visible && (
         <Card>
@@ -164,7 +213,7 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
               <select
                 id="legal_status"
                 {...register("legal_status")}
-                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                className={selectClass}
               >
                 <option value="">— לא צוין —</option>
                 {(Object.keys(legalStatusLabels) as LegalStatus[]).map((status) => (
@@ -197,57 +246,208 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
   );
 }
 
-function DiagnosisArray({
+function DiagnosesCard({
   control,
   register,
 }: {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
 }): ReactNode {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "medical_diagnoses",
+  const catalog = useQuery({
+    queryKey: queryKeys.diagnoses,
+    queryFn: () => diagnosesApi.list(),
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>אבחנות רפואיות/תפקודיות</CardTitle>
+        <CardTitle>אבחונים</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {fields.map((field, index) => (
-          <div key={field.id} className="flex items-start gap-2">
-            <div className="grid flex-1 gap-2 sm:grid-cols-2">
-              <Input
-                placeholder="שם האבחנה"
-                {...register(`medical_diagnoses.${index}.name`)}
-              />
-              <Input
-                placeholder="הערות"
-                {...register(`medical_diagnoses.${index}.notes`)}
-              />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => remove(index)}
-            >
-              <Trash2 className="h-4 w-4 text-rating-red" />
-            </Button>
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append({ name: "", notes: "" })}
-        >
-          <Plus className="h-4 w-4" />
-          הוספה
-        </Button>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="idd_severity">{IDD_DIAGNOSIS_NAME} — דרגה</Label>
+          <select
+            id="idd_severity"
+            {...register("idd_severity", { required: true })}
+            className={selectClass}
+          >
+            <option value="">— בחר/י דרגה —</option>
+            {(Object.keys(iddSeverityLabels) as IddSeverity[]).map((severity) => (
+              <option key={severity} value={severity}>
+                {iddSeverityLabels[severity]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <datalist id="diagnosis-options">
+          {(catalog.data ?? []).map((entry) => (
+            <option key={entry.id} value={entry.name} />
+          ))}
+        </datalist>
+        <StringArray
+          control={control}
+          register={register}
+          name="additional_diagnoses"
+          label="אבחנות נוספות"
+          placeholder="בחר/י מהרשימה או הקלד/י אבחנה חדשה"
+          datalistId="diagnosis-options"
+        />
       </CardContent>
     </Card>
+  );
+}
+
+function MedicalProfileCard({
+  control,
+  register,
+}: {
+  control: Control<FormValues>;
+  register: UseFormRegister<FormValues>;
+}): ReactNode {
+  const hasAllergies = useWatch({ control, name: "has_allergies_or_dietary" });
+  const takesMedication = useWatch({ control, name: "takes_regular_medication" });
+  const devices = useWatch({ control, name: "assistive_devices" });
+  const showOther = (devices ?? []).includes("other");
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>פרופיל רפואי ובטיחותי קריטי</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <label className="flex items-center gap-2 text-sm font-medium text-ink">
+          <input type="checkbox" {...register("has_allergies_or_dietary")} />
+          יש אלרגיות / מגבלות תזונה
+        </label>
+        {hasAllergies && (
+          <StringArray
+            control={control}
+            register={register}
+            name="allergies_dietary"
+            label="פירוט אלרגיות / מגבלות"
+            placeholder="תיאור"
+          />
+        )}
+
+        <label className="flex items-center gap-2 text-sm font-medium text-ink">
+          <input type="checkbox" {...register("takes_regular_medication")} />
+          נוטל/ת תרופות קבועות
+        </label>
+        {takesMedication && (
+          <div className="space-y-4">
+            <StringArray
+              control={control}
+              register={register}
+              name="medications"
+              label="תרופות"
+              placeholder="שם התרופה"
+            />
+            <div>
+              <Label htmlFor="medication_independence">מידת עצמאות בלקיחת תרופות</Label>
+              <select
+                id="medication_independence"
+                {...register("medication_independence")}
+                className={selectClass}
+              >
+                <option value="">— לא צוין —</option>
+                {(
+                  Object.keys(medicationIndependenceLabels) as MedicationIndependence[]
+                ).map((level) => (
+                  <option key={level} value={level}>
+                    {medicationIndependenceLabels[level]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <Label htmlFor="emergency_protocol">פרוטוקול חירום רפואי</Label>
+          <Textarea
+            id="emergency_protocol"
+            rows={3}
+            maxLength={5000}
+            {...register("emergency_protocol")}
+          />
+        </div>
+
+        <div>
+          <div className="mb-2 text-sm font-medium text-ink">אביזרי עזר פיזיים</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {(Object.keys(assistiveDeviceLabels) as AssistiveDevice[]).map((device) => (
+              <label key={device} className="flex items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  value={device}
+                  {...register("assistive_devices")}
+                />
+                {assistiveDeviceLabels[device]}
+              </label>
+            ))}
+          </div>
+          {showOther && (
+            <div className="mt-2">
+              <Label htmlFor="assistive_device_other">פירוט "אחר"</Label>
+              <Input
+                id="assistive_device_other"
+                maxLength={200}
+                {...register("assistive_device_other")}
+              />
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+type StringArrayName = "additional_diagnoses" | "allergies_dietary" | "medications";
+
+function StringArray({
+  control,
+  register,
+  name,
+  label,
+  placeholder,
+  datalistId,
+}: {
+  control: Control<FormValues>;
+  register: UseFormRegister<FormValues>;
+  name: StringArrayName;
+  label: string;
+  placeholder: string;
+  datalistId?: string;
+}): ReactNode {
+  const { fields, append, remove } = useFieldArray({ control, name });
+
+  return (
+    <div className="space-y-2">
+      <div className="text-sm font-medium text-ink">{label}</div>
+      {fields.map((field, index) => (
+        <div key={field.id} className="flex items-center gap-2">
+          <Input
+            className="flex-1"
+            placeholder={placeholder}
+            list={datalistId}
+            {...register(`${name}.${index}.value`)}
+          />
+          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+            <Trash2 className="h-4 w-4 text-rating-red" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => append({ value: "" })}
+      >
+        <Plus className="h-4 w-4" />
+        הוספה
+      </Button>
+    </div>
   );
 }
 

@@ -2,10 +2,12 @@ import uuid
 from datetime import UTC, datetime
 
 from backend.app.client.classes.class_repository import ClassRepository
+from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.student import Student
+from backend.app.models.client.student_details import StudentDetails
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
 from backend.app.schema.service.audit_entry import AuditEntry
@@ -14,6 +16,7 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 
 _ENTITY_TYPE = "student"
+_DETAILS_ENTITY_TYPE = "student_details"
 
 
 class StudentService:
@@ -21,11 +24,13 @@ class StudentService:
         self,
         student_repository: StudentRepository,
         class_repository: ClassRepository,
+        details_repository: StudentDetailsRepository,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
     ) -> None:
         self._students = student_repository
         self._classes = class_repository
+        self._details = details_repository
         self._guard = access_guard
         self._audit = audit_logger
 
@@ -43,7 +48,38 @@ class StudentService:
                 changes=["full_name", "class_id"],
             )
         )
+        self._create_initial_details(student.id, request, actor_id)
         return StudentResponse.model_validate(student)
+
+    def _create_initial_details(
+        self, student_id: uuid.UUID, request: StudentCreateRequest, actor_id: uuid.UUID
+    ) -> None:
+        if request.national_id is None and request.date_of_birth is None:
+            return
+        details, _ = self._details.get_or_create(student_id)
+        changes = self._apply_initial_details(details, request)
+        self._details.flush()
+        self._audit.record(
+            AuditEntry(
+                actor_id=actor_id,
+                action=AuditAction.CREATE,
+                entity_type=_DETAILS_ENTITY_TYPE,
+                entity_id=student_id,
+                changes=changes,
+            )
+        )
+
+    def _apply_initial_details(
+        self, details: StudentDetails, request: StudentCreateRequest
+    ) -> list[str]:
+        changes: list[str] = []
+        if request.national_id is not None:
+            details.national_id = request.national_id
+            changes.append("national_id")
+        if request.date_of_birth is not None:
+            details.date_of_birth = request.date_of_birth
+            changes.append("date_of_birth")
+        return changes
 
     def list_active(self, scope: StudentAccessScope) -> list[StudentResponse]:
         students = self._students_in_scope(scope)

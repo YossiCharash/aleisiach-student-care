@@ -1,6 +1,8 @@
 import { apiClient, buildPdfUrl } from "@/lib/api/client";
 import type {
   ClassResponse,
+  DiagnosisCatalogResponse,
+  DiagnosisCatalogUpdate,
   InvitationCommand,
   LabelResponse,
   LabelTreeNode,
@@ -103,6 +105,20 @@ export const detailsApi = {
     apiClient.put<StudentDetailsResponse>(`/students/${studentId}/details`, body),
   pdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/details/pdf`),
+};
+
+export const diagnosesApi = {
+  list: (includeInactive = false): Promise<DiagnosisCatalogResponse[]> =>
+    apiClient.get<DiagnosisCatalogResponse[]>(
+      `/diagnoses?include_inactive=${includeInactive}`
+    ),
+  create: (name: string): Promise<DiagnosisCatalogResponse> =>
+    apiClient.post<DiagnosisCatalogResponse>("/diagnoses", { name }),
+  update: (
+    diagnosisId: string,
+    body: DiagnosisCatalogUpdate
+  ): Promise<DiagnosisCatalogResponse> =>
+    apiClient.patch<DiagnosisCatalogResponse>(`/diagnoses/${diagnosisId}`, body),
 };
 
 export const socialNoteApi = {

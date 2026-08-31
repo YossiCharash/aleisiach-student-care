@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
+from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.security import CurrentUser, Manager
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
@@ -23,6 +24,7 @@ def get_student_service(
     return StudentService(
         StudentRepository(session),
         ClassRepository(session),
+        StudentDetailsRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )

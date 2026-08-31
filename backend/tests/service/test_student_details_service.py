@@ -6,21 +6,28 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
+from backend.app.client.students.diagnosis_catalog_repository import (
+    DiagnosisCatalogRepository,
+)
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.models.client.assistive_device import AssistiveDevice
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
+from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.legal_status import LegalStatus
+from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.models.client.student import Student
 from backend.app.schema.routes.contact_info import ContactInfo
-from backend.app.schema.routes.diagnosis import Diagnosis
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
 )
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.students.diagnosis_catalog_service import DiagnosisCatalogService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_details_service import StudentDetailsService
 from backend.app.utils.service.clock import Clock
@@ -45,10 +52,12 @@ def _setup(session: Session) -> tuple[StudentDetailsService, uuid.UUID]:
     student = Student(full_name="Dana", class_id=class_entity.id)
     session.add(student)
     session.flush()
+    audit_logger = AuditLogger(AuditLogRepository(session))
     service = StudentDetailsService(
         StudentDetailsRepository(session),
+        DiagnosisCatalogService(DiagnosisCatalogRepository(session), audit_logger),
         StudentAccessGuard(StudentRepository(session)),
-        AuditLogger(AuditLogRepository(session)),
+        audit_logger,
         _FixedClock(),
     )
     return service, student.id
@@ -60,7 +69,8 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
         national_id="123456789",
         date_of_birth=date(2012, 5, 1),
         home_language="עברית",
-        medical_diagnoses=[Diagnosis(name="ADHD", notes="mild")],
+        idd_severity=IddSeverity.MODERATE,
+        additional_diagnoses=["ADHD"],
         emergency_contacts=[ContactInfo(full_name="Mom", phone="050")],
         legal_status=LegalStatus.GUARDIAN_APPOINTED,
         guardians=[ContactInfo(full_name="Guardian", relationship="aunt")],
@@ -70,12 +80,13 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
 
     assert saved.national_id == "123456789"
     assert saved.age == 14
+    assert saved.idd_severity == IddSeverity.MODERATE
     assert saved.legal_status == LegalStatus.GUARDIAN_APPOINTED
     assert saved.guardians[0].full_name == "Guardian"
 
     fetched = service.get(student_id, _ALL, include_sensitive=True)
     assert fetched.national_id == "123456789"
-    assert fetched.medical_diagnoses[0].name == "ADHD"
+    assert fetched.additional_diagnoses == ["ADHD"]
     assert fetched.emergency_contacts[0].full_name == "Mom"
 
 
@@ -168,3 +179,71 @@ def test_get_for_out_of_scope_student_is_hidden(db_session: Session) -> None:
 
     with pytest.raises(NotFoundError):
         service.get(student_id, foreign, include_sensitive=True)
+
+
+def test_new_diagnosis_is_added_to_catalog(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(additional_diagnoses=["אבחנה חדשה", "אבחנה חדשה"]),
+        _ALL,
+        _ACTOR,
+    )
+
+    catalog = list(db_session.scalars(select(DiagnosisCatalog)))
+    assert [entry.name for entry in catalog] == ["אבחנה חדשה"]
+
+
+def test_medical_profile_is_normalized_when_toggles_off(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(
+            has_allergies_or_dietary=False,
+            allergies_dietary=["ignored"],
+            takes_regular_medication=False,
+            medications=["ignored"],
+            medication_independence=MedicationIndependence.INDEPENDENT,
+        ),
+        _ALL,
+        _ACTOR,
+    )
+
+    assert saved.allergies_dietary == []
+    assert saved.medications == []
+    assert saved.medication_independence is None
+
+
+def test_assistive_device_other_cleared_when_other_not_selected(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(
+            assistive_devices=[AssistiveDevice.GLASSES],
+            assistive_device_other="ignored",
+        ),
+        _ALL,
+        _ACTOR,
+    )
+
+    assert saved.assistive_devices == [AssistiveDevice.GLASSES]
+    assert saved.assistive_device_other is None
+
+
+def test_assistive_device_other_kept_when_other_selected(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(
+            assistive_devices=[AssistiveDevice.OTHER],
+            assistive_device_other="מכשיר מיוחד",
+        ),
+        _ALL,
+        _ACTOR,
+    )
+
+    assert saved.assistive_device_other == "מכשיר מיוחד"

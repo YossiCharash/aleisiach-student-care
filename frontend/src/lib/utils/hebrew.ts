@@ -1,4 +1,12 @@
-import type { LegalStatus, MeetingRating, UserRole, UserStatus } from "@/lib/api/types";
+import type {
+  AssistiveDevice,
+  IddSeverity,
+  LegalStatus,
+  MedicationIndependence,
+  MeetingRating,
+  UserRole,
+  UserStatus,
+} from "@/lib/api/types";
 
 export const roleLabels: Record<UserRole, string> = {
   manager: "מנהל/ת",
@@ -22,6 +30,29 @@ export const legalStatusLabels: Record<LegalStatus, string> = {
   guardian_appointed: "מונה אפוטרופוס",
   parents_are_guardians: "ההורים הם האפוטרופוסים",
 };
+
+export const iddSeverityLabels: Record<IddSeverity, string> = {
+  mild: "קלה",
+  moderate: "בינונית",
+  complex: "מורכבת",
+};
+
+export const medicationIndependenceLabels: Record<MedicationIndependence, string> = {
+  not_alone: "אינו נוטל לבד",
+  needs_reminder: "זקוק לתזכורת והשגחה",
+  independent: "עצמאי",
+};
+
+export const assistiveDeviceLabels: Record<AssistiveDevice, string> = {
+  glasses: "משקפיים",
+  hearing_aid: "מכשיר שמיעה",
+  orthotics: "מדרסים",
+  crutches: "קביים",
+  walker: "הליכון",
+  other: "אחר",
+};
+
+export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
 
 const monthNames = [
   "ינואר",
