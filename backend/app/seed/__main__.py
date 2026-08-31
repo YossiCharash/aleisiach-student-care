@@ -11,6 +11,8 @@ from backend.app.utils.service.password_hasher import PasswordHasher
 
 def main() -> None:
     settings = Settings()
+    if settings.app.environment == "production":
+        raise SystemExit("סירוב לזרוע נתוני דמו בסביבת פרודקשן.")
     database = Database(settings.database)
     generator = database.session()
     session = next(generator)

@@ -17,7 +17,7 @@ def test_change_password_updates_login_credentials(
 
     response = api.post(
         "/auth/password/change",
-        json={"current_password": "password123", "new_password": "a-fresh-password"},
+        json={"current_password": "password123", "new_password": "a-fresh-pass1"},
         headers=headers,
     )
     assert response.status_code == 204
@@ -28,7 +28,7 @@ def test_change_password_updates_login_credentials(
     )
     assert (
         api.post(
-            "/auth/login", json={"username": "teacher", "password": "a-fresh-password"}
+            "/auth/login", json={"username": "teacher", "password": "a-fresh-pass1"}
         ).status_code
         == 200
     )
@@ -42,7 +42,7 @@ def test_wrong_current_password_is_rejected(
 
     response = api.post(
         "/auth/password/change",
-        json={"current_password": "wrong-one", "new_password": "a-fresh-password"},
+        json={"current_password": "wrong-one", "new_password": "a-fresh-pass1"},
         headers=headers,
     )
     assert response.status_code == 400
@@ -66,6 +66,6 @@ def test_short_new_password_is_rejected(
 def test_change_password_requires_authentication(api: TestClient) -> None:
     response = api.post(
         "/auth/password/change",
-        json={"current_password": "password123", "new_password": "a-fresh-password"},
+        json={"current_password": "password123", "new_password": "a-fresh-pass1"},
     )
     assert response.status_code == 401

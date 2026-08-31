@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Callable, Iterator
+from datetime import timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,6 +10,8 @@ from sqlalchemy.pool import StaticPool
 
 from backend.app.client.database.provider import get_session
 from backend.app.client.pdf.pdf_renderer import PdfRenderer
+from backend.app.client.ratelimit.provider import get_rate_limiter
+from backend.app.client.ratelimit.rate_limiter import RateLimiter
 from backend.app.main import create_app
 from backend.app.models.base import Base
 from backend.app.models.client.class_entity import ClassEntity
@@ -57,6 +60,7 @@ def api(db_session: Session) -> Iterator[TestClient]:
 
     app.dependency_overrides[get_session] = override_session
     app.dependency_overrides[get_pdf_renderer] = lambda: _StubPdfRenderer()
+    app.dependency_overrides[get_rate_limiter] = lambda: _NoOpRateLimiter()
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
@@ -65,6 +69,11 @@ def api(db_session: Session) -> Iterator[TestClient]:
 class _StubPdfRenderer(PdfRenderer):
     def render(self, html: str) -> bytes:
         return b"%PDF-1.4 stub"
+
+
+class _NoOpRateLimiter(RateLimiter):
+    def check(self, key: str, limit: int, window: timedelta) -> None:
+        return None
 
 
 @pytest.fixture

@@ -31,6 +31,7 @@ from backend.app.service.auth.password_reset_service import PasswordResetService
 from backend.app.service.auth.session_service import SessionService
 from backend.app.service.auth.token_consumer import TokenConsumer
 from backend.app.service.auth.token_issuer import TokenIssuer
+from backend.app.utils.routes.rate_limit import rate_limited
 
 SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
@@ -96,7 +97,11 @@ SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    dependencies=[Depends(rate_limited("login"))],
+)
 def login(
     request: LoginRequest, auth: AuthenticationDep, sessions: SessionServiceDep
 ) -> LoginResponse:
@@ -118,7 +123,11 @@ def create_invitation(
     return service.invite(request, manager.id)
 
 
-@router.post("/invitations/accept", response_model=UserResponse)
+@router.post(
+    "/invitations/accept",
+    response_model=UserResponse,
+    dependencies=[Depends(rate_limited("invitation_accept"))],
+)
 def accept_invitation(request: InvitationAcceptRequest, service: InvitationDep) -> UserResponse:
     return service.accept(request.token, request.username, request.password)
 
@@ -130,11 +139,19 @@ def change_password(
     service.change(user.id, request.current_password, request.new_password)
 
 
-@router.post("/password-reset/request", status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/password-reset/request",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(rate_limited("password_reset_request"))],
+)
 def request_password_reset(request: PasswordResetRequest, service: PasswordResetDep) -> None:
     service.request(request.email)
 
 
-@router.post("/password-reset/confirm", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/password-reset/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(rate_limited("password_reset_confirm"))],
+)
 def confirm_password_reset(request: PasswordResetConfirmRequest, service: PasswordResetDep) -> None:
     service.reset(request.token, request.new_password)
