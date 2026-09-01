@@ -6,16 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  Pencil,
-  Plus,
-  RotateCcw,
-  X,
-} from "lucide-react";
+import { Check, ChevronDown, Eye, EyeOff, Pencil, RotateCcw, X } from "lucide-react";
 import { taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, SkillTreeNode, SubLabelTreeNode } from "@/lib/api/types";
@@ -23,7 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
-import { SettingsIconButton } from "@/pages/settings/SettingsList";
+import { AddSettingInput, SettingsIconButton } from "@/pages/settings/SettingsList";
 
 const ShowInactiveContext = createContext(false);
 
@@ -43,6 +34,7 @@ function useTreeMutation<TArgs>(
 export function TaxonomyArea(): ReactNode {
   const query = useQuery({ queryKey: queryKeys.taxonomyTree, queryFn: taxonomyApi.tree });
   const [showInactive, setShowInactive] = useState(false);
+  const createLabel = useTreeMutation((name: string) => taxonomyApi.createLabel(name));
 
   return (
     <ShowInactiveContext.Provider value={showInactive}>
@@ -65,10 +57,10 @@ export function TaxonomyArea(): ReactNode {
           </Button>
         </div>
 
-        <AddInline
+        <AddSettingInput
           placeholder="שם תווית חדשה"
           buttonLabel="הוספת תווית"
-          onSubmit={(name) => taxonomyApi.createLabel(name)}
+          onSubmit={createLabel}
         />
 
         {query.isLoading && <LoadingState />}
@@ -157,6 +149,9 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateLabel(label.id, { is_active: false })
   );
+  const createSubLabel = useTreeMutation((name: string) =>
+    taxonomyApi.createSubLabel(label.id, name)
+  );
 
   const skillCount = label.sub_labels.reduce(
     (total, subLabel) => total + subLabel.skills.length,
@@ -188,10 +183,10 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
       </div>
       {open && (
         <div className="space-y-3 border-t border-slate-100 p-4">
-          <AddInline
+          <AddSettingInput
             placeholder="שם תת-תווית"
             buttonLabel="הוספת תת-תווית"
-            onSubmit={(name) => taxonomyApi.createSubLabel(label.id, name)}
+            onSubmit={createSubLabel}
           />
           {label.sub_labels.map((subLabel) => (
             <SubLabelNode key={subLabel.id} subLabel={subLabel} />
@@ -217,6 +212,9 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateSubLabel(subLabel.id, { is_active: false })
   );
+  const createSkill = useTreeMutation((name: string) =>
+    taxonomyApi.createSkill(subLabel.id, name)
+  );
 
   return (
     <div className="ms-4 rounded-lg border border-s-4 border-slate-200 border-s-brand-300 bg-white">
@@ -231,10 +229,10 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
         />
       </div>
       <div className="space-y-2 p-3">
-        <AddInline
+        <AddSettingInput
           placeholder="שם כישור"
           buttonLabel="הוספת כישור"
-          onSubmit={(name) => taxonomyApi.createSkill(subLabel.id, name)}
+          onSubmit={createSkill}
         />
         {subLabel.skills.length > 0 && (
           <div className="ms-4 space-y-2">
@@ -264,6 +262,9 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateSkill(skill.id, { is_active: false })
   );
+  const createSolution = useTreeMutation((text: string) =>
+    taxonomyApi.createSolution(skill.id, text)
+  );
 
   return (
     <div className="rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
@@ -283,10 +284,10 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
       </div>
       {open && (
         <div className="space-y-2 border-t border-slate-100 p-3">
-          <AddInline
+          <AddSettingInput
             placeholder="טקסט פתרון"
             buttonLabel="הוספת פתרון"
-            onSubmit={(text) => taxonomyApi.createSolution(skill.id, text)}
+            onSubmit={createSolution}
           />
           {skill.solutions.length > 0 && (
             <ul className="space-y-1">
@@ -524,74 +525,6 @@ function NodeName({
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-function AddInline({
-  placeholder,
-  buttonLabel,
-  onSubmit,
-}: {
-  placeholder: string;
-  buttonLabel: string;
-  onSubmit: (value: string) => Promise<unknown>;
-}): ReactNode {
-  const queryClient = useQueryClient();
-  const [adding, setAdding] = useState(false);
-  const [value, setValue] = useState("");
-
-  const mutation = useMutation({
-    mutationFn: () => onSubmit(value.trim()),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.taxonomyTree });
-      setValue("");
-      setAdding(false);
-    },
-  });
-
-  function cancel(): void {
-    setValue("");
-    setAdding(false);
-  }
-
-  if (!adding) {
-    return (
-      <Button type="button" size="sm" variant="outline" onClick={() => setAdding(true)}>
-        <Plus className="h-4 w-4" />
-        {buttonLabel}
-      </Button>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <Input
-        autoFocus
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => setValue(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && value.trim() !== "" && !mutation.isPending) {
-            mutation.mutate();
-          }
-          if (event.key === "Escape") {
-            cancel();
-          }
-        }}
-        className="h-9"
-      />
-      <Button
-        type="button"
-        size="sm"
-        disabled={value.trim() === "" || mutation.isPending}
-        onClick={() => mutation.mutate()}
-      >
-        {mutation.isPending ? "שומר…" : "שמירה"}
-      </Button>
-      <Button type="button" size="sm" variant="ghost" onClick={cancel}>
-        ביטול
-      </Button>
     </div>
   );
 }
