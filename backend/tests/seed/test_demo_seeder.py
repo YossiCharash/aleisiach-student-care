@@ -16,7 +16,6 @@ from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.contact_info import ContactInfo
-from backend.app.schema.routes.diagnosis import Diagnosis
 from backend.app.seed.demo_credentials import ALL_ACCOUNTS, DEMO_PASSWORD, INSTRUCTOR
 from backend.app.seed.demo_seeder import DemoSeeder
 from backend.app.utils.service.password_hasher import PasswordHasher
@@ -98,10 +97,10 @@ def test_seeded_details_deserialize_through_response_schemas(db_session: Session
 
     details = db_session.scalars(select(StudentDetails)).one()
     contacts = [ContactInfo(**item) for item in [*details.emergency_contacts, *details.guardians]]
-    diagnoses = [Diagnosis(**item) for item in details.medical_diagnoses]
 
     assert all(contact.full_name for contact in contacts)
-    assert all(diagnosis.name for diagnosis in diagnoses)
+    assert details.idd_severity is not None
+    assert all(isinstance(name, str) for name in details.additional_diagnoses)
 
 
 def test_run_is_idempotent(db_session: Session) -> None:

@@ -34,6 +34,71 @@ def test_manager_creates_and_reads_student(
     assert fetched.json()["full_name"] == "Dana"
 
 
+def test_manager_creates_student_with_basic_details(
+    api: TestClient, seed_class: SeedClass, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = seed_class("Aleph")
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    created = api.post(
+        "/students",
+        headers=headers,
+        json={
+            "full_name": "Dana",
+            "class_id": str(class_id),
+            "national_id": "123456789",
+            "date_of_birth": "2015-04-01",
+        },
+    )
+    assert created.status_code == 201
+    student_id = created.json()["id"]
+
+    details = api.get(f"/students/{student_id}/details", headers=headers).json()
+    assert details["national_id"] == "123456789"
+    assert details["date_of_birth"] == "2015-04-01"
+
+
+def test_create_without_basic_details_leaves_details_empty(
+    api: TestClient, seed_class: SeedClass, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = seed_class("Aleph")
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    created = api.post(
+        "/students", headers=headers, json={"full_name": "Dana", "class_id": str(class_id)}
+    )
+    student_id = created.json()["id"]
+
+    details = api.get(f"/students/{student_id}/details", headers=headers).json()
+    assert details["national_id"] is None
+    assert details["date_of_birth"] is None
+
+
+def test_create_with_basic_details_audits_student_details(
+    api: TestClient,
+    db_session: Session,
+    seed_class: SeedClass,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    api.post(
+        "/students",
+        headers=headers,
+        json={"full_name": "Dana", "class_id": str(class_id), "national_id": "123456789"},
+    )
+
+    logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
+    detail_logs = [log for log in logs if log.entity_type == "student_details"]
+    assert len(detail_logs) == 1
+    assert detail_logs[0].action == AuditAction.CREATE
+
+
 def test_create_requires_authentication(api: TestClient, seed_class: SeedClass) -> None:
     class_id = seed_class("Aleph")
     response = api.post("/students", json={"full_name": "X", "class_id": str(class_id)})

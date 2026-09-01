@@ -1,4 +1,10 @@
-import type { LegalStatus, MeetingRating, UserRole, UserStatus } from "@/lib/api/types";
+import type {
+  DetailOptionField,
+  LegalStatus,
+  MeetingRating,
+  UserRole,
+  UserStatus,
+} from "@/lib/api/types";
 
 export const roleLabels: Record<UserRole, string> = {
   manager: "מנהל/ת",
@@ -22,6 +28,16 @@ export const legalStatusLabels: Record<LegalStatus, string> = {
   guardian_appointed: "מונה אפוטרופוס",
   parents_are_guardians: "ההורים הם האפוטרופוסים",
 };
+
+export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
+  idd_severity: "דרגת מגבלה שכלית התפתחותית",
+  medication_independence: "מידת עצמאות בלקיחת תרופות",
+  expression_mode: "אופן הבעה עיקרי",
+  language_comprehension: "מידת הבנת השפה",
+  assistive_device: "אביזרי עזר פיזיים",
+};
+
+export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
 
 const monthNames = [
   "ינואר",

@@ -25,13 +25,23 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
   const [classId, setClassId] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
 
   const mutation = useMutation({
-    mutationFn: () => studentsApi.create({ full_name: fullName, class_id: classId }),
+    mutationFn: () =>
+      studentsApi.create({
+        full_name: fullName,
+        class_id: classId,
+        national_id: nationalId.trim() || null,
+        date_of_birth: dateOfBirth || null,
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.students });
       setFullName("");
       setClassId("");
+      setNationalId("");
+      setDateOfBirth("");
       onOpenChange(false);
     },
   });
@@ -66,6 +76,29 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
             onChange={setClassId}
             required
           />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="student-national-id">תעודת זהות</Label>
+              <Input
+                id="student-national-id"
+                value={nationalId}
+                onChange={(event) => setNationalId(event.target.value)}
+                inputMode="numeric"
+              />
+            </div>
+            <div>
+              <Label htmlFor="student-dob">תאריך לידה</Label>
+              <Input
+                id="student-dob"
+                type="date"
+                value={dateOfBirth}
+                onChange={(event) => setDateOfBirth(event.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-sm text-ink-muted">
+            שאר הפרטים יושלמו בהמשך בלשונית "פרטי תלמיד".
+          </p>
           <div className="flex justify-start gap-2">
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "שומר…" : "הוספה"}

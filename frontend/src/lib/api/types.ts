@@ -68,6 +68,8 @@ export interface StudentResponse {
 export interface StudentCreateRequest {
   full_name: string;
   class_id: string;
+  national_id?: string | null;
+  date_of_birth?: string | null;
 }
 
 export interface SolutionTreeNode {
@@ -191,9 +193,38 @@ export interface ProgramResponse {
   areas_to_strengthen: ProgramArea[];
 }
 
-export interface Diagnosis {
+export type DetailOptionField =
+  | "idd_severity"
+  | "medication_independence"
+  | "expression_mode"
+  | "language_comprehension"
+  | "assistive_device";
+
+export interface DetailOptionResponse {
+  id: string;
+  field: DetailOptionField;
   name: string;
-  notes: string | null;
+  order: number;
+  is_active: boolean;
+}
+
+export interface DetailOptionUpdate {
+  name?: string;
+  order?: number;
+  is_active?: boolean;
+}
+
+export interface DiagnosisCatalogResponse {
+  id: string;
+  name: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface DiagnosisCatalogUpdate {
+  name?: string;
+  order?: number;
+  is_active?: boolean;
 }
 
 export interface ContactInfo {
@@ -209,10 +240,27 @@ export interface StudentDetailsResponse {
   age: number | null;
   address: string | null;
   home_language: string | null;
-  medical_diagnoses: Diagnosis[];
+  idd_severity: string | null;
+  additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];
+  has_allergies_or_dietary: boolean;
+  allergies_dietary: string[];
+  takes_regular_medication: boolean;
+  medications: string[];
+  medication_independence: string | null;
+  emergency_protocol: string | null;
+  assistive_devices: string[];
+  assistive_device_other: string | null;
+  expression_mode: string | null;
+  language_comprehension: string | null;
+  current_or_last_framework: string | null;
+  prior_task_experience: string | null;
+  interests_strengths: string | null;
+  triggers: string | null;
+  distress_early_signs: string | null;
+  calming_methods: string | null;
   sensitive_visible: boolean;
 }
 
@@ -221,10 +269,27 @@ export interface StudentDetailsUpsertRequest {
   date_of_birth: string | null;
   address: string | null;
   home_language: string | null;
-  medical_diagnoses: Diagnosis[];
+  idd_severity: string | null;
+  additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];
+  has_allergies_or_dietary: boolean;
+  allergies_dietary: string[];
+  takes_regular_medication: boolean;
+  medications: string[];
+  medication_independence: string | null;
+  emergency_protocol: string | null;
+  assistive_devices: string[];
+  assistive_device_other: string | null;
+  expression_mode: string | null;
+  language_comprehension: string | null;
+  current_or_last_framework: string | null;
+  prior_task_experience: string | null;
+  interests_strengths: string | null;
+  triggers: string | null;
+  distress_early_signs: string | null;
+  calming_methods: string | null;
 }
 
 export interface SocialNoteResponse {

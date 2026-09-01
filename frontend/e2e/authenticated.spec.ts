@@ -19,13 +19,15 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("tab", { name: "פרטי תלמיד" })).toBeVisible();
   });
 
-  test("reaches settings with users, classes and taxonomy areas", async ({ page }) => {
+  test("reaches settings with users, classes and skills areas", async ({ page }) => {
     await login(page, "mor");
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "הגדרות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "משתמשים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "כיתות" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "טקסונומיה" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "כישורים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "אבחונים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "עריכת פרטי תלמיד" })).toBeVisible();
 
     await page.getByRole("tab", { name: "כיתות" }).click();
     await expect(page.getByText("כיתה א׳")).toBeVisible();

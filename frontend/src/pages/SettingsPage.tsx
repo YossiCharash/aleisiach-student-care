@@ -4,8 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { UsersArea } from "@/pages/settings/UsersArea";
 import { ClassesArea } from "@/pages/settings/ClassesArea";
 import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
+import { DiagnosesArea } from "@/pages/settings/DiagnosesArea";
+import { DetailOptionsArea } from "@/pages/settings/DetailOptionsArea";
 
-const tabs = ["users", "classes", "taxonomy"] as const;
+const tabs = ["users", "classes", "taxonomy", "diagnoses", "detail-options"] as const;
 type SettingsTab = (typeof tabs)[number];
 
 function isSettingsTab(value: string | null): value is SettingsTab {
@@ -35,7 +37,9 @@ export function SettingsPage(): ReactNode {
         <TabsList>
           <TabsTrigger value="users">משתמשים</TabsTrigger>
           <TabsTrigger value="classes">כיתות</TabsTrigger>
-          <TabsTrigger value="taxonomy">טקסונומיה</TabsTrigger>
+          <TabsTrigger value="taxonomy">כישורים</TabsTrigger>
+          <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
+          <TabsTrigger value="detail-options">עריכת פרטי תלמיד</TabsTrigger>
         </TabsList>
         <TabsContent value="users">
           <UsersArea />
@@ -45,6 +49,12 @@ export function SettingsPage(): ReactNode {
         </TabsContent>
         <TabsContent value="taxonomy">
           <TaxonomyArea />
+        </TabsContent>
+        <TabsContent value="diagnoses">
+          <DiagnosesArea />
+        </TabsContent>
+        <TabsContent value="detail-options">
+          <DetailOptionsArea />
         </TabsContent>
       </Tabs>
     </div>

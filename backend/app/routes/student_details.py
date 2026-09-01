@@ -6,6 +6,10 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
+from backend.app.client.students.detail_option_repository import DetailOptionRepository
+from backend.app.client.students.diagnosis_catalog_repository import (
+    DiagnosisCatalogRepository,
+)
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.pdf import RendererDep
@@ -15,6 +19,7 @@ from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
 )
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.students.diagnosis_catalog_service import DiagnosisCatalogService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_details_document import StudentDetailsDocument
@@ -25,10 +30,13 @@ from backend.app.utils.service.clock import Clock
 def get_student_details_service(
     session: Annotated[Session, Depends(get_session)],
 ) -> StudentDetailsService:
+    audit_logger = AuditLogger(AuditLogRepository(session))
     return StudentDetailsService(
         StudentDetailsRepository(session),
+        DiagnosisCatalogService(DiagnosisCatalogRepository(session), audit_logger),
+        DetailOptionRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        AuditLogger(AuditLogRepository(session)),
+        audit_logger,
         Clock(),
     )
 

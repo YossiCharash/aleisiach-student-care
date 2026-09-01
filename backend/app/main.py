@@ -6,6 +6,8 @@ from backend.app.configuration.settings import Settings
 from backend.app.errors.routes.error_handlers import register_error_handlers
 from backend.app.routes.auth import router as auth_router
 from backend.app.routes.classes import router as classes_router
+from backend.app.routes.detail_options import router as detail_options_router
+from backend.app.routes.diagnoses import router as diagnoses_router
 from backend.app.routes.extra_section_types import router as extra_section_types_router
 from backend.app.routes.health import router as health_router
 from backend.app.routes.meetings import router as meetings_router
@@ -46,6 +48,8 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(students_router)
     app.include_router(classes_router)
+    app.include_router(diagnoses_router)
+    app.include_router(detail_options_router)
     app.include_router(taxonomy_router)
     app.include_router(meetings_router)
     app.include_router(program_router)
