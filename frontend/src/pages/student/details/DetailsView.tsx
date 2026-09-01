@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
 import type { ContactInfo, StudentDetailsResponse } from "@/lib/api/types";
 import {
-  assistiveDeviceLabels,
   formatDate,
   IDD_DIAGNOSIS_NAME,
-  iddSeverityLabels,
   legalStatusLabels,
-  medicationIndependenceLabels,
+  OTHER_DEVICE_NAME,
 } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
@@ -43,7 +41,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           <div className="rounded-lg border border-slate-100 px-3 py-2">
             <div className="font-medium text-ink">{IDD_DIAGNOSIS_NAME}</div>
             <div className="mt-0.5 text-sm text-ink-muted">
-              דרגה: {details.idd_severity ? iddSeverityLabels[details.idd_severity] : "—"}
+              דרגה: {details.idd_severity || "—"}
             </div>
           </div>
           {details.additional_diagnoses.length > 0 && (
@@ -71,6 +69,52 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
       </Card>
 
       <MedicalProfileCard details={details} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>ערוץ תקשורת מועדף</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div>
+            <span className="text-ink-muted">אופן הבעה עיקרי: </span>
+            <span className="font-medium text-ink">{details.expression_mode || "—"}</span>
+          </div>
+          <div>
+            <span className="text-ink-muted">מידת הבנת השפה: </span>
+            <span className="font-medium text-ink">
+              {details.language_comprehension || "—"}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>רקע חינוכי ותעסוקתי קודם</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <TextBlock
+            label="מסגרת נוכחית או אחרונה"
+            value={details.current_or_last_framework}
+          />
+          <TextBlock
+            label="ניסיון קודם במטלות / עבודות"
+            value={details.prior_task_experience}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>תעודת זהות רגשית</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <TextBlock label="תחומי עניין וחוזקות" value={details.interests_strengths} />
+          <TextBlock label="גורמים מציפים / טריגרים" value={details.triggers} />
+          <TextBlock label="סימנים מקדימים למצוקה" value={details.distress_early_signs} />
+          <TextBlock label="דרכי הרגעה מומלצות" value={details.calming_methods} />
+        </CardContent>
+      </Card>
 
       {details.sensitive_visible ? (
         <Card>
@@ -106,9 +150,9 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
 
 function MedicalProfileCard({ details }: { details: StudentDetailsResponse }): ReactNode {
   const devices = details.assistive_devices.map((device) =>
-    device === "other" && details.assistive_device_other
+    device === OTHER_DEVICE_NAME && details.assistive_device_other
       ? `אחר: ${details.assistive_device_other}`
-      : assistiveDeviceLabels[device]
+      : device
   );
   return (
     <Card>
@@ -130,9 +174,7 @@ function MedicalProfileCard({ details }: { details: StudentDetailsResponse }): R
           <div>
             <span className="text-ink-muted">מידת עצמאות בלקיחת תרופות: </span>
             <span className="font-medium text-ink">
-              {details.medication_independence
-                ? medicationIndependenceLabels[details.medication_independence]
-                : "—"}
+              {details.medication_independence || "—"}
             </span>
           </div>
         )}
@@ -174,6 +216,15 @@ function ListBlock({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function TextBlock({ label, value }: { label: string; value: string | null }): ReactNode {
+  return (
+    <div>
+      <div className="mb-1 text-ink-muted">{label}</div>
+      <div className="whitespace-pre-wrap font-medium text-ink">{value || "—"}</div>
     </div>
   );
 }

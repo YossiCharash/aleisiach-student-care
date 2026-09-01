@@ -1,9 +1,6 @@
 from html import escape
 
-from backend.app.models.client.assistive_device import AssistiveDevice
-from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.legal_status import LegalStatus
-from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 
@@ -11,25 +8,8 @@ _LEGAL_STATUS_LABELS = {
     LegalStatus.GUARDIAN_APPOINTED: "מונה אפוטרופוס",
     LegalStatus.PARENTS_ARE_GUARDIANS: "הורים אפוטרופסים",
 }
-_IDD_SEVERITY_LABELS = {
-    IddSeverity.MILD: "קלה",
-    IddSeverity.MODERATE: "בינונית",
-    IddSeverity.COMPLEX: "מורכבת",
-}
-_MEDICATION_INDEPENDENCE_LABELS = {
-    MedicationIndependence.NOT_ALONE: "אינו נוטל לבד",
-    MedicationIndependence.NEEDS_REMINDER: "זקוק לתזכורת והשגחה",
-    MedicationIndependence.INDEPENDENT: "עצמאי",
-}
-_ASSISTIVE_DEVICE_LABELS = {
-    AssistiveDevice.GLASSES: "משקפיים",
-    AssistiveDevice.HEARING_AID: "מכשיר שמיעה",
-    AssistiveDevice.ORTHOTICS: "מדרסים",
-    AssistiveDevice.CRUTCHES: "קביים",
-    AssistiveDevice.WALKER: "הליכון",
-    AssistiveDevice.OTHER: "אחר",
-}
 _IDD_NAME = "מגבלה שכלית התפתחותית"
+_OTHER_DEVICE = "אחר"
 
 _CSS = (
     "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
@@ -49,6 +29,9 @@ class StudentDetailsDocument:
         if details.sensitive_visible:
             sections.append(self._guardianship(details))
         sections.append(self._medical_profile(details))
+        sections.append(self._communication(details))
+        sections.append(self._background(details))
+        sections.append(self._emotional_id(details))
         body = "".join(sections)
         return (
             '<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8">'
@@ -68,9 +51,7 @@ class StudentDetailsDocument:
         return "<h2>זהות</h2>" + "".join(fields)
 
     def _diagnoses(self, details: StudentDetailsResponse) -> str:
-        severity = (
-            _IDD_SEVERITY_LABELS[details.idd_severity] if details.idd_severity is not None else "—"
-        )
+        severity = details.idd_severity if details.idd_severity else "—"
         items = [f"<li>{escape(_IDD_NAME)} — דרגה: {escape(severity)}</li>"]
         items.extend(f"<li>{escape(name)}</li>" for name in details.additional_diagnoses)
         return f"<h2>אבחונים</h2><ul>{''.join(items)}</ul>"
@@ -83,8 +64,8 @@ class StudentDetailsDocument:
             details.medications if details.takes_regular_medication else []
         )
         independence = (
-            _MEDICATION_INDEPENDENCE_LABELS[details.medication_independence]
-            if details.takes_regular_medication and details.medication_independence is not None
+            details.medication_independence
+            if details.takes_regular_medication and details.medication_independence
             else "—"
         )
         devices = self._device_labels(details)
@@ -100,13 +81,36 @@ class StudentDetailsDocument:
     def _block(self, label: str, body: str) -> str:
         return f"<div class='field'><span class='label'>{escape(label)}:</span></div>{body}"
 
+    def _communication(self, details: StudentDetailsResponse) -> str:
+        return (
+            "<h2>ערוץ תקשורת מועדף</h2>"
+            + self._field("אופן הבעה עיקרי", details.expression_mode)
+            + self._field("מידת הבנת השפה", details.language_comprehension)
+        )
+
+    def _background(self, details: StudentDetailsResponse) -> str:
+        return (
+            "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
+            + self._field("מסגרת נוכחית או אחרונה", details.current_or_last_framework)
+            + self._field("ניסיון קודם במטלות / עבודות", details.prior_task_experience)
+        )
+
+    def _emotional_id(self, details: StudentDetailsResponse) -> str:
+        return (
+            "<h2>תעודת זהות רגשית</h2>"
+            + self._field("תחומי עניין וחוזקות", details.interests_strengths)
+            + self._field("גורמים מציפים / טריגרים", details.triggers)
+            + self._field("סימנים מקדימים למצוקה", details.distress_early_signs)
+            + self._field("דרכי הרגעה מומלצות", details.calming_methods)
+        )
+
     def _device_labels(self, details: StudentDetailsResponse) -> str:
         labels: list[str] = []
         for device in details.assistive_devices:
-            if device == AssistiveDevice.OTHER and details.assistive_device_other:
+            if device == _OTHER_DEVICE and details.assistive_device_other:
                 labels.append(f"אחר: {details.assistive_device_other}")
             else:
-                labels.append(_ASSISTIVE_DEVICE_LABELS[device])
+                labels.append(device)
         return self._list_or_dash(labels)
 
     def _list_or_dash(self, values: list[str]) -> str:

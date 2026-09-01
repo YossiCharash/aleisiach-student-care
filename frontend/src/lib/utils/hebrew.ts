@@ -1,8 +1,6 @@
 import type {
-  AssistiveDevice,
-  IddSeverity,
+  DetailOptionField,
   LegalStatus,
-  MedicationIndependence,
   MeetingRating,
   UserRole,
   UserStatus,
@@ -31,26 +29,15 @@ export const legalStatusLabels: Record<LegalStatus, string> = {
   parents_are_guardians: "ההורים הם האפוטרופוסים",
 };
 
-export const iddSeverityLabels: Record<IddSeverity, string> = {
-  mild: "קלה",
-  moderate: "בינונית",
-  complex: "מורכבת",
+export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
+  idd_severity: "דרגת מגבלה שכלית התפתחותית",
+  medication_independence: "מידת עצמאות בלקיחת תרופות",
+  expression_mode: "אופן הבעה עיקרי",
+  language_comprehension: "מידת הבנת השפה",
+  assistive_device: "אביזרי עזר פיזיים",
 };
 
-export const medicationIndependenceLabels: Record<MedicationIndependence, string> = {
-  not_alone: "אינו נוטל לבד",
-  needs_reminder: "זקוק לתזכורת והשגחה",
-  independent: "עצמאי",
-};
-
-export const assistiveDeviceLabels: Record<AssistiveDevice, string> = {
-  glasses: "משקפיים",
-  hearing_aid: "מכשיר שמיעה",
-  orthotics: "מדרסים",
-  crutches: "קביים",
-  walker: "הליכון",
-  other: "אחר",
-};
+export const OTHER_DEVICE_NAME = "אחר";
 
 export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
 

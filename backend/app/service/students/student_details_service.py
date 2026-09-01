@@ -1,7 +1,6 @@
 import uuid
 
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
-from backend.app.models.client.assistive_device import AssistiveDevice
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.student_details import StudentDetails
 from backend.app.schema.routes.contact_info import ContactInfo
@@ -18,6 +17,7 @@ from backend.app.utils.service.age_calculator import AgeCalculator
 from backend.app.utils.service.clock import Clock
 
 _ENTITY_TYPE = "student_details"
+_OTHER_DEVICE = "אחר"
 _TRACKED_FIELDS = (
     "national_id",
     "date_of_birth",
@@ -36,6 +36,14 @@ _TRACKED_FIELDS = (
     "emergency_protocol",
     "assistive_devices",
     "assistive_device_other",
+    "expression_mode",
+    "language_comprehension",
+    "current_or_last_framework",
+    "prior_task_experience",
+    "interests_strengths",
+    "triggers",
+    "distress_early_signs",
+    "calming_methods",
 )
 
 
@@ -105,6 +113,19 @@ class StudentDetailsService:
         details.legal_status = request.legal_status
         details.guardians = [item.model_dump() for item in request.guardians]
         self._apply_medical_profile(details, request)
+        self._apply_profile_sections(details, request)
+
+    def _apply_profile_sections(
+        self, details: StudentDetails, request: StudentDetailsUpsertRequest
+    ) -> None:
+        details.expression_mode = request.expression_mode
+        details.language_comprehension = request.language_comprehension
+        details.current_or_last_framework = request.current_or_last_framework
+        details.prior_task_experience = request.prior_task_experience
+        details.interests_strengths = request.interests_strengths
+        details.triggers = request.triggers
+        details.distress_early_signs = request.distress_early_signs
+        details.calming_methods = request.calming_methods
 
     def _apply_medical_profile(
         self, details: StudentDetails, request: StudentDetailsUpsertRequest
@@ -121,10 +142,10 @@ class StudentDetailsService:
             request.medication_independence if request.takes_regular_medication else None
         )
         details.emergency_protocol = request.emergency_protocol
-        devices = self._unique([device.value for device in request.assistive_devices])
+        devices = self._clean(request.assistive_devices)
         details.assistive_devices = devices
         details.assistive_device_other = (
-            request.assistive_device_other if AssistiveDevice.OTHER.value in devices else None
+            request.assistive_device_other if _OTHER_DEVICE in devices else None
         )
 
     def _clean(self, items: list[str]) -> list[str]:
@@ -178,7 +199,15 @@ class StudentDetailsService:
             medications=list(details.medications),
             medication_independence=details.medication_independence,
             emergency_protocol=details.emergency_protocol,
-            assistive_devices=[AssistiveDevice(value) for value in details.assistive_devices],
+            assistive_devices=list(details.assistive_devices),
             assistive_device_other=details.assistive_device_other,
+            expression_mode=details.expression_mode,
+            language_comprehension=details.language_comprehension,
+            current_or_last_framework=details.current_or_last_framework,
+            prior_task_experience=details.prior_task_experience,
+            interests_strengths=details.interests_strengths,
+            triggers=details.triggers,
+            distress_early_signs=details.distress_early_signs,
+            calming_methods=details.calming_methods,
             sensitive_visible=include_sensitive,
         )

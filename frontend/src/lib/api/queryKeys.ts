@@ -14,4 +14,5 @@ export const queryKeys = {
   users: ["users"] as const,
   classes: ["classes"] as const,
   diagnoses: ["diagnoses"] as const,
+  detailOptions: ["detail-options"] as const,
 };

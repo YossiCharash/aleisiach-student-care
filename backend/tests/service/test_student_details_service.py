@@ -12,14 +12,11 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.errors.service.not_found_error import NotFoundError
-from backend.app.models.client.assistive_device import AssistiveDevice
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
-from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.legal_status import LegalStatus
-from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.models.client.student import Student
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_upsert_request import (
@@ -69,18 +66,22 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
         national_id="123456789",
         date_of_birth=date(2012, 5, 1),
         home_language="עברית",
-        idd_severity=IddSeverity.MODERATE,
+        idd_severity="בינונית",
         additional_diagnoses=["ADHD"],
         emergency_contacts=[ContactInfo(full_name="Mom", phone="050")],
         legal_status=LegalStatus.GUARDIAN_APPOINTED,
         guardians=[ContactInfo(full_name="Guardian", relationship="aunt")],
+        expression_mode="ג'סטות ותנועות גוף",
+        interests_strengths="ציור",
     )
 
     saved = service.upsert(student_id, request, _ALL, _ACTOR)
 
     assert saved.national_id == "123456789"
     assert saved.age == 14
-    assert saved.idd_severity == IddSeverity.MODERATE
+    assert saved.idd_severity == "בינונית"
+    assert saved.expression_mode == "ג'סטות ותנועות גוף"
+    assert saved.interests_strengths == "ציור"
     assert saved.legal_status == LegalStatus.GUARDIAN_APPOINTED
     assert saved.guardians[0].full_name == "Guardian"
 
@@ -205,7 +206,7 @@ def test_medical_profile_is_normalized_when_toggles_off(db_session: Session) -> 
             allergies_dietary=["ignored"],
             takes_regular_medication=False,
             medications=["ignored"],
-            medication_independence=MedicationIndependence.INDEPENDENT,
+            medication_independence="עצמאי",
         ),
         _ALL,
         _ACTOR,
@@ -222,14 +223,14 @@ def test_assistive_device_other_cleared_when_other_not_selected(db_session: Sess
     saved = service.upsert(
         student_id,
         StudentDetailsUpsertRequest(
-            assistive_devices=[AssistiveDevice.GLASSES],
+            assistive_devices=["משקפיים"],
             assistive_device_other="ignored",
         ),
         _ALL,
         _ACTOR,
     )
 
-    assert saved.assistive_devices == [AssistiveDevice.GLASSES]
+    assert saved.assistive_devices == ["משקפיים"]
     assert saved.assistive_device_other is None
 
 
@@ -239,7 +240,7 @@ def test_assistive_device_other_kept_when_other_selected(db_session: Session) ->
     saved = service.upsert(
         student_id,
         StudentDetailsUpsertRequest(
-            assistive_devices=[AssistiveDevice.OTHER],
+            assistive_devices=["אחר"],
             assistive_device_other="מכשיר מיוחד",
         ),
         _ALL,

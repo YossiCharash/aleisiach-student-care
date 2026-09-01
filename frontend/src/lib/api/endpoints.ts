@@ -1,6 +1,9 @@
 import { apiClient, buildPdfUrl } from "@/lib/api/client";
 import type {
   ClassResponse,
+  DetailOptionField,
+  DetailOptionResponse,
+  DetailOptionUpdate,
   DiagnosisCatalogResponse,
   DiagnosisCatalogUpdate,
   InvitationCommand,
@@ -119,6 +122,17 @@ export const diagnosesApi = {
     body: DiagnosisCatalogUpdate
   ): Promise<DiagnosisCatalogResponse> =>
     apiClient.patch<DiagnosisCatalogResponse>(`/diagnoses/${diagnosisId}`, body),
+};
+
+export const detailOptionsApi = {
+  list: (includeInactive = false): Promise<DetailOptionResponse[]> =>
+    apiClient.get<DetailOptionResponse[]>(
+      `/detail-options?include_inactive=${includeInactive}`
+    ),
+  create: (field: DetailOptionField, name: string): Promise<DetailOptionResponse> =>
+    apiClient.post<DetailOptionResponse>("/detail-options", { field, name }),
+  update: (optionId: string, body: DetailOptionUpdate): Promise<DetailOptionResponse> =>
+    apiClient.patch<DetailOptionResponse>(`/detail-options/${optionId}`, body),
 };
 
 export const socialNoteApi = {

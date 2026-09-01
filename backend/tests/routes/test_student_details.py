@@ -26,6 +26,14 @@ _BODY = {
     "allergies_dietary": ["בוטנים"],
     "emergency_protocol": "פרוטוקול חירום",
     "assistive_devices": ["glasses"],
+    "expression_mode": "fluent_speech",
+    "language_comprehension": "complex_instructions",
+    "current_or_last_framework": "גן תקשורת",
+    "prior_task_experience": "עבודה במטבח",
+    "interests_strengths": "ציור",
+    "triggers": "רעש",
+    "distress_early_signs": "כיסוי אוזניים",
+    "calming_methods": "מוזיקה רגועה",
 }
 
 
@@ -104,6 +112,9 @@ def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     assert body["emergency_contacts"][0]["full_name"] == "Mom"
     assert body["has_allergies_or_dietary"] is True
     assert body["emergency_protocol"] == "פרוטוקול חירום"
+    assert body["expression_mode"] == "fluent_speech"
+    assert body["current_or_last_framework"] == "גן תקשורת"
+    assert body["interests_strengths"] == "ציור"
 
     forbidden = api.put(f"/students/{student_id}/details", headers=prof_headers, json=_BODY)
     assert forbidden.status_code == 403

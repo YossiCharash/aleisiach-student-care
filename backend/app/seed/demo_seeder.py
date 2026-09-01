@@ -4,12 +4,9 @@ from datetime import UTC, date, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.models.client.assistive_device import AssistiveDevice
 from backend.app.models.client.class_entity import ClassEntity
-from backend.app.models.client.idd_severity import IddSeverity
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
-from backend.app.models.client.medication_independence import MedicationIndependence
 from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
 from backend.app.models.client.meeting_rating import MeetingRating
@@ -146,7 +143,7 @@ class DemoSeeder:
                 date_of_birth=date(2015, 3, 12),
                 address="רחוב הדגמה 1, עיר הדגמה",
                 home_language="עברית",
-                idd_severity=IddSeverity.MILD,
+                idd_severity="קלה",
                 additional_diagnoses=["הפרעת קשב וריכוז"],
                 emergency_contacts=[
                     {"full_name": "הורה לדוגמה", "relationship": "אם", "phone": "050-0000000"}
@@ -157,9 +154,17 @@ class DemoSeeder:
                 allergies_dietary=["אלרגיה לבוטנים"],
                 takes_regular_medication=True,
                 medications=["ריטלין"],
-                medication_independence=MedicationIndependence.NEEDS_REMINDER,
+                medication_independence="זקוק לתזכורת והשגחה",
                 emergency_protocol='במקרה חירום ליצור קשר עם ההורים ולהזעיק מד"א.',
-                assistive_devices=[AssistiveDevice.GLASSES.value],
+                assistive_devices=["משקפיים"],
+                expression_mode="דיבור מילולי שוטף",
+                language_comprehension="מבין הוראות מורכבות",
+                current_or_last_framework="גן תקשורת עירוני",
+                prior_task_experience="סייעה בחלוקת חומרים בכיתה.",
+                interests_strengths="אוהבת ציור ומוזיקה; חזקה בזיכרון חזותי.",
+                triggers="רעש פתאומי חזק.",
+                distress_early_signs="כיסוי אוזניים והימנעות מקשר עין.",
+                calming_methods="מעבר לפינה שקטה והאזנה למוזיקה רגועה.",
             )
         )
         self._session.flush()
