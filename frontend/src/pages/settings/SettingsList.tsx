@@ -48,8 +48,14 @@ export function AddSettingInput({
   buttonLabel: string;
   onSubmit: (value: string) => Promise<unknown>;
 }): ReactNode {
+  const [adding, setAdding] = useState(false);
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function cancel(): void {
+    setValue("");
+    setAdding(false);
+  }
 
   async function submit(): Promise<void> {
     const trimmed = value.trim();
@@ -59,15 +65,25 @@ export function AddSettingInput({
     setBusy(true);
     try {
       await onSubmit(trimmed);
-      setValue("");
+      cancel();
     } finally {
       setBusy(false);
     }
   }
 
+  if (!adding) {
+    return (
+      <Button type="button" size="sm" variant="outline" onClick={() => setAdding(true)}>
+        <Plus className="h-4 w-4" />
+        {buttonLabel}
+      </Button>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Input
+        autoFocus
         value={value}
         placeholder={placeholder}
         onChange={(event) => setValue(event.target.value)}
@@ -75,18 +91,22 @@ export function AddSettingInput({
           if (event.key === "Enter") {
             void submit();
           }
+          if (event.key === "Escape") {
+            cancel();
+          }
         }}
         className="h-9 max-w-xs"
       />
       <Button
         type="button"
         size="sm"
-        variant="outline"
         disabled={value.trim() === "" || busy}
         onClick={() => void submit()}
       >
-        <Plus className="h-4 w-4" />
-        {buttonLabel}
+        {busy ? "שומר…" : "שמירה"}
+      </Button>
+      <Button type="button" size="sm" variant="ghost" onClick={cancel}>
+        ביטול
       </Button>
     </div>
   );
