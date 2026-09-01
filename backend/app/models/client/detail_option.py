@@ -13,7 +13,13 @@ class DetailOption(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     field: Mapped[DetailOptionField] = mapped_column(
-        Enum(DetailOptionField, native_enum=False, length=40), nullable=False
+        Enum(
+            DetailOptionField,
+            native_enum=False,
+            length=40,
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
+        nullable=False,
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     order: Mapped[int] = mapped_column("order", Integer, nullable=False, default=0)

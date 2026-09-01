@@ -2,7 +2,11 @@ import uuid
 from collections.abc import Callable
 
 from fastapi.testclient import TestClient
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
+from backend.app.client.students.detail_option_repository import DetailOptionRepository
+from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 
@@ -134,3 +138,24 @@ def test_readding_deactivated_option_reactivates_it(
 
 def test_detail_options_require_authentication(api: TestClient) -> None:
     assert api.get("/detail-options").status_code == 401
+
+
+def test_seeded_lowercase_field_value_reads_back(db_session: Session) -> None:
+    db_session.execute(
+        text(
+            'INSERT INTO detail_options (id, field, name, "order", is_active) '
+            "VALUES (:id, :field, :name, :order, :is_active)"
+        ),
+        {
+            "id": uuid.uuid4().hex,
+            "field": DetailOptionField.ASSISTIVE_DEVICE.value,
+            "name": "משקפיים",
+            "order": 0,
+            "is_active": True,
+        },
+    )
+    db_session.flush()
+
+    options = DetailOptionRepository(db_session).list(include_inactive=True)
+
+    assert [option.field for option in options] == [DetailOptionField.ASSISTIVE_DEVICE]
