@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+import { SettingsIconButton } from "@/pages/settings/SettingsList";
 
 const ShowInactiveContext = createContext(false);
 
@@ -458,10 +459,10 @@ function NodeName({
           }}
           className="h-9"
         />
-        <IconButton label="שמירה" onClick={() => void save()} disabled={busy}>
+        <SettingsIconButton label="שמירה" onClick={() => void save()} disabled={busy}>
           <Check className="h-4 w-4 text-accent-600" />
-        </IconButton>
-        <IconButton
+        </SettingsIconButton>
+        <SettingsIconButton
           label="ביטול"
           onClick={() => {
             setEditing(false);
@@ -469,7 +470,7 @@ function NodeName({
           }}
         >
           <X className="h-4 w-4" />
-        </IconButton>
+        </SettingsIconButton>
       </div>
     );
   }
@@ -514,41 +515,16 @@ function NodeName({
           </div>
         ) : (
           <>
-            <IconButton label="עריכה" onClick={() => setEditing(true)}>
+            <SettingsIconButton label="עריכה" onClick={() => setEditing(true)}>
               <Pencil className="h-4 w-4" />
-            </IconButton>
-            <IconButton label="השבתה" onClick={() => setConfirming(true)}>
+            </SettingsIconButton>
+            <SettingsIconButton label="השבתה" onClick={() => setConfirming(true)}>
               <X className="h-4 w-4 text-rating-red" />
-            </IconButton>
+            </SettingsIconButton>
           </>
         )}
       </div>
     </div>
-  );
-}
-
-function IconButton({
-  label,
-  onClick,
-  disabled,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  children: ReactNode;
-}): ReactNode {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded p-1 text-ink-muted hover:bg-slate-100 hover:text-ink disabled:opacity-50"
-    >
-      {children}
-    </button>
   );
 }
 
