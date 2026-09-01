@@ -30,7 +30,7 @@ export function ClassesArea(): ReactNode {
         (query.data.length === 0 ? (
           <EmptyState>אין כיתות עדיין.</EmptyState>
         ) : (
-          <Card>
+          <Card className="border-s-4 border-s-brand-300">
             <CardContent className="p-0">
               <ul>
                 {query.data.map((classItem) => (
@@ -67,7 +67,7 @@ function AddClass(): ReactNode {
             mutation.mutate();
           }
         }}
-        className="h-9"
+        className="h-9 max-w-xs"
       />
       <Button
         type="button"
@@ -107,7 +107,7 @@ function ClassRow({ classItem }: { classItem: ClassResponse }): ReactNode {
   }
 
   return (
-    <li className="flex items-center gap-2 border-b border-slate-50 px-4 py-3 last:border-0">
+    <li className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
       {editing ? (
         <>
           <Input
@@ -121,7 +121,7 @@ function ClassRow({ classItem }: { classItem: ClassResponse }): ReactNode {
                 setDraft(classItem.name);
               }
             }}
-            className="h-9"
+            className="h-9 max-w-xs"
           />
           <IconButton label="שמירה" onClick={save} disabled={mutation.isPending}>
             <Check className="h-4 w-4 text-accent-600" />
@@ -138,7 +138,8 @@ function ClassRow({ classItem }: { classItem: ClassResponse }): ReactNode {
         </>
       ) : (
         <>
-          <span className="flex-1 font-medium text-ink">{classItem.name}</span>
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" aria-hidden />
+          <span className="flex-1 text-sm font-medium text-ink">{classItem.name}</span>
           <IconButton label="עריכה" onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />
           </IconButton>

@@ -45,7 +45,7 @@ export function DiagnosesArea(): ReactNode {
         (query.data.length === 0 ? (
           <EmptyState>אין אבחנות בקטלוג עדיין.</EmptyState>
         ) : (
-          <Card>
+          <Card className="border-s-4 border-s-brand-300">
             <CardContent className="p-0">
               <ul>
                 {query.data.map((diagnosis) => (
@@ -89,7 +89,7 @@ function AddDiagnosis(): ReactNode {
             mutation.mutate();
           }
         }}
-        className="h-9"
+        className="h-9 max-w-xs"
       />
       <Button
         type="button"
@@ -134,7 +134,7 @@ function DiagnosisRow({ diagnosis }: { diagnosis: DiagnosisCatalogResponse }): R
   }
 
   return (
-    <li className="flex items-center gap-2 border-b border-slate-50 px-4 py-3 last:border-0">
+    <li className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
       {editing ? (
         <>
           <Input
@@ -148,7 +148,7 @@ function DiagnosisRow({ diagnosis }: { diagnosis: DiagnosisCatalogResponse }): R
                 setDraft(diagnosis.name);
               }
             }}
-            className="h-9"
+            className="h-9 max-w-xs"
           />
           <IconButton label="שמירה" onClick={save} disabled={rename.isPending}>
             <Check className="h-4 w-4 text-accent-600" />
@@ -166,7 +166,11 @@ function DiagnosisRow({ diagnosis }: { diagnosis: DiagnosisCatalogResponse }): R
       ) : (
         <>
           <span
-            className={`flex-1 font-medium ${diagnosis.is_active ? "text-ink" : "text-ink-muted line-through"}`}
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${diagnosis.is_active ? "bg-brand-400" : "bg-slate-300"}`}
+            aria-hidden
+          />
+          <span
+            className={`flex-1 text-sm font-medium ${diagnosis.is_active ? "text-ink" : "text-ink-muted line-through"}`}
           >
             {diagnosis.name}
           </span>

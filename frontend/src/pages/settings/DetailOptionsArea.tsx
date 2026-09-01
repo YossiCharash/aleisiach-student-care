@@ -75,7 +75,7 @@ function FieldGroup({
       {options.length === 0 ? (
         <EmptyState>אין אפשרויות.</EmptyState>
       ) : (
-        <Card>
+        <Card className="border-s-4 border-s-brand-300">
           <CardContent className="p-0">
             <ul>
               {options.map((option) => (
@@ -112,7 +112,7 @@ function AddOption({ field }: { field: DetailOptionField }): ReactNode {
             mutation.mutate();
           }
         }}
-        className="h-9"
+        className="h-9 max-w-xs"
       />
       <Button
         type="button"
@@ -157,7 +157,7 @@ function OptionRow({ option }: { option: DetailOptionResponse }): ReactNode {
   }
 
   return (
-    <li className="flex items-center gap-2 border-b border-slate-50 px-4 py-3 last:border-0">
+    <li className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
       {editing ? (
         <>
           <Input
@@ -171,7 +171,7 @@ function OptionRow({ option }: { option: DetailOptionResponse }): ReactNode {
                 setDraft(option.name);
               }
             }}
-            className="h-9"
+            className="h-9 max-w-xs"
           />
           <IconButton label="שמירה" onClick={save} disabled={rename.isPending}>
             <Check className="h-4 w-4 text-accent-600" />
@@ -189,7 +189,11 @@ function OptionRow({ option }: { option: DetailOptionResponse }): ReactNode {
       ) : (
         <>
           <span
-            className={`flex-1 font-medium ${option.is_active ? "text-ink" : "text-ink-muted line-through"}`}
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${option.is_active ? "bg-brand-400" : "bg-slate-300"}`}
+            aria-hidden
+          />
+          <span
+            className={`flex-1 text-sm font-medium ${option.is_active ? "text-ink" : "text-ink-muted line-through"}`}
           >
             {option.name}
           </span>
