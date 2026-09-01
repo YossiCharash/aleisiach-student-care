@@ -45,14 +45,17 @@ export function DetailOptionsArea(): ReactNode {
 
       {query.isLoading && <LoadingState />}
       {query.isError && <ErrorState error={query.error} />}
-      {query.data &&
-        FIELD_ORDER.map((field) => (
-          <FieldGroup
-            key={field}
-            field={field}
-            options={query.data.filter((option) => option.field === field)}
-          />
-        ))}
+      {query.data && (
+        <div className="grid grid-cols-2 items-start gap-x-6 gap-y-6">
+          {FIELD_ORDER.map((field) => (
+            <FieldGroup
+              key={field}
+              field={field}
+              options={query.data.filter((option) => option.field === field)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
