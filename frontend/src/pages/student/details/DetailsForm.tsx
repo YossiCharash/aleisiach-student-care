@@ -16,11 +16,7 @@ import type {
   StudentDetailsResponse,
   StudentDetailsUpsertRequest,
 } from "@/lib/api/types";
-import {
-  IDD_DIAGNOSIS_NAME,
-  legalStatusLabels,
-  OTHER_DEVICE_NAME,
-} from "@/lib/utils/hebrew";
+import { IDD_DIAGNOSIS_NAME, legalStatusLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -72,11 +68,14 @@ type OptionsFor = (field: DetailOptionField) => string[];
 const selectClass =
   "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400";
 
-function withCurrent(options: string[], current: string): string[] {
-  if (current === "" || options.includes(current)) {
-    return options;
+function mergeMissing(options: string[], extra: string[]): string[] {
+  const merged = [...options];
+  for (const value of extra) {
+    if (value !== "" && !merged.includes(value)) {
+      merged.push(value);
+    }
   }
-  return [current, ...options];
+  return merged;
 }
 
 function toContactItems(contacts: StudentDetailsResponse["guardians"]): ContactItem[] {
@@ -174,7 +173,7 @@ interface Props {
 
 export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
   const queryClient = useQueryClient();
-  const { register, control, handleSubmit } = useForm<FormValues>({
+  const { register, control, handleSubmit, formState } = useForm<FormValues>({
     defaultValues: toFormValues(details),
   });
   const optionsQuery = useQuery({
@@ -231,10 +230,10 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
       <DiagnosesCard
         control={control}
         register={register}
-        severityOptions={withCurrent(
-          optionsFor("idd_severity"),
-          details.idd_severity ?? ""
-        )}
+        severityOptions={mergeMissing(optionsFor("idd_severity"), [
+          details.idd_severity ?? "",
+        ])}
+        error={!!formState.errors.idd_severity}
       />
 
       <ContactArray
@@ -334,10 +333,12 @@ function DiagnosesCard({
   control,
   register,
   severityOptions,
+  error,
 }: {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
   severityOptions: string[];
+  error: boolean;
 }): ReactNode {
   const catalog = useQuery({
     queryKey: queryKeys.diagnoses,
@@ -359,6 +360,9 @@ function DiagnosesCard({
             options={severityOptions}
             required
           />
+          {error && (
+            <p className="mt-1 text-sm text-rating-red">יש לבחור דרגה לפני שמירה.</p>
+          )}
         </div>
 
         <datalist id="diagnosis-options">
@@ -392,9 +396,7 @@ function MedicalProfileCard({
 }): ReactNode {
   const hasAllergies = useWatch({ control, name: "has_allergies_or_dietary" });
   const takesMedication = useWatch({ control, name: "takes_regular_medication" });
-  const devices = useWatch({ control, name: "assistive_devices" });
-  const showOther = (devices ?? []).includes(OTHER_DEVICE_NAME);
-  const deviceOptions = mergeAll(
+  const deviceOptions = mergeMissing(
     optionsFor("assistive_device"),
     details.assistive_devices
   );
@@ -438,10 +440,9 @@ function MedicalProfileCard({
                 id="medication_independence"
                 register={register}
                 name="medication_independence"
-                options={withCurrent(
-                  optionsFor("medication_independence"),
-                  details.medication_independence ?? ""
-                )}
+                options={mergeMissing(optionsFor("medication_independence"), [
+                  details.medication_independence ?? "",
+                ])}
               />
             </div>
           </div>
@@ -471,30 +472,18 @@ function MedicalProfileCard({
               </label>
             ))}
           </div>
-          {showOther && (
-            <div className="mt-2">
-              <Label htmlFor="assistive_device_other">פירוט "אחר"</Label>
-              <Input
-                id="assistive_device_other"
-                maxLength={200}
-                {...register("assistive_device_other")}
-              />
-            </div>
-          )}
+          <div className="mt-2">
+            <Label htmlFor="assistive_device_other">אביזר עזר נוסף (פירוט)</Label>
+            <Input
+              id="assistive_device_other"
+              maxLength={200}
+              {...register("assistive_device_other")}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
   );
-}
-
-function mergeAll(options: string[], current: string[]): string[] {
-  const merged = [...options];
-  for (const value of current) {
-    if (!merged.includes(value)) {
-      merged.push(value);
-    }
-  }
-  return merged;
 }
 
 function CommunicationCard({
@@ -518,10 +507,9 @@ function CommunicationCard({
             id="expression_mode"
             register={register}
             name="expression_mode"
-            options={withCurrent(
-              optionsFor("expression_mode"),
-              details.expression_mode ?? ""
-            )}
+            options={mergeMissing(optionsFor("expression_mode"), [
+              details.expression_mode ?? "",
+            ])}
           />
         </div>
         <div>
@@ -530,10 +518,9 @@ function CommunicationCard({
             id="language_comprehension"
             register={register}
             name="language_comprehension"
-            options={withCurrent(
-              optionsFor("language_comprehension"),
-              details.language_comprehension ?? ""
-            )}
+            options={mergeMissing(optionsFor("language_comprehension"), [
+              details.language_comprehension ?? "",
+            ])}
           />
         </div>
       </CardContent>

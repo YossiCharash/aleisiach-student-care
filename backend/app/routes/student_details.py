@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
+from backend.app.client.students.detail_option_repository import DetailOptionRepository
 from backend.app.client.students.diagnosis_catalog_repository import (
     DiagnosisCatalogRepository,
 )
@@ -33,6 +34,7 @@ def get_student_details_service(
     return StudentDetailsService(
         StudentDetailsRepository(session),
         DiagnosisCatalogService(DiagnosisCatalogRepository(session), audit_logger),
+        DetailOptionRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         audit_logger,
         Clock(),

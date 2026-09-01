@@ -37,8 +37,6 @@ export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
   assistive_device: "אביזרי עזר פיזיים",
 };
 
-export const OTHER_DEVICE_NAME = "אחר";
-
 export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
 
 const monthNames = [

@@ -6,15 +6,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
+from backend.app.client.students.detail_option_repository import DetailOptionRepository
 from backend.app.client.students.diagnosis_catalog_repository import (
     DiagnosisCatalogRepository,
 )
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
+from backend.app.errors.service.invalid_detail_value_error import InvalidDetailValueError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.detail_option import DetailOption
+from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.models.client.student import Student
@@ -53,6 +57,7 @@ def _setup(session: Session) -> tuple[StudentDetailsService, uuid.UUID]:
     service = StudentDetailsService(
         StudentDetailsRepository(session),
         DiagnosisCatalogService(DiagnosisCatalogRepository(session), audit_logger),
+        DetailOptionRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         audit_logger,
         _FixedClock(),
@@ -217,34 +222,67 @@ def test_medical_profile_is_normalized_when_toggles_off(db_session: Session) -> 
     assert saved.medication_independence is None
 
 
-def test_assistive_device_other_cleared_when_other_not_selected(db_session: Session) -> None:
+def test_assistive_device_other_is_independent_of_device_selection(db_session: Session) -> None:
     service, student_id = _setup(db_session)
 
     saved = service.upsert(
         student_id,
         StudentDetailsUpsertRequest(
             assistive_devices=["משקפיים"],
-            assistive_device_other="ignored",
-        ),
-        _ALL,
-        _ACTOR,
-    )
-
-    assert saved.assistive_devices == ["משקפיים"]
-    assert saved.assistive_device_other is None
-
-
-def test_assistive_device_other_kept_when_other_selected(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
-
-    saved = service.upsert(
-        student_id,
-        StudentDetailsUpsertRequest(
-            assistive_devices=["אחר"],
             assistive_device_other="מכשיר מיוחד",
         ),
         _ALL,
         _ACTOR,
     )
 
+    assert saved.assistive_devices == ["משקפיים"]
     assert saved.assistive_device_other == "מכשיר מיוחד"
+
+
+def _seed_option(session: Session, field: DetailOptionField, name: str) -> None:
+    session.add(DetailOption(field=field, name=name, order=0))
+    session.flush()
+
+
+def test_dropdown_value_within_catalog_is_accepted(db_session: Session) -> None:
+    _seed_option(db_session, DetailOptionField.IDD_SEVERITY, "קלה")
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id, StudentDetailsUpsertRequest(idd_severity="קלה"), _ALL, _ACTOR
+    )
+
+    assert saved.idd_severity == "קלה"
+
+
+def test_dropdown_value_outside_catalog_is_rejected(db_session: Session) -> None:
+    _seed_option(db_session, DetailOptionField.IDD_SEVERITY, "קלה")
+    service, student_id = _setup(db_session)
+
+    with pytest.raises(InvalidDetailValueError):
+        service.upsert(
+            student_id, StudentDetailsUpsertRequest(idd_severity="לא קיים"), _ALL, _ACTOR
+        )
+
+
+def test_unknown_assistive_device_is_rejected(db_session: Session) -> None:
+    _seed_option(db_session, DetailOptionField.ASSISTIVE_DEVICE, "משקפיים")
+    service, student_id = _setup(db_session)
+
+    with pytest.raises(InvalidDetailValueError):
+        service.upsert(
+            student_id,
+            StudentDetailsUpsertRequest(assistive_devices=["משקפיים", "לא קיים"]),
+            _ALL,
+            _ACTOR,
+        )
+
+
+def test_dropdown_value_is_unconstrained_when_field_has_no_options(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id, StudentDetailsUpsertRequest(expression_mode="כל ערך"), _ALL, _ACTOR
+    )
+
+    assert saved.expression_mode == "כל ערך"

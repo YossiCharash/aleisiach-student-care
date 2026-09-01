@@ -112,5 +112,25 @@ def test_update_unknown_option_returns_404(
     assert response.status_code == 404
 
 
+def test_readding_deactivated_option_reactivates_it(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    created = api.post(
+        "/detail-options", headers=headers, json={"field": "idd_severity", "name": "חוזרת"}
+    ).json()
+    api.patch(f"/detail-options/{created['id']}", headers=headers, json={"is_active": False})
+
+    readded = api.post(
+        "/detail-options", headers=headers, json={"field": "idd_severity", "name": "חוזרת"}
+    )
+    assert readded.status_code == 201
+    assert readded.json()["is_active"] is True
+
+    active = [row["name"] for row in api.get("/detail-options", headers=headers).json()]
+    assert "חוזרת" in active
+
+
 def test_detail_options_require_authentication(api: TestClient) -> None:
     assert api.get("/detail-options").status_code == 401

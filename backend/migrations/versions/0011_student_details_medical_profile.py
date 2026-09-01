@@ -27,7 +27,11 @@ def upgrade() -> None:
     )
     op.add_column(
         "student_details",
-        sa.Column("idd_severity", sa.Enum("mild", "moderate", "complex", native_enum=False, length=32), nullable=True),
+        sa.Column(
+            "idd_severity",
+            sa.Enum("mild", "moderate", "complex", native_enum=False, length=32),
+            nullable=True,
+        ),
     )
     op.add_column(
         "student_details",
@@ -35,7 +39,12 @@ def upgrade() -> None:
     )
     op.add_column(
         "student_details",
-        sa.Column("has_allergies_or_dietary", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column(
+            "has_allergies_or_dietary",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
     )
     op.add_column(
         "student_details",
@@ -43,7 +52,12 @@ def upgrade() -> None:
     )
     op.add_column(
         "student_details",
-        sa.Column("takes_regular_medication", sa.Boolean(), nullable=False, server_default=sa.false()),
+        sa.Column(
+            "takes_regular_medication",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.false(),
+        ),
     )
     op.add_column(
         "student_details",

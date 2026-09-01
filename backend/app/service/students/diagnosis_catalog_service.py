@@ -72,6 +72,10 @@ class DiagnosisCatalogService:
     def _get_or_create(self, name: str, actor_id: uuid.UUID) -> DiagnosisCatalog:
         existing = self._catalog.get_by_name(name)
         if existing is not None:
+            if not existing.is_active:
+                existing.is_active = True
+                self._catalog.flush()
+                self._record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
             return existing
         entry = DiagnosisCatalog(name=name, order=self._catalog.next_order())
         self._catalog.add(entry)

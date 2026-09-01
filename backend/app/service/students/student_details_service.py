@@ -1,7 +1,10 @@
 import uuid
 
+from backend.app.client.students.detail_option_repository import DetailOptionRepository
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
+from backend.app.errors.service.invalid_detail_value_error import InvalidDetailValueError
 from backend.app.models.client.audit_action import AuditAction
+from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.student_details import StudentDetails
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
@@ -17,7 +20,6 @@ from backend.app.utils.service.age_calculator import AgeCalculator
 from backend.app.utils.service.clock import Clock
 
 _ENTITY_TYPE = "student_details"
-_OTHER_DEVICE = "אחר"
 _TRACKED_FIELDS = (
     "national_id",
     "date_of_birth",
@@ -52,12 +54,14 @@ class StudentDetailsService:
         self,
         details_repository: StudentDetailsRepository,
         diagnosis_catalog: DiagnosisCatalogService,
+        detail_options: DetailOptionRepository,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
         clock: Clock,
     ) -> None:
         self._details = details_repository
         self._diagnoses = diagnosis_catalog
+        self._detail_options = detail_options
         self._guard = access_guard
         self._audit = audit_logger
         self._clock = clock
@@ -77,6 +81,7 @@ class StudentDetailsService:
         actor_id: uuid.UUID,
     ) -> StudentDetailsResponse:
         self._guard.require(student_id, scope)
+        self._validate_options(request)
         details, created = self._details.get_or_create(student_id)
         before = self._snapshot(details)
         self._apply(details, request, actor_id)
@@ -142,11 +147,42 @@ class StudentDetailsService:
             request.medication_independence if request.takes_regular_medication else None
         )
         details.emergency_protocol = request.emergency_protocol
-        devices = self._clean(request.assistive_devices)
-        details.assistive_devices = devices
-        details.assistive_device_other = (
-            request.assistive_device_other if _OTHER_DEVICE in devices else None
+        details.assistive_devices = self._clean(request.assistive_devices)
+        details.assistive_device_other = request.assistive_device_other
+
+    def _validate_options(self, request: StudentDetailsUpsertRequest) -> None:
+        valid = self._valid_option_names()
+        self._check_option(valid, DetailOptionField.IDD_SEVERITY, request.idd_severity)
+        self._check_option(valid, DetailOptionField.EXPRESSION_MODE, request.expression_mode)
+        self._check_option(
+            valid, DetailOptionField.LANGUAGE_COMPREHENSION, request.language_comprehension
         )
+        if request.takes_regular_medication:
+            self._check_option(
+                valid, DetailOptionField.MEDICATION_INDEPENDENCE, request.medication_independence
+            )
+        for device in request.assistive_devices:
+            self._check_option(valid, DetailOptionField.ASSISTIVE_DEVICE, device)
+
+    def _valid_option_names(self) -> dict[DetailOptionField, set[str]]:
+        names: dict[DetailOptionField, set[str]] = {}
+        for option in self._detail_options.list(include_inactive=True):
+            names.setdefault(option.field, set()).add(option.name)
+        return names
+
+    def _check_option(
+        self,
+        valid: dict[DetailOptionField, set[str]],
+        field: DetailOptionField,
+        value: str | None,
+    ) -> None:
+        if value is None or value.strip() == "":
+            return
+        allowed = valid.get(field)
+        if allowed is None:
+            return
+        if value not in allowed:
+            raise InvalidDetailValueError("הערך שנבחר אינו קיים ברשימת האפשרויות")
 
     def _clean(self, items: list[str]) -> list[str]:
         return self._unique([item.strip() for item in items if item.strip()])

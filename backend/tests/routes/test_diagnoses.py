@@ -71,5 +71,21 @@ def test_update_unknown_diagnosis_returns_404(
     assert response.status_code == 404
 
 
+def test_readding_deactivated_diagnosis_reactivates_it(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    created = api.post("/diagnoses", headers=headers, json={"name": "חוזרת"}).json()
+    api.patch(f"/diagnoses/{created['id']}", headers=headers, json={"is_active": False})
+
+    readded = api.post("/diagnoses", headers=headers, json={"name": "חוזרת"})
+    assert readded.status_code == 201
+    assert readded.json()["is_active"] is True
+
+    names = [row["name"] for row in api.get("/diagnoses", headers=headers).json()]
+    assert "חוזרת" in names
+
+
 def test_diagnoses_require_authentication(api: TestClient) -> None:
     assert api.get("/diagnoses").status_code == 401

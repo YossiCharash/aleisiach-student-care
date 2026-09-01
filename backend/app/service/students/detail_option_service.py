@@ -35,6 +35,10 @@ class DetailOptionService:
         name = request.name.strip()
         existing = self._options.get_by_field_and_name(request.field, name)
         if existing is not None:
+            if not existing.is_active:
+                existing.is_active = True
+                self._options.flush()
+                self._record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
             return DetailOptionResponse.model_validate(existing)
         option = DetailOption(
             field=request.field,

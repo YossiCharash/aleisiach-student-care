@@ -1,11 +1,6 @@
 import type { ReactNode } from "react";
 import type { ContactInfo, StudentDetailsResponse } from "@/lib/api/types";
-import {
-  formatDate,
-  IDD_DIAGNOSIS_NAME,
-  legalStatusLabels,
-  OTHER_DEVICE_NAME,
-} from "@/lib/utils/hebrew";
+import { formatDate, IDD_DIAGNOSIS_NAME, legalStatusLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
 import { Badge } from "@/components/ui/Badge";
@@ -149,11 +144,10 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
 }
 
 function MedicalProfileCard({ details }: { details: StudentDetailsResponse }): ReactNode {
-  const devices = details.assistive_devices.map((device) =>
-    device === OTHER_DEVICE_NAME && details.assistive_device_other
-      ? `אחר: ${details.assistive_device_other}`
-      : device
-  );
+  const devices = [...details.assistive_devices];
+  if (details.assistive_device_other) {
+    devices.push(`אחר: ${details.assistive_device_other}`);
+  }
   return (
     <Card>
       <CardHeader>

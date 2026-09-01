@@ -9,7 +9,6 @@ _LEGAL_STATUS_LABELS = {
     LegalStatus.PARENTS_ARE_GUARDIANS: "הורים אפוטרופסים",
 }
 _IDD_NAME = "מגבלה שכלית התפתחותית"
-_OTHER_DEVICE = "אחר"
 
 _CSS = (
     "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
@@ -105,12 +104,9 @@ class StudentDetailsDocument:
         )
 
     def _device_labels(self, details: StudentDetailsResponse) -> str:
-        labels: list[str] = []
-        for device in details.assistive_devices:
-            if device == _OTHER_DEVICE and details.assistive_device_other:
-                labels.append(f"אחר: {details.assistive_device_other}")
-            else:
-                labels.append(device)
+        labels = list(details.assistive_devices)
+        if details.assistive_device_other:
+            labels.append(f"אחר: {details.assistive_device_other}")
         return self._list_or_dash(labels)
 
     def _list_or_dash(self, values: list[str]) -> str:
