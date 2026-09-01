@@ -48,7 +48,7 @@ export function TaxonomyArea(): ReactNode {
       <div className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-ink">טקסונומיה</h2>
+            <h2 className="text-lg font-semibold text-ink">כישורים</h2>
             <p className="mt-1 text-sm text-ink-muted">
               תוויות ← תת-תוויות ← כישורים ← פתרונות. שינויים משתקפים מיד בטופס הישיבות.
             </p>
