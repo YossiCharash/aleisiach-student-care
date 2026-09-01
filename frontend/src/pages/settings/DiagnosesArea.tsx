@@ -45,24 +45,26 @@ export function DiagnosesArea(): ReactNode {
         </Button>
       </div>
 
-      <AddSettingInput
-        placeholder="שם אבחנה חדשה"
-        buttonLabel="הוספת אבחנה"
-        onSubmit={(name) => create.mutateAsync(name)}
-      />
+      <div className="max-w-2xl space-y-4">
+        <AddSettingInput
+          placeholder="שם אבחנה חדשה"
+          buttonLabel="הוספת אבחנה"
+          onSubmit={(name) => create.mutateAsync(name)}
+        />
 
-      {query.isLoading && <LoadingState />}
-      {query.isError && <ErrorState error={query.error} />}
-      {query.data &&
-        (query.data.length === 0 ? (
-          <EmptyState>אין אבחנות בקטלוג עדיין.</EmptyState>
-        ) : (
-          <SettingsListCard>
-            {query.data.map((diagnosis) => (
-              <DiagnosisRow key={diagnosis.id} diagnosis={diagnosis} />
-            ))}
-          </SettingsListCard>
-        ))}
+        {query.isLoading && <LoadingState />}
+        {query.isError && <ErrorState error={query.error} />}
+        {query.data &&
+          (query.data.length === 0 ? (
+            <EmptyState>אין אבחנות בקטלוג עדיין.</EmptyState>
+          ) : (
+            <SettingsListCard>
+              {query.data.map((diagnosis) => (
+                <DiagnosisRow key={diagnosis.id} diagnosis={diagnosis} />
+              ))}
+            </SettingsListCard>
+          ))}
+      </div>
     </div>
   );
 }

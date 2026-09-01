@@ -28,24 +28,26 @@ export function ClassesArea(): ReactNode {
         </p>
       </div>
 
-      <AddSettingInput
-        placeholder="שם כיתה חדשה"
-        buttonLabel="הוספת כיתה"
-        onSubmit={(name) => create.mutateAsync(name)}
-      />
+      <div className="max-w-2xl space-y-4">
+        <AddSettingInput
+          placeholder="שם כיתה חדשה"
+          buttonLabel="הוספת כיתה"
+          onSubmit={(name) => create.mutateAsync(name)}
+        />
 
-      {query.isLoading && <LoadingState />}
-      {query.isError && <ErrorState error={query.error} />}
-      {query.data &&
-        (query.data.length === 0 ? (
-          <EmptyState>אין כיתות עדיין.</EmptyState>
-        ) : (
-          <SettingsListCard>
-            {query.data.map((classItem) => (
-              <ClassRow key={classItem.id} classItem={classItem} />
-            ))}
-          </SettingsListCard>
-        ))}
+        {query.isLoading && <LoadingState />}
+        {query.isError && <ErrorState error={query.error} />}
+        {query.data &&
+          (query.data.length === 0 ? (
+            <EmptyState>אין כיתות עדיין.</EmptyState>
+          ) : (
+            <SettingsListCard>
+              {query.data.map((classItem) => (
+                <ClassRow key={classItem.id} classItem={classItem} />
+              ))}
+            </SettingsListCard>
+          ))}
+      </div>
     </div>
   );
 }
