@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAdminSettings
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -31,26 +32,33 @@ def _seeder(session: Session, settings: BootstrapAdminSettings) -> BootstrapAdmi
 
 
 def _count_users(session: Session) -> int:
-    return session.scalar(select(func.count()).select_from(User)) or 0
+    with TenantBinding.platform(session):
+        return session.scalar(select(func.count()).select_from(User)) or 0
 
 
-def test_creates_active_manager_when_configured(db_session: Session) -> None:
+def _only_user(session: Session) -> User:
+    with TenantBinding.platform(session):
+        return session.scalars(select(User)).one()
+
+
+def test_creates_active_super_admin_when_configured(db_session: Session) -> None:
     created = _seeder(db_session, _settings()).run()
 
     assert created is True
-    manager = db_session.scalars(select(User)).one()
-    assert manager.role == UserRole.MANAGER
-    assert manager.status == UserStatus.ACTIVE
-    assert manager.username == "yossi"
-    assert manager.class_id is None
+    admin = _only_user(db_session)
+    assert admin.role == UserRole.SUPER_ADMIN
+    assert admin.status == UserStatus.ACTIVE
+    assert admin.username == "yossi"
+    assert admin.class_id is None
+    assert admin.institution_id is None
 
 
 def test_seeded_password_verifies(db_session: Session) -> None:
     _seeder(db_session, _settings()).run()
 
-    manager = db_session.scalars(select(User)).one()
-    assert manager.password_hash is not None
-    assert PasswordHasher().verify(manager.password_hash, _PASSWORD)
+    admin = _only_user(db_session)
+    assert admin.password_hash is not None
+    assert PasswordHasher().verify(admin.password_hash, _PASSWORD)
 
 
 def test_does_nothing_when_not_configured(db_session: Session) -> None:
@@ -60,15 +68,26 @@ def test_does_nothing_when_not_configured(db_session: Session) -> None:
     assert _count_users(db_session) == 0
 
 
-def test_is_idempotent_when_a_manager_already_exists(
+def test_is_idempotent_when_a_super_admin_already_exists(
+    db_session: Session, seed_user: Callable[..., User]
+) -> None:
+    seed_user("root", UserRole.SUPER_ADMIN)
+
+    created = _seeder(db_session, _settings()).run()
+
+    assert created is False
+    assert _count_users(db_session) == 1
+
+
+def test_seeds_even_when_an_institution_manager_exists(
     db_session: Session, seed_user: Callable[..., User]
 ) -> None:
     seed_user("mor", UserRole.MANAGER)
 
     created = _seeder(db_session, _settings()).run()
 
-    assert created is False
-    assert _count_users(db_session) == 1
+    assert created is True
+    assert _count_users(db_session) == 2
 
 
 def test_rejects_weak_password(db_session: Session) -> None:
@@ -96,11 +115,13 @@ def test_concurrent_insert_is_absorbed_instead_of_crashing(
             email=settings.email,
             username="racer",
             password_hash=PasswordHasher().hash(_PASSWORD),
-            role=UserRole.INSTRUCTOR,
+            role=UserRole.SUPER_ADMIN,
             status=UserStatus.ACTIVE,
+            institution_id=None,
         )
     )
     db_session.flush()
     monkeypatch.setattr(seeder, "_reject_taken_identity", lambda: None)
+    monkeypatch.setattr(seeder, "_super_admin_exists", lambda: False)
 
     assert seeder.run() is False

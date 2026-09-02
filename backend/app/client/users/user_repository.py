@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.user import User
 
 
@@ -11,6 +12,8 @@ class UserRepository:
         self._session = session
 
     def add(self, user: User) -> User:
+        if user.institution_id is None:
+            user.institution_id = TenantBinding.require(self._session)
         self._session.add(user)
         self._session.flush()
         return user
@@ -19,7 +22,7 @@ class UserRepository:
         self._session.commit()
 
     def get(self, user_id: uuid.UUID) -> User | None:
-        return self._session.get(User, user_id)
+        return self._session.get(User, user_id, populate_existing=True)
 
     def list_all(self) -> list[User]:
         return list(self._session.scalars(select(User).order_by(User.full_name)).all())
@@ -28,4 +31,5 @@ class UserRepository:
         return self._session.scalar(select(User).where(User.email == email))
 
     def get_by_username(self, username: str) -> User | None:
-        return self._session.scalar(select(User).where(User.username == username))
+        with TenantBinding.platform(self._session):
+            return self._session.scalar(select(User).where(User.username == username))

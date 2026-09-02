@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.detail_option_repository import DetailOptionRepository
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.detail_option_create_request import (
     DetailOptionCreateRequest,
 )
@@ -29,7 +29,9 @@ def get_detail_option_service(
 
 ServiceDep = Annotated[DetailOptionService, Depends(get_detail_option_service)]
 
-router = APIRouter(prefix="/detail-options", tags=["detail-options"])
+router = APIRouter(
+    prefix="/detail-options", tags=["detail-options"], dependencies=[Depends(require_tenant)]
+)
 
 
 @router.get("", response_model=list[DetailOptionResponse])

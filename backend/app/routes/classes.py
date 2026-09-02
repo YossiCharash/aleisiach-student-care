@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.class_create_request import ClassCreateRequest
 from backend.app.schema.routes.class_response import ClassResponse
 from backend.app.schema.routes.class_update_request import ClassUpdateRequest
@@ -23,7 +23,7 @@ def get_class_service(
 
 ServiceDep = Annotated[ClassService, Depends(get_class_service)]
 
-router = APIRouter(prefix="/classes", tags=["classes"])
+router = APIRouter(prefix="/classes", tags=["classes"], dependencies=[Depends(require_tenant)])
 
 
 @router.get("", response_model=list[ClassResponse])

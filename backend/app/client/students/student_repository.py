@@ -16,7 +16,7 @@ class StudentRepository:
         return student
 
     def get(self, student_id: uuid.UUID) -> Student | None:
-        return self._session.get(Student, student_id)
+        return self._session.get(Student, student_id, populate_existing=True)
 
     def list_active(self) -> list[Student]:
         statement = (

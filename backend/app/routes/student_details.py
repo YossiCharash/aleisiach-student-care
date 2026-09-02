@@ -13,7 +13,7 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.pdf import RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser
+from backend.app.routes.security import ContentWriter, CurrentUser, require_tenant
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -43,7 +43,11 @@ def get_student_details_service(
 
 ServiceDep = Annotated[StudentDetailsService, Depends(get_student_details_service)]
 
-router = APIRouter(prefix="/students/{student_id}/details", tags=["student-details"])
+router = APIRouter(
+    prefix="/students/{student_id}/details",
+    tags=["student-details"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.get("", response_model=StudentDetailsResponse)

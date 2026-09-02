@@ -4,6 +4,7 @@ from typing import TypeVar
 from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.label import Label
 from backend.app.models.client.ordered_taxonomy_node import OrderedTaxonomyNode
 from backend.app.models.client.skill import Skill
@@ -24,7 +25,7 @@ class TaxonomyRepository:
         return self._add(label)
 
     def get_label(self, label_id: uuid.UUID) -> Label | None:
-        return self._session.get(Label, label_id)
+        return self._session.get(Label, label_id, populate_existing=True)
 
     def list_labels(self, include_inactive: bool) -> list[Label]:
         return self._ordered(Label, include_inactive)
@@ -36,7 +37,7 @@ class TaxonomyRepository:
         return self._add(sub_label)
 
     def get_sub_label(self, sub_label_id: uuid.UUID) -> SubLabel | None:
-        return self._session.get(SubLabel, sub_label_id)
+        return self._session.get(SubLabel, sub_label_id, populate_existing=True)
 
     def list_sub_labels(self, label_id: uuid.UUID, include_inactive: bool) -> list[SubLabel]:
         return self._ordered(SubLabel, include_inactive, SubLabel.label_id == label_id)
@@ -48,7 +49,7 @@ class TaxonomyRepository:
         return self._add(skill)
 
     def get_skill(self, skill_id: uuid.UUID) -> Skill | None:
-        return self._session.get(Skill, skill_id)
+        return self._session.get(Skill, skill_id, populate_existing=True)
 
     def list_skills(self, sub_label_id: uuid.UUID, include_inactive: bool) -> list[Skill]:
         return self._ordered(Skill, include_inactive, Skill.sub_label_id == sub_label_id)
@@ -62,7 +63,7 @@ class TaxonomyRepository:
         return solution
 
     def get_solution(self, solution_id: uuid.UUID) -> Solution | None:
-        return self._session.get(Solution, solution_id)
+        return self._session.get(Solution, solution_id, populate_existing=True)
 
     def list_solutions(self, skill_id: uuid.UUID, include_inactive: bool) -> list[Solution]:
         statement = select(Solution).where(Solution.skill_id == skill_id)
@@ -101,7 +102,9 @@ class TaxonomyRepository:
         return list(self._session.scalars(statement).all())
 
     def _next_order(self, model: type[NodeT], *filters: ColumnElement[bool]) -> int:
-        statement = select(func.coalesce(func.max(model.order), -1))
+        statement = select(func.coalesce(func.max(model.order), -1)).where(
+            model.institution_id == TenantBinding.require(self._session)
+        )
         for condition in filters:
             statement = statement.where(condition)
         current_max = self._session.scalar(statement)

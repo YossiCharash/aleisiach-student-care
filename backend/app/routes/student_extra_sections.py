@@ -13,7 +13,7 @@ from backend.app.client.students.student_extra_section_repository import (
     StudentExtraSectionRepository,
 )
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import ContentWriter, CurrentUser
+from backend.app.routes.security import ContentWriter, CurrentUser, require_tenant
 from backend.app.schema.routes.student_extra_section_entry import StudentExtraSectionEntry
 from backend.app.schema.routes.student_extra_section_upsert_request import (
     StudentExtraSectionUpsertRequest,
@@ -39,7 +39,11 @@ def get_student_extra_section_service(
 
 ServiceDep = Annotated[StudentExtraSectionService, Depends(get_student_extra_section_service)]
 
-router = APIRouter(prefix="/students/{student_id}/extra-sections", tags=["student-extra-sections"])
+router = APIRouter(
+    prefix="/students/{student_id}/extra-sections",
+    tags=["student-extra-sections"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.get("", response_model=list[StudentExtraSectionEntry])

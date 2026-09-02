@@ -10,7 +10,7 @@ from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.routes.pdf import RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser
+from backend.app.routes.security import ContentWriter, CurrentUser, require_tenant
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -33,7 +33,11 @@ def get_meeting_service(
 
 ServiceDep = Annotated[MeetingService, Depends(get_meeting_service)]
 
-router = APIRouter(prefix="/students/{student_id}/meetings", tags=["meetings"])
+router = APIRouter(
+    prefix="/students/{student_id}/meetings",
+    tags=["meetings"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.post("", response_model=MeetingResponse, status_code=status.HTTP_201_CREATED)

@@ -9,6 +9,7 @@ from backend.app.client.students.detail_option_repository import DetailOptionRep
 from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -143,8 +144,8 @@ def test_detail_options_require_authentication(api: TestClient) -> None:
 def test_seeded_lowercase_field_value_reads_back(db_session: Session) -> None:
     db_session.execute(
         text(
-            'INSERT INTO detail_options (id, field, name, "order", is_active) '
-            "VALUES (:id, :field, :name, :order, :is_active)"
+            'INSERT INTO detail_options (id, field, name, "order", is_active, institution_id) '
+            "VALUES (:id, :field, :name, :order, :is_active, :institution_id)"
         ),
         {
             "id": uuid.uuid4().hex,
@@ -152,6 +153,7 @@ def test_seeded_lowercase_field_value_reads_back(db_session: Session) -> None:
             "name": "משקפיים",
             "order": 0,
             "is_active": True,
+            "institution_id": DEFAULT_INSTITUTION_ID.hex,
         },
     )
     db_session.flush()

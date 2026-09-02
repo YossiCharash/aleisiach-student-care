@@ -5,11 +5,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
 from backend.app.models.client.detail_option_field import DetailOptionField
+from backend.app.models.client.tenant_scoped import TenantScoped
 
 
-class DetailOption(Base):
+class DetailOption(TenantScoped, Base):
     __tablename__ = "detail_options"
-    __table_args__ = (UniqueConstraint("field", "name"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "institution_id", "field", "name", name="uq_detail_options_institution_field_name"
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     field: Mapped[DetailOptionField] = mapped_column(

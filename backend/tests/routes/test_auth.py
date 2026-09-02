@@ -10,6 +10,7 @@ from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.utils.service.password_hasher import PasswordHasher
 from backend.app.utils.service.token_factory import TokenFactory
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 
 def _seed_invited_user(session: Session) -> str:
@@ -18,6 +19,7 @@ def _seed_invited_user(session: Session) -> str:
         email="m@example.com",
         role=UserRole.MANAGER,
         status=UserStatus.INVITED,
+        institution_id=DEFAULT_INSTITUTION_ID,
     )
     session.add(user)
     session.flush()
@@ -76,6 +78,7 @@ def test_login_seeded_active_user(api: TestClient, db_session: Session) -> None:
             password_hash=hasher.hash("password123"),
             role=UserRole.PROFESSIONAL_TEACHER,
             status=UserStatus.ACTIVE,
+            institution_id=DEFAULT_INSTITUTION_ID,
         )
     )
     db_session.flush()

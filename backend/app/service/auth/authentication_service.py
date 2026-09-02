@@ -1,8 +1,10 @@
 from datetime import UTC, timedelta
 
+from backend.app.client.institutions.institution_repository import InstitutionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.errors.service.authentication_error import AuthenticationError
+from backend.app.errors.service.institution_inactive_error import InstitutionInactiveError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.user import User
 from backend.app.models.client.user_status import UserStatus
@@ -20,12 +22,14 @@ class AuthenticationService:
     def __init__(
         self,
         users: UserRepository,
+        institutions: InstitutionRepository,
         password_hasher: PasswordHasher,
         auth_settings: AuthSettings,
         clock: Clock,
         audit_logger: AuditLogger,
     ) -> None:
         self._users = users
+        self._institutions = institutions
         self._password_hasher = password_hasher
         self._auth_settings = auth_settings
         self._clock = clock
@@ -48,10 +52,18 @@ class AuthenticationService:
         if not self._password_hasher.verify(user.password_hash, password):
             self._register_failure(user, context)
             raise AuthenticationError
+        self._reject_inactive_institution(user)
         user.failed_login_count = 0
         user.locked_until = None
         self._record(user, AuditAction.LOGIN, context)
         return UserResponse.model_validate(user)
+
+    def _reject_inactive_institution(self, user: User) -> None:
+        if user.institution_id is None:
+            return
+        institution = self._institutions.get(user.institution_id)
+        if institution is None or not institution.is_active:
+            raise InstitutionInactiveError
 
     def _is_locked(self, user: User) -> bool:
         if user.locked_until is None:

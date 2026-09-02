@@ -4,7 +4,9 @@ from datetime import UTC, date, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.models.client.meeting_entry import MeetingEntry
@@ -21,6 +23,8 @@ from backend.app.models.client.user import User
 from backend.app.models.client.user_status import UserStatus
 from backend.app.seed.demo_credentials import (
     ALL_ACCOUNTS,
+    DEMO_INSTITUTION_CODE,
+    DEMO_INSTITUTION_NAME,
     DEMO_PASSWORD,
     INSTRUCTOR,
     MANAGER,
@@ -40,13 +44,21 @@ class DemoSeeder:
     def run(self) -> None:
         if self.is_seeded():
             return
+        institution = self._seed_institution()
         classes = self._seed_classes()
-        self._seed_users(classes["כיתה א׳"].id)
+        self._seed_users(classes["כיתה א׳"].id, institution.id)
         skills = self._seed_taxonomy()
         students = self._seed_students(classes)
         self._seed_meeting(students["נועה כהן"].id, skills)
         self._seed_details(students["נועה כהן"].id)
         self._seed_social_note(students["נועה כהן"].id)
+
+    def _seed_institution(self) -> Institution:
+        institution = Institution(name=DEMO_INSTITUTION_NAME, code=DEMO_INSTITUTION_CODE)
+        self._session.add(institution)
+        self._session.flush()
+        TenantBinding.bind(self._session, institution.id)
+        return institution
 
     def _seed_classes(self) -> dict[str, ClassEntity]:
         classes = {name: ClassEntity(name=name) for name in ("כיתה א׳", "כיתה ב׳")}
@@ -54,13 +66,15 @@ class DemoSeeder:
         self._session.flush()
         return classes
 
-    def _seed_users(self, instructor_class_id: uuid.UUID) -> None:
+    def _seed_users(self, instructor_class_id: uuid.UUID, institution_id: uuid.UUID) -> None:
         for account in ALL_ACCOUNTS:
             class_id = instructor_class_id if account is INSTRUCTOR else None
-            self._session.add(self._build_user(account, class_id))
+            self._session.add(self._build_user(account, class_id, institution_id))
         self._session.flush()
 
-    def _build_user(self, account: DemoAccount, class_id: uuid.UUID | None) -> User:
+    def _build_user(
+        self, account: DemoAccount, class_id: uuid.UUID | None, institution_id: uuid.UUID
+    ) -> User:
         return User(
             full_name=account.full_name,
             email=account.email,
@@ -69,6 +83,7 @@ class DemoSeeder:
             role=account.role,
             class_id=class_id,
             status=UserStatus.ACTIVE,
+            institution_id=institution_id,
         )
 
     def _seed_taxonomy(self) -> dict[str, Skill]:

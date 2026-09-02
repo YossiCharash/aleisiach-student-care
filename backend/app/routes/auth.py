@@ -7,6 +7,7 @@ from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
 from backend.app.client.auth.session_repository import SessionRepository
 from backend.app.client.database.provider import get_session
+from backend.app.client.institutions.institution_repository import InstitutionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
@@ -61,6 +62,7 @@ def get_authentication_service(
 ) -> AuthenticationService:
     return AuthenticationService(
         UserRepository(session),
+        InstitutionRepository(session),
         bootstrap.password_hasher,
         bootstrap.settings.auth,
         bootstrap.clock,

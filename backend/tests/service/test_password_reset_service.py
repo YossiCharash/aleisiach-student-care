@@ -19,6 +19,7 @@ from backend.app.service.auth.token_issuer import TokenIssuer
 from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
 from backend.app.utils.service.token_factory import TokenFactory
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 from backend.tests.service.capturing_email_sender import CapturingEmailSender
 
 _BASE = datetime(2026, 8, 27, 9, 0, tzinfo=UTC)
@@ -65,6 +66,7 @@ def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:
             password_hash=hasher.hash("old-password"),
             role=UserRole.MANAGER,
             status=UserStatus.ACTIVE,
+            institution_id=DEFAULT_INSTITUTION_ID,
         )
     )
     session.flush()

@@ -9,7 +9,7 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.students.extra_section_type_repository import (
     ExtraSectionTypeRepository,
 )
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.extra_section_type_create_request import (
     ExtraSectionTypeCreateRequest,
 )
@@ -36,7 +36,11 @@ def get_extra_section_type_service(
 
 ServiceDep = Annotated[ExtraSectionTypeService, Depends(get_extra_section_type_service)]
 
-router = APIRouter(prefix="/extra-section-types", tags=["extra-section-types"])
+router = APIRouter(
+    prefix="/extra-section-types",
+    tags=["extra-section-types"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.get("/tree", response_model=list[ExtraSectionTypeNode])

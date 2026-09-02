@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
+from backend.app.client.institutions.institution_repository import InstitutionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.errors.service.authentication_error import AuthenticationError
@@ -18,6 +19,7 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 from backend.tests.support.fake_clock import FakeClock
 
 _BASE = datetime(2026, 8, 27, 9, 0, tzinfo=UTC)
@@ -42,6 +44,7 @@ def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:
             password_hash=hasher.hash("password123"),
             role=UserRole.MANAGER,
             status=UserStatus.ACTIVE,
+            institution_id=DEFAULT_INSTITUTION_ID,
         )
     )
     session.flush()
@@ -50,6 +53,7 @@ def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:
 def _service(session: Session, hasher: PasswordHasher, clock: Clock) -> AuthenticationService:
     return AuthenticationService(
         UserRepository(session),
+        InstitutionRepository(session),
         hasher,
         AuthSettings(),
         clock,

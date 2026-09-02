@@ -9,7 +9,7 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.students.diagnosis_catalog_repository import (
     DiagnosisCatalogRepository,
 )
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.diagnosis_catalog_create_request import (
     DiagnosisCatalogCreateRequest,
 )
@@ -31,7 +31,7 @@ def get_diagnosis_catalog_service(
 
 ServiceDep = Annotated[DiagnosisCatalogService, Depends(get_diagnosis_catalog_service)]
 
-router = APIRouter(prefix="/diagnoses", tags=["diagnoses"])
+router = APIRouter(prefix="/diagnoses", tags=["diagnoses"], dependencies=[Depends(require_tenant)])
 
 
 @router.get("", response_model=list[DiagnosisCatalogResponse])

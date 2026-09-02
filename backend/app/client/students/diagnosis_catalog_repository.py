@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 
 
@@ -16,7 +17,7 @@ class DiagnosisCatalogRepository:
         return entry
 
     def get(self, diagnosis_id: uuid.UUID) -> DiagnosisCatalog | None:
-        return self._session.get(DiagnosisCatalog, diagnosis_id)
+        return self._session.get(DiagnosisCatalog, diagnosis_id, populate_existing=True)
 
     def get_by_name(self, name: str) -> DiagnosisCatalog | None:
         statement = select(DiagnosisCatalog).where(DiagnosisCatalog.name == name)
@@ -30,7 +31,9 @@ class DiagnosisCatalogRepository:
         return list(self._session.scalars(statement).all())
 
     def next_order(self) -> int:
-        statement = select(func.coalesce(func.max(DiagnosisCatalog.order), -1))
+        statement = select(func.coalesce(func.max(DiagnosisCatalog.order), -1)).where(
+            DiagnosisCatalog.institution_id == TenantBinding.require(self._session)
+        )
         current_max = self._session.scalar(statement)
         return int(current_max if current_max is not None else -1) + 1
 

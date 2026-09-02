@@ -17,6 +17,7 @@ from backend.app.service.auth.credential_reset_finalizer import CredentialResetF
 from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 _CURRENT = "current-password"
 
@@ -41,6 +42,7 @@ def _seed(session: Session, hasher: PasswordHasher) -> User:
         password_hash=hasher.hash(_CURRENT),
         role=UserRole.INSTRUCTOR,
         status=UserStatus.ACTIVE,
+        institution_id=DEFAULT_INSTITUTION_ID,
     )
     session.add(user)
     session.flush()

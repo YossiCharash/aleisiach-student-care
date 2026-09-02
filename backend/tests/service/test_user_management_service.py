@@ -25,6 +25,7 @@ from backend.app.service.auth.invitation_dispatcher import InvitationDispatcher
 from backend.app.service.auth.token_issuer import TokenIssuer
 from backend.app.service.users.user_management_service import UserManagementService
 from backend.app.utils.service.token_factory import TokenFactory
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 from backend.tests.service.capturing_email_sender import CapturingEmailSender
 
 _ACTOR = uuid.uuid4()
@@ -44,6 +45,7 @@ def _seed(
         role=role,
         status=status,
         password_hash=password_hash,
+        institution_id=DEFAULT_INSTITUTION_ID,
     )
     session.add(user)
     session.flush()
