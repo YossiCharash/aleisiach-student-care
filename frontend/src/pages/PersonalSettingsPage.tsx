@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { setToken } from "@/lib/auth/tokenStorage";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -74,7 +75,8 @@ function ChangePasswordForm(): ReactNode {
         current_password: currentPassword,
         new_password: newPassword,
       }),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      setToken(response.token);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");

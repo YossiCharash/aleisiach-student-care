@@ -10,8 +10,15 @@ class StudentAccessGuard:
     def __init__(self, student_repository: StudentRepository) -> None:
         self._students = student_repository
 
-    def require(self, student_id: uuid.UUID, scope: StudentAccessScope) -> Student:
+    def require(
+        self,
+        student_id: uuid.UUID,
+        scope: StudentAccessScope,
+        allow_archived: bool = False,
+    ) -> Student:
         student = self._students.get(student_id)
         if student is None or not scope.permits(student.class_id):
+            raise NotFoundError("student")
+        if student.is_archived and not allow_archived:
             raise NotFoundError("student")
         return student

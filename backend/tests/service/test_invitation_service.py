@@ -54,7 +54,7 @@ def test_invite_then_accept_activates_user(db_session: Session) -> None:
     assert sender.invitation_link is not None
 
     token = CapturingEmailSender.token_from(sender.invitation_link)
-    activated = service.accept(token, "manager1", "password123")
+    activated = service.accept(token, "manager1", "manager-pass-2026")
 
     assert activated.status == UserStatus.ACTIVE
     assert activated.username == "manager1"
@@ -89,4 +89,4 @@ def test_accept_with_unknown_token_raises(db_session: Session) -> None:
     service = _service(db_session, CapturingEmailSender())
 
     with pytest.raises(InvalidTokenError):
-        service.accept("not-a-real-token", "someone", "password123")
+        service.accept("not-a-real-token", "someone", "manager-pass-2026")

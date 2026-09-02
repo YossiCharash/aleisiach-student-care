@@ -14,6 +14,7 @@ from backend.app.models.client.user import User
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.service.audit_entry import AuditEntry
+from backend.app.schema.service.auth_event_context import AuthEventContext
 from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.token_consumer import TokenConsumer
@@ -71,7 +72,14 @@ class InvitationService:
         )
         return UserResponse.model_validate(user)
 
-    def accept(self, raw_token: str, username: str, password: str) -> UserResponse:
+    def accept(
+        self,
+        raw_token: str,
+        username: str,
+        password: str,
+        context: AuthEventContext | None = None,
+    ) -> UserResponse:
+        context = context or AuthEventContext()
         token = self._token_consumer.consume(raw_token, TokenKind.INVITE)
         user = self._users.get(token.user_id)
         if user is None:
@@ -81,4 +89,14 @@ class InvitationService:
         user.username = username
         user.password_hash = self._password_hasher.hash(password)
         user.status = UserStatus.ACTIVE
+        self._audit.record(
+            AuditEntry(
+                actor_id=user.id,
+                action=AuditAction.INVITATION_ACCEPTED,
+                entity_type="auth",
+                entity_id=user.id,
+                ip=context.ip,
+                user_agent=context.user_agent,
+            )
+        )
         return UserResponse.model_validate(user)

@@ -20,7 +20,7 @@ def test_change_password_updates_login_credentials(
         json={"current_password": "password123", "new_password": "a-fresh-pass1"},
         headers=headers,
     )
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     assert (
         api.post("/auth/login", json={"username": "teacher", "password": "password123"}).status_code
@@ -69,3 +69,23 @@ def test_change_password_requires_authentication(api: TestClient) -> None:
         json={"current_password": "password123", "new_password": "a-fresh-pass1"},
     )
     assert response.status_code == 401
+
+
+def test_change_password_rotates_the_callers_session(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("teacher", UserRole.INSTRUCTOR)
+    headers = auth_headers(api, "teacher")
+
+    response = api.post(
+        "/auth/password/change",
+        json={"current_password": "password123", "new_password": "a-fresh-pass1"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+
+    rotated = response.json()["token"]
+    assert rotated != headers["Authorization"].removeprefix("Bearer ")
+
+    assert api.get("/students", headers=headers).status_code == 401
+    assert api.get("/students", headers={"Authorization": f"Bearer {rotated}"}).status_code == 200

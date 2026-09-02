@@ -6,4 +6,4 @@ class CannotDisableSelfError(AppError):
     code = "cannot_disable_self"
 
     def __init__(self) -> None:
-        super().__init__("You cannot disable your own account")
+        super().__init__("אי אפשר להשבית את החשבון של עצמך.")

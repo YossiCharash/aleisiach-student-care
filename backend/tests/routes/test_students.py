@@ -231,8 +231,8 @@ def test_create_and_archive_are_audited(
     api.post(f"/students/{student_id}/archive", headers=headers)
 
     logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
-    actions = [log.action for log in logs]
+    student_logs = [log for log in logs if log.entity_type == "student"]
+    actions = [log.action for log in student_logs]
     assert AuditAction.CREATE in actions
     assert AuditAction.ARCHIVE in actions
-    assert all(log.actor_id == boss_id for log in logs)
-    assert all(log.entity_type == "student" for log in logs)
+    assert all(log.actor_id == boss_id for log in student_logs)

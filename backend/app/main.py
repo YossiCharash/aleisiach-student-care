@@ -25,10 +25,14 @@ from backend.app.utils.routes.security_headers_middleware import SecurityHeaders
 
 def create_app() -> FastAPI:
     bootstrap = Bootstrap(Settings())
-    app = FastAPI(title=bootstrap.settings.app.name)
-    app.state.bootstrap = bootstrap
-
     is_production = bootstrap.settings.app.environment == "production"
+    app = FastAPI(
+        title=bootstrap.settings.app.name,
+        docs_url=None if is_production else "/docs",
+        redoc_url=None if is_production else "/redoc",
+        openapi_url=None if is_production else "/openapi.json",
+    )
+    app.state.bootstrap = bootstrap
     app.add_middleware(
         SecurityHeadersMiddleware,
         hsts_max_age_seconds=(

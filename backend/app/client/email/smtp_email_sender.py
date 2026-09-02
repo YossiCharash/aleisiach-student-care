@@ -1,4 +1,5 @@
 import smtplib
+import ssl
 from email.message import EmailMessage
 
 from backend.app.client.email.email_sender import EmailSender
@@ -35,7 +36,7 @@ class SmtpEmailSender(EmailSender):
             timeout=self._settings.smtp_timeout_seconds,
         ) as smtp:
             if self._settings.smtp_starttls:
-                smtp.starttls()
+                smtp.starttls(context=ssl.create_default_context())
             if self._settings.smtp_username:
                 smtp.login(self._settings.smtp_username, self._settings.smtp_password)
             smtp.send_message(message)

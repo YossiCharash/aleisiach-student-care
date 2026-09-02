@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.client.auth.session_repository import SessionRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
@@ -19,12 +20,15 @@ from backend.app.schema.routes.invitation_accept_request import InvitationAccept
 from backend.app.schema.routes.login_request import LoginRequest
 from backend.app.schema.routes.login_response import LoginResponse
 from backend.app.schema.routes.password_change_request import PasswordChangeRequest
+from backend.app.schema.routes.password_change_response import PasswordChangeResponse
 from backend.app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
 from backend.app.schema.routes.password_reset_request import PasswordResetRequest
 from backend.app.schema.routes.user_response import UserResponse
+from backend.app.schema.service.auth_event_context import AuthEventContext
 from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
+from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
 from backend.app.service.auth.invitation_service import InvitationService
 from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.service.auth.password_reset_service import PasswordResetService
@@ -32,6 +36,7 @@ from backend.app.service.auth.session_service import SessionService
 from backend.app.service.auth.token_consumer import TokenConsumer
 from backend.app.service.auth.token_issuer import TokenIssuer
 from backend.app.utils.routes.rate_limit import rate_limited
+from backend.app.utils.routes.request_context import get_auth_event_context
 
 SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
@@ -59,13 +64,29 @@ def get_authentication_service(
         bootstrap.password_hasher,
         bootstrap.settings.auth,
         bootstrap.clock,
+        AuditLogger(AuditLogRepository(session)),
+    )
+
+
+def _credential_reset_finalizer(
+    session: SessionDep, bootstrap: BootstrapDep
+) -> CredentialResetFinalizer:
+    return CredentialResetFinalizer(
+        SessionRepository(session),
+        AuthTokenRepository(session),
+        bootstrap.clock,
     )
 
 
 def get_password_change_service(
     session: SessionDep, bootstrap: BootstrapDep
 ) -> PasswordChangeService:
-    return PasswordChangeService(UserRepository(session), bootstrap.password_hasher)
+    return PasswordChangeService(
+        UserRepository(session),
+        bootstrap.password_hasher,
+        _credential_reset_finalizer(session, bootstrap),
+        AuditLogger(AuditLogRepository(session)),
+    )
 
 
 def get_password_reset_service(
@@ -81,6 +102,8 @@ def get_password_reset_service(
         bootstrap.settings.auth,
         bootstrap.settings.email,
         bootstrap.clock,
+        _credential_reset_finalizer(session, bootstrap),
+        AuditLogger(AuditLogRepository(session)),
     )
 
 
@@ -93,6 +116,7 @@ AuthenticationDep = Annotated[AuthenticationService, Depends(get_authentication_
 PasswordChangeDep = Annotated[PasswordChangeService, Depends(get_password_change_service)]
 PasswordResetDep = Annotated[PasswordResetService, Depends(get_password_reset_service)]
 SessionServiceDep = Annotated[SessionService, Depends(get_session_service)]
+AuthEventContextDep = Annotated[AuthEventContext, Depends(get_auth_event_context)]
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -103,9 +127,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     dependencies=[Depends(rate_limited("login"))],
 )
 def login(
-    request: LoginRequest, auth: AuthenticationDep, sessions: SessionServiceDep
+    request: LoginRequest,
+    auth: AuthenticationDep,
+    sessions: SessionServiceDep,
+    context: AuthEventContextDep,
 ) -> LoginResponse:
-    user = auth.authenticate(request.username, request.password)
+    user = auth.authenticate(request.username, request.password, context)
     token = sessions.create(user.id)
     return LoginResponse(token=token, user=user)
 
@@ -128,15 +155,22 @@ def create_invitation(
     response_model=UserResponse,
     dependencies=[Depends(rate_limited("invitation_accept"))],
 )
-def accept_invitation(request: InvitationAcceptRequest, service: InvitationDep) -> UserResponse:
-    return service.accept(request.token, request.username, request.password)
+def accept_invitation(
+    request: InvitationAcceptRequest, service: InvitationDep, context: AuthEventContextDep
+) -> UserResponse:
+    return service.accept(request.token, request.username, request.password, context)
 
 
-@router.post("/password/change", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/password/change", response_model=PasswordChangeResponse)
 def change_password(
-    request: PasswordChangeRequest, service: PasswordChangeDep, user: CurrentUser
-) -> None:
-    service.change(user.id, request.current_password, request.new_password)
+    request: PasswordChangeRequest,
+    service: PasswordChangeDep,
+    user: CurrentUser,
+    context: AuthEventContextDep,
+    sessions: SessionServiceDep,
+) -> PasswordChangeResponse:
+    service.change(user.id, request.current_password, request.new_password, context)
+    return PasswordChangeResponse(token=sessions.create(user.id))
 
 
 @router.post(
@@ -153,5 +187,9 @@ def request_password_reset(request: PasswordResetRequest, service: PasswordReset
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(rate_limited("password_reset_confirm"))],
 )
-def confirm_password_reset(request: PasswordResetConfirmRequest, service: PasswordResetDep) -> None:
-    service.reset(request.token, request.new_password)
+def confirm_password_reset(
+    request: PasswordResetConfirmRequest,
+    service: PasswordResetDep,
+    context: AuthEventContextDep,
+) -> None:
+    service.reset(request.token, request.new_password, context)

@@ -44,3 +44,24 @@ def test_require_raises_for_unknown_student(db_session: Session) -> None:
 
     with pytest.raises(NotFoundError):
         guard.require(uuid.uuid4(), StudentAccessScope(all_classes=True))
+
+
+def test_require_hides_archived_student_by_default(db_session: Session) -> None:
+    student = _seed_student(db_session)
+    student.is_archived = True
+    db_session.flush()
+    guard = StudentAccessGuard(StudentRepository(db_session))
+
+    with pytest.raises(NotFoundError):
+        guard.require(student.id, StudentAccessScope(all_classes=True))
+
+
+def test_require_returns_archived_student_when_allowed(db_session: Session) -> None:
+    student = _seed_student(db_session)
+    student.is_archived = True
+    db_session.flush()
+    guard = StudentAccessGuard(StudentRepository(db_session))
+
+    result = guard.require(student.id, StudentAccessScope(all_classes=True), allow_archived=True)
+
+    assert result.id == student.id
