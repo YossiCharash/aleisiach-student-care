@@ -13,7 +13,7 @@ import { ProgramTab } from "@/pages/student/ProgramTab";
 import { MeetingsTab } from "@/pages/student/MeetingsTab";
 import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
-import { ArchiveStudentButton } from "@/pages/student/ArchiveStudentButton";
+import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 
 export function StudentPage(): ReactNode {
   const { studentId = "" } = useParams();
@@ -51,7 +51,7 @@ export function StudentPage(): ReactNode {
           <h1 className="text-2xl font-bold text-ink">{student.full_name}</h1>
         </div>
         {permissions.canManage(user) && !student.is_archived && (
-          <ArchiveStudentButton studentId={student.id} />
+          <StudentActionsMenu student={student} />
         )}
       </div>
 

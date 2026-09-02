@@ -29,6 +29,9 @@ from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
+from backend.app.service.auth.invitation_dispatcher_factory import (
+    InvitationDispatcherFactory,
+)
 from backend.app.service.auth.invitation_service import InvitationService
 from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.service.auth.password_reset_service import PasswordResetService
@@ -46,12 +49,9 @@ def get_invitation_service(session: SessionDep, bootstrap: BootstrapDep) -> Invi
     tokens = AuthTokenRepository(session)
     return InvitationService(
         UserRepository(session),
-        TokenIssuer(tokens, bootstrap.token_factory),
+        InvitationDispatcherFactory.create(session, bootstrap),
         TokenConsumer(tokens, bootstrap.token_factory),
         bootstrap.password_hasher,
-        bootstrap.email_sender,
-        bootstrap.settings.auth,
-        bootstrap.settings.email,
         AuditLogger(AuditLogRepository(session)),
     )
 

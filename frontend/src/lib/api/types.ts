@@ -57,6 +57,13 @@ export interface PasswordResetConfirmRequest {
   new_password: string;
 }
 
+export interface UserUpdateRequest {
+  full_name: string;
+  email: string;
+  role: UserRole;
+  class_id: string | null;
+}
+
 export interface ClassResponse {
   id: string;
   name: string;
@@ -67,6 +74,11 @@ export interface StudentResponse {
   class_id: string;
   full_name: string;
   is_archived: boolean;
+}
+
+export interface StudentUpdateRequest {
+  full_name: string;
+  class_id: string;
 }
 
 export interface StudentCreateRequest {

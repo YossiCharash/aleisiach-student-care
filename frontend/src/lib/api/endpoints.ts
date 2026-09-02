@@ -26,8 +26,10 @@ import type {
   StudentDetailsResponse,
   StudentDetailsUpsertRequest,
   StudentResponse,
+  StudentUpdateRequest,
   SubLabelResponse,
   UserResponse,
+  UserUpdateRequest,
 } from "@/lib/api/types";
 
 export const authApi = {
@@ -55,6 +57,8 @@ export const authApi = {
 
 export const usersApi = {
   list: (): Promise<UserResponse[]> => apiClient.get<UserResponse[]>("/users"),
+  update: (userId: string, body: UserUpdateRequest): Promise<UserResponse> =>
+    apiClient.patch<UserResponse>(`/users/${userId}`, body),
   disable: (userId: string): Promise<UserResponse> =>
     apiClient.post<UserResponse>(`/users/${userId}/disable`),
   enable: (userId: string): Promise<UserResponse> =>
@@ -67,6 +71,12 @@ export const classesApi = {
     apiClient.post<ClassResponse>("/classes", { name }),
   rename: (classId: string, name: string): Promise<ClassResponse> =>
     apiClient.patch<ClassResponse>(`/classes/${classId}`, { name }),
+  listArchived: (): Promise<ClassResponse[]> =>
+    apiClient.get<ClassResponse[]>("/classes/archived"),
+  archive: (classId: string): Promise<ClassResponse> =>
+    apiClient.post<ClassResponse>(`/classes/${classId}/archive`),
+  restore: (classId: string): Promise<ClassResponse> =>
+    apiClient.post<ClassResponse>(`/classes/${classId}/restore`),
 };
 
 export const studentsApi = {
@@ -75,6 +85,8 @@ export const studentsApi = {
     apiClient.get<StudentResponse>(`/students/${studentId}`),
   create: (body: StudentCreateRequest): Promise<StudentResponse> =>
     apiClient.post<StudentResponse>("/students", body),
+  update: (studentId: string, body: StudentUpdateRequest): Promise<StudentResponse> =>
+    apiClient.patch<StudentResponse>(`/students/${studentId}`, body),
   archive: (studentId: string): Promise<StudentResponse> =>
     apiClient.post<StudentResponse>(`/students/${studentId}/archive`),
   listArchived: (): Promise<StudentResponse[]> =>

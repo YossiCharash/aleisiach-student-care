@@ -12,6 +12,7 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.security import CurrentUser, Manager
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.schema.routes.student_update_request import StudentUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
@@ -55,6 +56,16 @@ def list_archived_students(service: ServiceDep, _: Manager) -> list[StudentRespo
 @router.get("/{student_id}", response_model=StudentResponse)
 def get_student(student_id: uuid.UUID, service: ServiceDep, user: CurrentUser) -> StudentResponse:
     return service.get(student_id, StudentAccessPolicy.scope_for(user))
+
+
+@router.patch("/{student_id}", response_model=StudentResponse)
+def update_student(
+    student_id: uuid.UUID,
+    request: StudentUpdateRequest,
+    service: ServiceDep,
+    manager: Manager,
+) -> StudentResponse:
+    return service.update(student_id, request, manager.id)
 
 
 @router.post("/{student_id}/archive", response_model=StudentResponse)

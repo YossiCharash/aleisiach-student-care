@@ -88,4 +88,36 @@ describe("EditableSettingRow", () => {
       within(row).queryByRole("button", { name: "הפעלה מחדש" })
     ).not.toBeInTheDocument();
   });
+
+  it("surfaces the server message when deactivation is refused", async () => {
+    const onSetActive = vi
+      .fn()
+      .mockRejectedValue(new Error("לא ניתן להעביר את הכיתה לארכיון."));
+    renderRow(
+      <EditableSettingRow name="כיתה א" onRename={vi.fn()} onSetActive={onSetActive} />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "לא ניתן להעביר את הכיתה לארכיון."
+    );
+  });
+
+  it("clears a previous action error on the next attempt", async () => {
+    const onSetActive = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("נכשל"))
+      .mockResolvedValueOnce(undefined);
+    renderRow(
+      <EditableSettingRow name="כיתה א" onRename={vi.fn()} onSetActive={onSetActive} />
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
+
+    await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+  });
 });

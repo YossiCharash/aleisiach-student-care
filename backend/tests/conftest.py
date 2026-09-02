@@ -90,7 +90,12 @@ class _NoOpRateLimiter(RateLimiter):
 
 @pytest.fixture
 def seed_user(db_session: Session) -> Callable[..., User]:
-    def _seed(username: str, role: UserRole, class_id: uuid.UUID | None = None) -> User:
+    def _seed(
+        username: str,
+        role: UserRole,
+        class_id: uuid.UUID | None = None,
+        status: UserStatus = UserStatus.ACTIVE,
+    ) -> User:
         user = User(
             full_name="User",
             email=f"{username}@example.com",
@@ -98,7 +103,7 @@ def seed_user(db_session: Session) -> Callable[..., User]:
             password_hash=PasswordHasher().hash("password123"),
             role=role,
             class_id=class_id,
-            status=UserStatus.ACTIVE,
+            status=status,
         )
         db_session.add(user)
         db_session.flush()

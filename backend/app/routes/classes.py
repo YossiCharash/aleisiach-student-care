@@ -28,7 +28,12 @@ router = APIRouter(prefix="/classes", tags=["classes"])
 
 @router.get("", response_model=list[ClassResponse])
 def list_classes(service: ServiceDep, _: CurrentUser) -> list[ClassResponse]:
-    return service.list_all()
+    return service.list_active()
+
+
+@router.get("/archived", response_model=list[ClassResponse])
+def list_archived_classes(service: ServiceDep, _: Manager) -> list[ClassResponse]:
+    return service.list_archived()
 
 
 @router.post("", response_model=ClassResponse, status_code=status.HTTP_201_CREATED)
@@ -46,3 +51,13 @@ def rename_class(
     manager: Manager,
 ) -> ClassResponse:
     return service.rename(class_id, request, manager.id)
+
+
+@router.post("/{class_id}/archive", response_model=ClassResponse)
+def archive_class(class_id: uuid.UUID, service: ServiceDep, manager: Manager) -> ClassResponse:
+    return service.archive(class_id, manager.id)
+
+
+@router.post("/{class_id}/restore", response_model=ClassResponse)
+def restore_class(class_id: uuid.UUID, service: ServiceDep, manager: Manager) -> ClassResponse:
+    return service.restore(class_id, manager.id)

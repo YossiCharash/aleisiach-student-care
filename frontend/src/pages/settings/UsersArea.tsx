@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { UserPlus } from "lucide-react";
+import { Pencil, UserPlus } from "lucide-react";
 import { usersApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { UserResponse } from "@/lib/api/types";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { InviteUserDialog } from "@/pages/settings/InviteUserDialog";
+import { EditUserDialog } from "@/pages/settings/EditUserDialog";
 
 export function UsersArea(): ReactNode {
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -74,6 +75,7 @@ const statusTone = {
 function UserRow({ user }: { user: UserResponse }): ReactNode {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
+  const [editOpen, setEditOpen] = useState(false);
   const isSelf = currentUser?.id === user.id;
 
   const mutation = useMutation({
@@ -91,16 +93,28 @@ function UserRow({ user }: { user: UserResponse }): ReactNode {
         <Badge tone={statusTone[user.status]}>{userStatusLabels[user.status]}</Badge>
       </td>
       <td className="px-4 py-3">
-        {!isSelf && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-          >
-            {user.status === "disabled" ? "הפעלה" : "השבתה"}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil className="h-4 w-4" />
+            עריכה
           </Button>
-        )}
+          {!isSelf && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => mutation.mutate()}
+              disabled={mutation.isPending}
+            >
+              {user.status === "disabled" ? "הפעלה" : "השבתה"}
+            </Button>
+          )}
+        </div>
+        <EditUserDialog
+          user={user}
+          isSelf={isSelf}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
       </td>
     </tr>
   );
