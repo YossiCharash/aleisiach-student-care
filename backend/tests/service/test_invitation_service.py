@@ -17,6 +17,7 @@ from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.auth.invitation_dispatcher import InvitationDispatcher
 from backend.app.service.auth.invitation_service import InvitationService
 from backend.app.service.auth.token_consumer import TokenConsumer
 from backend.app.service.auth.token_issuer import TokenIssuer
@@ -32,12 +33,15 @@ def _service(session: Session, sender: CapturingEmailSender) -> InvitationServic
     factory = TokenFactory()
     return InvitationService(
         UserRepository(session),
-        TokenIssuer(tokens, factory),
+        InvitationDispatcher(
+            tokens,
+            TokenIssuer(tokens, factory),
+            sender,
+            AuthSettings(),
+            EmailSettings(),
+        ),
         TokenConsumer(tokens, factory),
         PasswordHasher(),
-        sender,
-        AuthSettings(),
-        EmailSettings(),
         AuditLogger(AuditLogRepository(session)),
     )
 
