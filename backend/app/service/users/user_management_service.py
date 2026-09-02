@@ -45,7 +45,7 @@ class UserManagementService:
         class_id = request.class_id if request.role is UserRole.INSTRUCTOR else None
         if request.role is UserRole.INSTRUCTOR and class_id is None:
             raise InstructorRequiresClassError
-        if class_id is not None and not self._classes.exists(class_id):
+        if class_id is not None and not self._classes.active_exists(class_id):
             raise NotFoundError("class")
         if request.role is not user.role and user_id == actor_id:
             raise CannotChangeOwnRoleError

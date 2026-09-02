@@ -36,7 +36,7 @@ class StudentService:
         self._audit = audit_logger
 
     def create(self, request: StudentCreateRequest, actor_id: uuid.UUID) -> StudentResponse:
-        if not self._classes.exists(request.class_id):
+        if not self._classes.active_exists(request.class_id):
             raise NotFoundError("class")
         student = Student(full_name=request.full_name, class_id=request.class_id)
         self._students.add(student)
@@ -86,7 +86,7 @@ class StudentService:
         self, student_id: uuid.UUID, request: StudentUpdateRequest, actor_id: uuid.UUID
     ) -> StudentResponse:
         student = self._require(student_id)
-        if not self._classes.exists(request.class_id):
+        if not self._classes.active_exists(request.class_id):
             raise NotFoundError("class")
         changes = self._apply_update(student, request)
         if changes:
