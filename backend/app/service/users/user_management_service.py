@@ -19,7 +19,8 @@ from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.invitation_dispatcher import InvitationDispatcher
 
-_ENTITY_TYPE = "permission"
+_PERMISSION_ENTITY_TYPE = "permission"
+_USER_ENTITY_TYPE = "user"
 
 
 class UserManagementService:
@@ -59,7 +60,7 @@ class UserManagementService:
             AuditEntry(
                 actor_id=actor_id,
                 action=AuditAction.UPDATE,
-                entity_type=_ENTITY_TYPE,
+                entity_type=_USER_ENTITY_TYPE,
                 entity_id=user.id,
                 changes=changes,
             )
@@ -115,7 +116,7 @@ class UserManagementService:
             AuditEntry(
                 actor_id=actor_id,
                 action=action,
-                entity_type=_ENTITY_TYPE,
+                entity_type=_PERMISSION_ENTITY_TYPE,
                 entity_id=entity_id,
                 changes=["status"],
             )

@@ -10,11 +10,13 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
-from backend.app.routes.auth import build_invitation_dispatcher
 from backend.app.routes.security import Manager
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.routes.user_update_request import UserUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.auth.invitation_dispatcher_factory import (
+    InvitationDispatcherFactory,
+)
 from backend.app.service.users.user_management_service import UserManagementService
 
 
@@ -25,7 +27,7 @@ def get_user_management_service(
     return UserManagementService(
         UserRepository(session),
         ClassRepository(session),
-        build_invitation_dispatcher(session, bootstrap),
+        InvitationDispatcherFactory.create(session, bootstrap),
         AuditLogger(AuditLogRepository(session)),
     )
 

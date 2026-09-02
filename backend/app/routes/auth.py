@@ -29,7 +29,9 @@ from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
-from backend.app.service.auth.invitation_dispatcher import InvitationDispatcher
+from backend.app.service.auth.invitation_dispatcher_factory import (
+    InvitationDispatcherFactory,
+)
 from backend.app.service.auth.invitation_service import InvitationService
 from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.service.auth.password_reset_service import PasswordResetService
@@ -43,22 +45,11 @@ SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
 
 
-def build_invitation_dispatcher(session: Session, bootstrap: Bootstrap) -> InvitationDispatcher:
-    tokens = AuthTokenRepository(session)
-    return InvitationDispatcher(
-        tokens,
-        TokenIssuer(tokens, bootstrap.token_factory),
-        bootstrap.email_sender,
-        bootstrap.settings.auth,
-        bootstrap.settings.email,
-    )
-
-
 def get_invitation_service(session: SessionDep, bootstrap: BootstrapDep) -> InvitationService:
     tokens = AuthTokenRepository(session)
     return InvitationService(
         UserRepository(session),
-        build_invitation_dispatcher(session, bootstrap),
+        InvitationDispatcherFactory.create(session, bootstrap),
         TokenConsumer(tokens, bootstrap.token_factory),
         bootstrap.password_hasher,
         AuditLogger(AuditLogRepository(session)),

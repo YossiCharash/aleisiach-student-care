@@ -59,7 +59,7 @@ class ClassService:
 
     def _require_empty(self, class_id: uuid.UUID) -> None:
         students = self._classes.count_active_students(class_id)
-        users = self._classes.count_assigned_users(class_id)
+        users = self._classes.count_enabled_users(class_id)
         if students or users:
             raise ClassNotEmptyError(students, users)
 

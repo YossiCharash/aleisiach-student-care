@@ -1,11 +1,12 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
+from backend.app.models.client.user_status import UserStatus
 
 
 class ClassRepository:
@@ -37,11 +38,17 @@ class ClassRepository:
         return list(self._session.scalars(statement).all())
 
     def count_active_students(self, class_id: uuid.UUID) -> int:
-        statement = select(Student).where(
-            Student.class_id == class_id, Student.is_archived.is_(False)
+        statement = (
+            select(func.count())
+            .select_from(Student)
+            .where(Student.class_id == class_id, Student.is_archived.is_(False))
         )
-        return len(list(self._session.scalars(statement).all()))
+        return self._session.scalar(statement) or 0
 
-    def count_assigned_users(self, class_id: uuid.UUID) -> int:
-        statement = select(User).where(User.class_id == class_id)
-        return len(list(self._session.scalars(statement).all()))
+    def count_enabled_users(self, class_id: uuid.UUID) -> int:
+        statement = (
+            select(func.count())
+            .select_from(User)
+            .where(User.class_id == class_id, User.status != UserStatus.DISABLED)
+        )
+        return self._session.scalar(statement) or 0

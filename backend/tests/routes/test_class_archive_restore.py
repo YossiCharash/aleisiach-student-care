@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -128,3 +129,37 @@ def test_refusal_message_reads_correctly_for_a_single_student(
     assert response.json()["message"] == (
         "לא ניתן להעביר את הכיתה לארכיון. משויכים אליה כעת — תלמידים פעילים: 1, משתמשים: 0."
     )
+
+
+def test_disabled_user_does_not_block_archiving(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Bet")
+    teacher_id = seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id).id
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    assert api.post(f"/classes/{class_id}/archive", headers=headers).status_code == 409
+
+    api.post(f"/users/{teacher_id}/disable", headers=headers)
+
+    assert api.post(f"/classes/{class_id}/archive", headers=headers).status_code == 200
+
+
+def test_invited_user_still_blocks_archiving(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Bet")
+    seed_user("pending", UserRole.INSTRUCTOR, class_id=class_id, status=UserStatus.INVITED)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    response = api.post(f"/classes/{class_id}/archive", headers=headers)
+
+    assert response.status_code == 409

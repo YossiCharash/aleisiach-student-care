@@ -181,7 +181,7 @@ def test_update_records_only_changed_fields_in_audit(
     logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
     assert logs[-1].action == AuditAction.UPDATE
     assert logs[-1].actor_id == boss_id
-    assert logs[-1].entity_type == "permission"
+    assert logs[-1].entity_type == "user"
     assert logs[-1].changes == ["full_name"]
 
 
