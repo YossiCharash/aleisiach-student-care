@@ -27,11 +27,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # Local convenience: migrate + seed demo data, then serve. (Do not seed in production.)
+    # The image entrypoint migrates first; here we also seed demo data before serving.
+    # (Do not seed in production.)
     command:
       - sh
       - -c
-      - "alembic upgrade head && python -m backend.app.seed && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
+      - "python -m backend.app.seed && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
 
