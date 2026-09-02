@@ -6,7 +6,7 @@ class EmailSettings(BaseSettings):
 
     provider: str = "console"
     from_address: str = "no-reply@aleisiach.local"
-    invite_base_url: str = "http://localhost:5173/invite"
+    invite_base_url: str = "http://localhost:5173/accept-invitation"
     reset_base_url: str = "http://localhost:5173/reset-password"
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587

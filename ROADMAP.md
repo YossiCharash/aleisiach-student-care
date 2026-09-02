@@ -43,7 +43,7 @@
 - [x] **Rate-limiting + lockout** על login (נעילת חשבון) + throttle על forgot-password (per-account)
 - [x] אכיפת RBAC מלאה על כל ה-routes (students · טקסונומיה · טאבים 2–4)
 - [ ] הקשחת rate-limit ברמת HTTP/IP (מעבר ל-per-account) — הקשחה עתידית
-- [ ] אינטגרציית ספק מייל אמיתי (כרגע ConsoleEmailSender)
+- [x] שליחת מייל אמיתית ב-SMTP (`SmtpEmailSender`, STARTTLS; ברירת מחדל Gmail SMTP) — נבחר ב-`EMAIL_PROVIDER=smtp`; ברירת מחדל לפיתוח = console
 - [ ] אזור משתמשים: רשימת/השבתת/הסרת משתמשים (מעבר ל-invite)
 
 ## 3. Backend — דומיינים
