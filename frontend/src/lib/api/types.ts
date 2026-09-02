@@ -21,6 +21,10 @@ export interface LoginResponse {
   user: UserResponse;
 }
 
+export interface PasswordChangeResponse {
+  token: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;

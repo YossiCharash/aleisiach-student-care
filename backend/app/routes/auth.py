@@ -20,6 +20,7 @@ from backend.app.schema.routes.invitation_accept_request import InvitationAccept
 from backend.app.schema.routes.login_request import LoginRequest
 from backend.app.schema.routes.login_response import LoginResponse
 from backend.app.schema.routes.password_change_request import PasswordChangeRequest
+from backend.app.schema.routes.password_change_response import PasswordChangeResponse
 from backend.app.schema.routes.password_reset_confirm_request import PasswordResetConfirmRequest
 from backend.app.schema.routes.password_reset_request import PasswordResetRequest
 from backend.app.schema.routes.user_response import UserResponse
@@ -160,14 +161,16 @@ def accept_invitation(
     return service.accept(request.token, request.username, request.password, context)
 
 
-@router.post("/password/change", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/password/change", response_model=PasswordChangeResponse)
 def change_password(
     request: PasswordChangeRequest,
     service: PasswordChangeDep,
     user: CurrentUser,
     context: AuthEventContextDep,
-) -> None:
+    sessions: SessionServiceDep,
+) -> PasswordChangeResponse:
     service.change(user.id, request.current_password, request.new_password, context)
+    return PasswordChangeResponse(token=sessions.create(user.id))
 
 
 @router.post(

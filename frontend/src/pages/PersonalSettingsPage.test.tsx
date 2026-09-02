@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PersonalSettingsPage } from "@/pages/PersonalSettingsPage";
+import { getToken } from "@/lib/auth/tokenStorage";
 import { renderWithClient } from "@/test/renderWithClient";
 import { authApi } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/client";
@@ -56,7 +57,7 @@ describe("PersonalSettingsPage — change password", () => {
   });
 
   it("submits the current and new password and confirms success", async () => {
-    changePasswordMock.mockResolvedValue(undefined);
+    changePasswordMock.mockResolvedValue({ token: "rotated-token" });
     renderWithClient(<PersonalSettingsPage />);
     await fill("old12345", "new12345", "new12345");
 
@@ -65,6 +66,15 @@ describe("PersonalSettingsPage — change password", () => {
       new_password: "new12345",
     });
     expect(await screen.findByText("הסיסמה שונתה בהצלחה.")).toBeInTheDocument();
+  });
+
+  it("stores the rotated session token so the user stays signed in", async () => {
+    changePasswordMock.mockResolvedValue({ token: "rotated-token" });
+    renderWithClient(<PersonalSettingsPage />);
+    await fill("old12345", "new12345", "new12345");
+
+    await screen.findByText("הסיסמה שונתה בהצלחה.");
+    expect(getToken()).toBe("rotated-token");
   });
 
   it("surfaces the server message when the current password is wrong", async () => {
