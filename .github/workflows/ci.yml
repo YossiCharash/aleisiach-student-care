@@ -34,6 +34,13 @@ jobs:
       - name: Pytest
         run: uv run pytest -q
 
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck
+        run: shellcheck .github/scripts/*.sh
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

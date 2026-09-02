@@ -2,8 +2,20 @@ import { expect, test } from "@playwright/test";
 import { login } from "./helpers/auth";
 
 test.describe("manager (mor) authenticated flows", () => {
-  test("logs in and sees every seeded student", async ({ page }) => {
+  test("lands on a home page, then reaches every student grouped by class", async ({
+    page,
+  }) => {
     await login(page, "mor");
+    const home = page.getByRole("main");
+    await expect(page).toHaveURL(/\/$/);
+    await expect(home.getByRole("link", { name: /^הגדרות/ })).toBeVisible();
+    await expect(home.getByRole("link", { name: /^ארכיון/ })).toBeVisible();
+
+    await home.getByRole("link", { name: /^תלמידים/ }).click();
+
+    await expect(page).toHaveURL(/\/students$/);
+    await expect(page.getByRole("heading", { name: /^כיתה א׳/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^כיתה ב׳/ })).toBeVisible();
     await expect(page.getByText("נועה כהן")).toBeVisible();
     await expect(page.getByText("איתי לוי")).toBeVisible();
     await expect(page.getByText("מאיה ברק")).toBeVisible();
@@ -11,6 +23,7 @@ test.describe("manager (mor) authenticated flows", () => {
 
   test("opens a student and sees the four tabs", async ({ page }) => {
     await login(page, "mor");
+    await page.goto("/students");
     await page.getByRole("link", { name: "נועה כהן" }).click();
     await expect(page).toHaveURL(/\/students\/.+/);
     await expect(page.getByRole("tab", { name: "תוכנית" })).toBeVisible();

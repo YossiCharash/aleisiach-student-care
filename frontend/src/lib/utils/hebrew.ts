@@ -84,3 +84,10 @@ export function formatDate(iso: string | null): string {
     year: "numeric",
   }).format(date);
 }
+
+export function studentCountLabel(count: number): string {
+  if (count === 1) {
+    return "תלמיד אחד";
+  }
+  return `${count} תלמידים`;
+}

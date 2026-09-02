@@ -26,7 +26,7 @@ export function ArchivedStudentsPage(): ReactNode {
           </p>
         </div>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/">
+          <Link to="/students">
             <ArrowRight className="h-4 w-4" />
             חזרה לתלמידים
           </Link>

@@ -87,7 +87,7 @@ social-worker note, in any institution.
 
 Isolation is enforced server-side in three layers and must stay that way: the session carries the
 bound institution, a global ORM filter applies it to every read and stamps every write, and
-composite foreign keys make a cross-institution link impossible in the database. See ADR-017.
+composite foreign keys make a cross-institution link impossible in the database. See ADR-018.
 
 Usernames are unique platform-wide (so the login screen needs no institution field); e-mail is
 unique **within** an institution.
@@ -277,7 +277,7 @@ on purpose: it has no access to any of these.
       Retention period is a config value, number TBD.
 - [x] Multi-tenancy — **many institutions with a platform `super_admin`; taxonomy per
       institution; one user belongs to one institution; the institution is derived from the
-      account at login** (decided 2026-09-02, ADR-017). A new institution starts with the
+      account at login** (decided 2026-09-02, ADR-018). A new institution starts with the
       detail-option catalog only; an institution carries a contact name and phone; the super
       admin may only re-send a pending manager invitation; forgot-password sends one link per
       matching account.

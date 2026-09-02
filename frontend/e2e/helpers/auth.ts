@@ -7,5 +7,5 @@ export async function login(page: Page, username: string): Promise<void> {
   await page.getByLabel("שם משתמש").fill(username);
   await page.getByLabel("סיסמה").fill(DEMO_PASSWORD);
   await page.getByRole("button", { name: "כניסה" }).click();
-  await expect(page.getByRole("heading", { name: "התלמידים שלי" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "יציאה" })).toBeVisible();
 }
