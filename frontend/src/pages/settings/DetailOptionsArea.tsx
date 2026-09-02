@@ -79,7 +79,7 @@ function FieldGroup({
   });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-brand-50/40 p-4 shadow-sm">
       <h3 className="text-sm font-semibold text-ink">{detailOptionFieldLabels[field]}</h3>
       <AddSettingInput
         placeholder="אפשרות חדשה"
