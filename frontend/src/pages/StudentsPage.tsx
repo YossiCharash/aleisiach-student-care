@@ -28,6 +28,9 @@ export function StudentsPage(): ReactNode {
   });
 
   const canCreate = user ? permissions.canCreateStudents(user) : false;
+  const isLoading = studentsQuery.isLoading || classesQuery.isLoading;
+  const error = studentsQuery.error ?? classesQuery.error;
+  const isReady = studentsQuery.data !== undefined && classesQuery.data !== undefined;
 
   return (
     <div>
@@ -46,12 +49,10 @@ export function StudentsPage(): ReactNode {
         )}
       </div>
 
-      {studentsQuery.isLoading && <LoadingState />}
-      {studentsQuery.isError && <ErrorState error={studentsQuery.error} />}
-      {studentsQuery.data && (
-        <StudentGroups
-          groups={groupByClass(studentsQuery.data, classesQuery.data ?? [])}
-        />
+      {isLoading && <LoadingState />}
+      {error && <ErrorState error={error} />}
+      {!isLoading && !error && isReady && (
+        <StudentGroups groups={groupByClass(studentsQuery.data, classesQuery.data)} />
       )}
 
       {canCreate && (
