@@ -10,6 +10,7 @@ from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
+from backend.app.schema.routes.student_update_request import StudentUpdateRequest
 from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -79,6 +80,35 @@ class StudentService:
         if request.date_of_birth is not None:
             details.date_of_birth = request.date_of_birth
             changes.append("date_of_birth")
+        return changes
+
+    def update(
+        self, student_id: uuid.UUID, request: StudentUpdateRequest, actor_id: uuid.UUID
+    ) -> StudentResponse:
+        student = self._require(student_id)
+        if not self._classes.exists(request.class_id):
+            raise NotFoundError("class")
+        changes = self._apply_update(student, request)
+        if changes:
+            self._audit.record(
+                AuditEntry(
+                    actor_id=actor_id,
+                    action=AuditAction.UPDATE,
+                    entity_type=_ENTITY_TYPE,
+                    entity_id=student.id,
+                    changes=changes,
+                )
+            )
+        return StudentResponse.model_validate(student)
+
+    def _apply_update(self, student: Student, request: StudentUpdateRequest) -> list[str]:
+        changes: list[str] = []
+        if student.full_name != request.full_name:
+            student.full_name = request.full_name
+            changes.append("full_name")
+        if student.class_id != request.class_id:
+            student.class_id = request.class_id
+            changes.append("class_id")
         return changes
 
     def list_active(self, scope: StudentAccessScope) -> list[StudentResponse]:
