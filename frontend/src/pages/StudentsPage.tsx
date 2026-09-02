@@ -6,6 +6,7 @@ import { studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { StudentResponse } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { displayName } from "@/lib/auth/displayName";
 import { permissions } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -24,7 +25,7 @@ export function StudentsPage(): ReactNode {
         <div>
           <h1 className="text-2xl font-bold text-ink">התלמידים שלי</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            שלום {user?.full_name}. לחצו על תלמיד לצפייה בתיק.
+            שלום {user ? displayName(user) : ""}. לחצו על תלמיד לצפייה בתיק.
           </p>
         </div>
         {user && permissions.canCreateStudents(user) && (

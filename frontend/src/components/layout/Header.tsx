@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Archive, LogOut, Settings, UserCog } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { displayName } from "@/lib/auth/displayName";
 import { permissions } from "@/lib/auth/permissions";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
@@ -31,7 +32,7 @@ export function Header(): ReactNode {
 
         <div className="flex items-center gap-3">
           <div className="text-end">
-            <div className="text-sm font-medium text-ink">{user.full_name}</div>
+            <div className="text-sm font-medium text-ink">{displayName(user)}</div>
             <div className="text-xs text-ink-muted">{roleLabels[user.role]}</div>
           </div>
 
