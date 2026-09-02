@@ -109,3 +109,22 @@ def test_class_archiving_requires_authentication(api: TestClient) -> None:
     class_id = uuid.uuid4()
     assert api.post(f"/classes/{class_id}/archive").status_code == 401
     assert api.get("/classes/archived").status_code == 401
+
+
+def test_refusal_message_reads_correctly_for_a_single_student(
+    api: TestClient,
+    seed_class: SeedClass,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    class_id = seed_class("Aleph")
+    seed_student(class_id, "Dana")
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    response = api.post(f"/classes/{class_id}/archive", headers=headers)
+
+    assert response.json()["message"] == (
+        "לא ניתן להעביר את הכיתה לארכיון. משויכים אליה כעת — תלמידים פעילים: 1, משתמשים: 0."
+    )

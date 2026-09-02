@@ -7,6 +7,6 @@ class ClassNotEmptyError(AppError):
 
     def __init__(self, students: int, users: int) -> None:
         super().__init__(
-            "לא ניתן להעביר את הכיתה לארכיון כל עוד משויכים אליה "
-            f"{students} תלמידים פעילים ו-{users} משתמשים."
+            "לא ניתן להעביר את הכיתה לארכיון. "
+            f"משויכים אליה כעת — תלמידים פעילים: {students}, משתמשים: {users}."
         )

@@ -18,6 +18,8 @@ describe("displayName", () => {
   });
 
   it("falls back to the manager-provided full name before the invitation is accepted", () => {
-    expect(displayName({ ...baseUser, username: null, status: "invited" })).toBe("מור כהן");
+    expect(displayName({ ...baseUser, username: null, status: "invited" })).toBe(
+      "מור כהן"
+    );
   });
 });

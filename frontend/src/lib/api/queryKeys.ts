@@ -13,6 +13,7 @@ export const queryKeys = {
   taxonomySolutions: (skillId: string) => ["taxonomy", "solutions", skillId] as const,
   users: ["users"] as const,
   classes: ["classes"] as const,
+  archivedClasses: ["classes", "archived"] as const,
   diagnoses: ["diagnoses"] as const,
   detailOptions: ["detail-options"] as const,
 };
