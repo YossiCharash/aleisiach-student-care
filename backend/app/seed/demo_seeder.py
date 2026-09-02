@@ -45,10 +45,10 @@ class DemoSeeder:
         if self.is_seeded():
             return
         institution = self._seed_institution()
-        classes = self._seed_classes()
+        classes = self._seed_classes(institution.id)
         self._seed_users(classes["כיתה א׳"].id, institution.id)
-        skills = self._seed_taxonomy()
-        students = self._seed_students(classes)
+        skills = self._seed_taxonomy(institution.id)
+        students = self._seed_students(classes, institution.id)
         self._seed_meeting(students["נועה כהן"].id, skills)
         self._seed_details(students["נועה כהן"].id)
         self._seed_social_note(students["נועה כהן"].id)
@@ -60,8 +60,11 @@ class DemoSeeder:
         TenantBinding.bind(self._session, institution.id)
         return institution
 
-    def _seed_classes(self) -> dict[str, ClassEntity]:
-        classes = {name: ClassEntity(name=name) for name in ("כיתה א׳", "כיתה ב׳")}
+    def _seed_classes(self, institution_id: uuid.UUID) -> dict[str, ClassEntity]:
+        classes = {
+            name: ClassEntity(name=name, institution_id=institution_id)
+            for name in ("כיתה א׳", "כיתה ב׳")
+        }
         self._session.add_all(classes.values())
         self._session.flush()
         return classes
@@ -86,29 +89,38 @@ class DemoSeeder:
             institution_id=institution_id,
         )
 
-    def _seed_taxonomy(self) -> dict[str, Skill]:
-        communication = self._add_label("תקשורת", 0)
-        independence = self._add_label("עצמאות", 1)
-        verbal = self._add_sub_label("תקשורת מילולית", communication.id, 0)
-        daily = self._add_sub_label("כישורי יומיום", independence.id, 0)
+    def _seed_taxonomy(self, institution_id: uuid.UUID) -> dict[str, Skill]:
+        communication = self._add_label("תקשורת", 0, institution_id)
+        independence = self._add_label("עצמאות", 1, institution_id)
+        verbal = self._add_sub_label("תקשורת מילולית", communication.id, 0, institution_id)
+        daily = self._add_sub_label("כישורי יומיום", independence.id, 0, institution_id)
 
-        expression = self._add_skill("הבעה בעל פה", verbal.id, 0)
-        listening = self._add_skill("הקשבה בקבוצה", verbal.id, 1)
-        organization = self._add_skill("התארגנות בוקר", daily.id, 0)
+        expression = self._add_skill("הבעה בעל פה", verbal.id, 0, institution_id)
+        listening = self._add_skill("הקשבה בקבוצה", verbal.id, 1, institution_id)
+        organization = self._add_skill("התארגנות בוקר", daily.id, 0, institution_id)
 
-        self._add_solution("תרגול יומי מול המראה", expression.id)
-        self._add_solution("שימוש בכרטיסיות תמונה", expression.id)
-        self._add_solution("ישיבה בקדמת הקבוצה", listening.id)
-        self._add_solution("לוח משימות מצויר", organization.id)
+        self._add_solution("תרגול יומי מול המראה", expression.id, institution_id)
+        self._add_solution("שימוש בכרטיסיות תמונה", expression.id, institution_id)
+        self._add_solution("ישיבה בקדמת הקבוצה", listening.id, institution_id)
+        self._add_solution("לוח משימות מצויר", organization.id, institution_id)
         self._session.flush()
 
         return {"expression": expression, "listening": listening, "organization": organization}
 
-    def _seed_students(self, classes: dict[str, ClassEntity]) -> dict[str, Student]:
+    def _seed_students(
+        self, classes: dict[str, ClassEntity], institution_id: uuid.UUID
+    ) -> dict[str, Student]:
         students = {
-            "נועה כהן": Student(full_name="נועה כהן", class_id=classes["כיתה א׳"].id),
-            "איתי לוי": Student(full_name="איתי לוי", class_id=classes["כיתה א׳"].id),
-            "מאיה ברק": Student(full_name="מאיה ברק", class_id=classes["כיתה ב׳"].id),
+            name: Student(
+                full_name=name,
+                class_id=classes[class_name].id,
+                institution_id=institution_id,
+            )
+            for name, class_name in (
+                ("נועה כהן", "כיתה א׳"),
+                ("איתי לוי", "כיתה א׳"),
+                ("מאיה ברק", "כיתה ב׳"),
+            )
         }
         self._session.add_all(students.values())
         self._session.flush()
@@ -197,26 +209,34 @@ class DemoSeeder:
         )
         self._session.flush()
 
-    def _add_label(self, name: str, order: int) -> Label:
-        label = Label(name=name, order=order)
+    def _add_label(self, name: str, order: int, institution_id: uuid.UUID) -> Label:
+        label = Label(name=name, order=order, institution_id=institution_id)
         self._session.add(label)
         self._session.flush()
         return label
 
-    def _add_sub_label(self, name: str, label_id: uuid.UUID, order: int) -> SubLabel:
-        sub_label = SubLabel(name=name, label_id=label_id, order=order)
+    def _add_sub_label(
+        self, name: str, label_id: uuid.UUID, order: int, institution_id: uuid.UUID
+    ) -> SubLabel:
+        sub_label = SubLabel(
+            name=name, label_id=label_id, order=order, institution_id=institution_id
+        )
         self._session.add(sub_label)
         self._session.flush()
         return sub_label
 
-    def _add_skill(self, name: str, sub_label_id: uuid.UUID, order: int) -> Skill:
-        skill = Skill(name=name, sub_label_id=sub_label_id, order=order)
+    def _add_skill(
+        self, name: str, sub_label_id: uuid.UUID, order: int, institution_id: uuid.UUID
+    ) -> Skill:
+        skill = Skill(
+            name=name, sub_label_id=sub_label_id, order=order, institution_id=institution_id
+        )
         self._session.add(skill)
         self._session.flush()
         return skill
 
-    def _add_solution(self, text: str, skill_id: uuid.UUID) -> Solution:
-        solution = Solution(text=text, skill_id=skill_id)
+    def _add_solution(self, text: str, skill_id: uuid.UUID, institution_id: uuid.UUID) -> Solution:
+        solution = Solution(text=text, skill_id=skill_id, institution_id=institution_id)
         self._session.add(solution)
         self._session.flush()
         return solution

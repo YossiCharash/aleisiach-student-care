@@ -11,10 +11,21 @@ _SCOPED_BASES = (TenantScoped, OptionalTenantScoped)
 class TenantFilter:
     @staticmethod
     def register() -> None:
-        if event.contains(Session, "do_orm_execute", TenantFilter._restrict_reads):
+        if TenantFilter.is_registered():
             return
         event.listen(Session, "do_orm_execute", TenantFilter._restrict_reads)
         event.listen(Session, "before_flush", TenantFilter._stamp_writes)
+
+    @staticmethod
+    def unregister() -> None:
+        if not TenantFilter.is_registered():
+            return
+        event.remove(Session, "do_orm_execute", TenantFilter._restrict_reads)
+        event.remove(Session, "before_flush", TenantFilter._stamp_writes)
+
+    @staticmethod
+    def is_registered() -> bool:
+        return event.contains(Session, "do_orm_execute", TenantFilter._restrict_reads)
 
     @staticmethod
     def _restrict_reads(state: ORMExecuteState) -> None:
