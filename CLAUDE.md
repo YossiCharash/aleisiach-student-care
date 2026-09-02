@@ -236,7 +236,8 @@ manager *is* the social worker; every manager may write it).
 - [x] Auth flow — **username + password for all users** (national ID dropped from auth);
       manager-provisioned via email invitation; role + class set in the invite form; password
       change + forgot-password reset; hashed passwords, single-use expiring tokens, rate-limit +
-      lockout (decided). Needs an email-sending service (provider TBD).
+      lockout (decided). Email delivery is **SMTP** (`SmtpEmailSender`, STARTTLS; Gmail SMTP
+      default) via `EMAIL_PROVIDER=smtp`; dev defaults to the console sender.
 - [x] Define access for the professional teacher — **read-only everywhere; Tab 3 & guardianship
       blocked** (decided).
 - [x] Social-worker status — **no separate role; all managers write Tab 3** (manager = social

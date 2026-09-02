@@ -284,7 +284,7 @@ flowchart TD
 - Passwords hashed (argon2/bcrypt). Tokens: random, stored **hashed**, single-use, time-expiring.
 - Rate-limit + lockout on login and forgot-password. National ID is **not** an auth factor.
 - Self-service password change lives in the user's personal settings.
-- Requires an **email-sending service** (provider TBD) — configured under `configuration/`.
+- Invitations/resets are sent by email over **SMTP** (`SmtpEmailSender`, stdlib `smtplib` + STARTTLS; Gmail SMTP by default), selected via `EMAIL_PROVIDER=smtp` and configured under `configuration/email/`; dev defaults to the console sender.
 
 ---
 
@@ -358,7 +358,6 @@ flowchart LR
 ## 8. Open dependencies (synced with CLAUDE.md §6)
 - Exact heading names for Tab 4 sections 5+ (structure decided = tables; names to be supplied).
 - Hebrew font choice for UI + PDF (deferred; Tubic vs Heebo — see `branding`).
-- Email-sending provider for invitations/resets (TBD, configured under `configuration/`).
 - Login/student-screen design variation choice.
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
