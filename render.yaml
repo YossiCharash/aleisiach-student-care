@@ -1,0 +1,82 @@
+# Render Blueprint — production infrastructure for the Student Care System.
+# Deploys are triggered by .github/workflows/deploy.yml after CI passes on main,
+# so autoDeploy stays off: a red suite must never reach production.
+# Values marked `sync: false` are set once in the Render dashboard (secrets and
+# cross-service URLs Render cannot compose here).
+
+databases:
+  - name: aleisiach-db
+    databaseName: aleisiach
+    user: aleisiach
+    region: frankfurt
+    plan: free
+
+services:
+  - type: web
+    name: aleisiach-backend
+    runtime: docker
+    region: frankfurt
+    plan: free
+    branch: main
+    autoDeploy: false
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      # Copy the database's Internal Database URL and replace the `postgresql://`
+      # scheme with `postgresql+psycopg://` — the app runs on psycopg v3.
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_ENVIRONMENT
+        value: production
+      # Render's load balancer plus the frontend's nginx proxy sit in front of the app;
+      # the rate limiter reads the client IP that many hops back in X-Forwarded-For.
+      - key: APP_TRUSTED_PROXY_COUNT
+        value: "2"
+      # The frontend origin, e.g. https://aleisiach-frontend.onrender.com
+      - key: APP_CORS_ORIGINS
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: smtp
+      - key: EMAIL_FROM_ADDRESS
+        sync: false
+      # Both must point at the deployed frontend, e.g.
+      # https://aleisiach-frontend.onrender.com/accept-invitation
+      - key: EMAIL_INVITE_BASE_URL
+        sync: false
+      - key: EMAIL_RESET_BASE_URL
+        sync: false
+      - key: EMAIL_SMTP_USERNAME
+        sync: false
+      - key: EMAIL_SMTP_PASSWORD
+        sync: false
+      - key: WHATSAPP_PROVIDER
+        value: webhook
+      - key: WHATSAPP_WEBHOOK_URL
+        sync: false
+      - key: WHATSAPP_RECIPIENT
+        sync: false
+      # First manager account, created on startup while no manager exists.
+      # Clear all four once the first login has happened.
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_USERNAME
+        sync: false
+      - key: BOOTSTRAP_ADMIN_FULL_NAME
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: aleisiach-frontend
+    runtime: docker
+    region: frankfurt
+    plan: free
+    branch: main
+    autoDeploy: false
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    envVars:
+      # The backend service's public origin, e.g. https://aleisiach-backend.onrender.com
+      - key: BACKEND_ORIGIN
+        sync: false
