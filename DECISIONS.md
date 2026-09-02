@@ -208,6 +208,25 @@ and to be the UI default; licensing **Tubic** for an exact match stays a later, 
 **Consequences:** No font licensing needed now; Heebo embeds in WeasyPrint and is installed in the
 backend container for PDF rendering.
 
+## ADR-017 — Continuous deployment = Render, gated by CI on `main`
+**Status:** Accepted · 2026-09-02
+**Context:** The stack (§1) fixes a containerized FastAPI backend, a static/SPA frontend and a
+managed PostgreSQL, but nothing in the repo described how a merge reaches production — deploys were
+configured by hand in a provider dashboard.
+**Decision:** Production runs on **Render** (backend Docker service · nginx SPA service · managed
+PostgreSQL), described as infrastructure-as-code in `render.yaml`. Render's own auto-deploy is
+**off**; `.github/workflows/deploy.yml` triggers on a **successful CI run on `main`** and deploys
+through the Render API at the exact commit CI tested, backend first and the frontend only once the
+backend is live. The deploy job polls until Render reports `live` or a failure, so a broken release
+turns the pipeline red.
+**Alternatives:** Render's push-based auto-deploy — rejected, it ships a red suite (rule 16);
+tag-triggered releases — rejected as premature for a single-environment prototype; GHCR images
+plus a self-managed host — rejected, more infrastructure than this project needs.
+**Consequences:** One environment (production) for now; adding staging means a second service set
+and a branch/approval rule. Migrations stay outside the pipeline — the container entrypoint runs
+`alembic upgrade head` on every start. Three repository secrets (`RENDER_API_KEY` and the two
+service ids) are the pipeline's only credentials; setup is documented in the README.
+
 ---
 
 ## Open / deferred items (not yet ADRs)

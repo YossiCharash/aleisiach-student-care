@@ -56,3 +56,44 @@ in `frontend/`) yourself when you want fast local feedback.
 ## Frontend (`frontend/`)
 
 Scaffolded next — Vite + React + TypeScript SPA (pnpm).
+
+## Deployment (Render)
+
+Production runs on **Render**: a Docker web service for the backend, a Docker (nginx) web
+service for the SPA, and a managed PostgreSQL instance. `render.yaml` is the blueprint for
+that infrastructure — it documents every environment variable the production guard requires.
+
+Deploys are **automatic but gated**: `.github/workflows/deploy.yml` runs only after the CI
+workflow finishes successfully on `main`, then deploys the backend and — once it is live —
+the frontend, pinned to the exact commit CI tested. A red suite never reaches production.
+Render's own auto-deploy stays off (`autoDeploy: false`) so this workflow is the only path in.
+
+### One-time setup
+
+1. **Services.** For a fresh environment, point Render at `render.yaml` (New → Blueprint).
+   If the services already exist, leave them as they are — only steps 2–4 are needed.
+2. **Environment variables.** Fill every `sync: false` value in the Render dashboard. Two are
+   easy to get wrong:
+   - `DATABASE_URL` must carry the psycopg v3 driver — take Render's *Internal Database URL*
+     and change `postgresql://` to `postgresql+psycopg://`.
+   - `BACKEND_ORIGIN` (frontend) and `APP_CORS_ORIGINS` / `EMAIL_*_BASE_URL` (backend) are the
+     services' public origins, known only after the first deploy.
+3. **Turn off auto-deploy** on both services (Settings → Build & Deploy) so CI stays the gate.
+4. **Repository secrets** (Settings → Secrets and variables → Actions):
+
+   | Secret | Where to find it |
+   |---|---|
+   | `RENDER_API_KEY` | Render → Account Settings → API Keys |
+   | `RENDER_BACKEND_SERVICE_ID` | the `srv-…` id in the backend service's dashboard URL |
+   | `RENDER_FRONTEND_SERVICE_ID` | the `srv-…` id in the frontend service's dashboard URL |
+
+### Notes
+
+- Migrations need no deploy step: `backend/docker-entrypoint.sh` runs `alembic upgrade head`
+  before the app boots, on every container start.
+- `plan: free` in the blueprint is a prototype default — free services sleep when idle and a
+  free PostgreSQL instance expires. Raise both plans before real use.
+- `APP_TRUSTED_PROXY_COUNT=2` assumes browser → nginx → Render load balancer → backend. It only
+  affects which IP the auth rate limiter attributes a request to; verify it against a real
+  request before relying on lockouts.
+- The demo seeder is never run in production — `docker-compose.yml` seeds it for local use only.
