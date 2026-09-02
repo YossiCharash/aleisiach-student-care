@@ -3,6 +3,7 @@ from typing import Self
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAdminSettings
 from backend.app.configuration.app.app_settings import AppSettings
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.configuration.database.database_settings import DatabaseSettings
@@ -12,6 +13,7 @@ from backend.app.configuration.notifications.whatsapp_settings import WhatsAppSe
 
 _PRODUCTION = "production"
 _DEFAULT_DB_CREDENTIALS = "aleisiach:aleisiach@"
+_SHIPPED_ADMIN_PASSWORD = "change-me-123"
 
 
 class Settings(BaseSettings):
@@ -23,6 +25,7 @@ class Settings(BaseSettings):
     email: EmailSettings = Field(default_factory=EmailSettings)
     whatsapp: WhatsAppSettings = Field(default_factory=WhatsAppSettings)
     retention: RetentionSettings = Field(default_factory=RetentionSettings)
+    bootstrap_admin: BootstrapAdminSettings = Field(default_factory=BootstrapAdminSettings)
 
     @model_validator(mode="after")
     def reject_development_defaults_in_production(self) -> Self:
@@ -46,4 +49,6 @@ class Settings(BaseSettings):
             problems.append("APP_TRUSTED_PROXY_COUNT=0 מאחד את כל התעבורה לדלי rate-limit אחד")
         if any("localhost" in origin for origin in self.app.cors_origins):
             problems.append("APP_CORS_ORIGINS עדיין מפנה ל-localhost")
+        if self.bootstrap_admin.password == _SHIPPED_ADMIN_PASSWORD:
+            problems.append("BOOTSTRAP_ADMIN_PASSWORD עדיין הסיסמה שמופיעה ב-.env.example")
         return problems

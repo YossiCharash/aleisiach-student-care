@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from "react";
 import { Check, Pencil, Plus, RotateCcw, X } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -30,13 +29,7 @@ export function SettingsIconButton({
 }
 
 export function SettingsListCard({ children }: { children: ReactNode }): ReactNode {
-  return (
-    <Card className="border-s-4 border-s-brand-300">
-      <CardContent className="p-0">
-        <ul>{children}</ul>
-      </CardContent>
-    </Card>
-  );
+  return <ul className="flex flex-wrap items-start gap-2">{children}</ul>;
 }
 
 export function AddSettingInput({
@@ -148,7 +141,7 @@ export function EditableSettingRow({
   }
 
   return (
-    <li className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 last:border-0">
+    <li className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 border-s-2 border-s-brand-300 bg-white py-1 pe-1 ps-2.5 shadow-sm">
       {editing ? (
         <>
           <Input
@@ -163,7 +156,7 @@ export function EditableSettingRow({
                 cancel();
               }
             }}
-            className="h-9 max-w-xs"
+            className="h-8 w-40"
           />
           <SettingsIconButton label="שמירה" onClick={() => void save()} disabled={busy}>
             <Check className="h-4 w-4 text-accent-600" />
@@ -179,7 +172,7 @@ export function EditableSettingRow({
             aria-hidden
           />
           <span
-            className={`flex-1 text-sm font-medium ${isActive ? "text-ink" : "text-ink-muted line-through"}`}
+            className={`text-sm font-medium ${isActive ? "text-ink" : "text-ink-muted line-through"}`}
           >
             {name}
           </span>

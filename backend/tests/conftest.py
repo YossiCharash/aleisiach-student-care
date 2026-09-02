@@ -3,6 +3,7 @@ from collections.abc import Callable, Iterator
 from datetime import timedelta
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -12,6 +13,9 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.pdf.pdf_renderer import PdfRenderer
 from backend.app.client.ratelimit.provider import get_rate_limiter
 from backend.app.client.ratelimit.rate_limiter import RateLimiter
+from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAdminSettings
+from backend.app.configuration.bootstrap import Bootstrap
+from backend.app.configuration.settings import Settings
 from backend.app.main import create_app
 from backend.app.models.base import Base
 from backend.app.models.client.class_entity import ClassEntity
@@ -23,9 +27,17 @@ from backend.app.routes.pdf import get_pdf_renderer
 from backend.app.utils.service.password_hasher import PasswordHasher
 
 
+def _unseeded_app() -> FastAPI:
+    settings = Settings()
+    settings.bootstrap_admin = BootstrapAdminSettings(
+        _env_file=None, email="", username="", full_name="", password=""
+    )
+    return create_app(Bootstrap(settings))
+
+
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(create_app())
+    return TestClient(_unseeded_app())
 
 
 @pytest.fixture
@@ -48,7 +60,7 @@ def db_session() -> Iterator[Session]:
 
 @pytest.fixture
 def api(db_session: Session) -> Iterator[TestClient]:
-    app = create_app()
+    app = _unseeded_app()
 
     def override_session() -> Iterator[Session]:
         try:

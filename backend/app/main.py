@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,17 +23,46 @@ from backend.app.routes.student_extra_sections import (
 from backend.app.routes.students import router as students_router
 from backend.app.routes.taxonomy import router as taxonomy_router
 from backend.app.routes.users import router as users_router
+from backend.app.seed.bootstrap_admin_seeder import BootstrapAdminSeeder
 from backend.app.utils.routes.security_headers_middleware import SecurityHeadersMiddleware
+from backend.app.utils.service.password_policy import PasswordPolicy
 
 
-def create_app() -> FastAPI:
-    bootstrap = Bootstrap(Settings())
+def seed_bootstrap_admin(bootstrap: Bootstrap) -> None:
+    if not bootstrap.settings.bootstrap_admin.is_configured:
+        return
+    policy = PasswordPolicy(
+        bootstrap.settings.auth.password_min_length,
+        bootstrap.settings.auth.password_max_length,
+    )
+    generator = bootstrap.database.session()
+    session = next(generator)
+    try:
+        BootstrapAdminSeeder(
+            session, bootstrap.password_hasher, policy, bootstrap.settings.bootstrap_admin
+        ).run()
+    except BaseException:
+        session.rollback()
+        raise
+    finally:
+        next(generator, None)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    seed_bootstrap_admin(app.state.bootstrap)
+    yield
+
+
+def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
+    bootstrap = bootstrap or Bootstrap(Settings())
     is_production = bootstrap.settings.app.environment == "production"
     app = FastAPI(
         title=bootstrap.settings.app.name,
         docs_url=None if is_production else "/docs",
         redoc_url=None if is_production else "/redoc",
         openapi_url=None if is_production else "/openapi.json",
+        lifespan=lifespan,
     )
     app.state.bootstrap = bootstrap
     app.add_middleware(

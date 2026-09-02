@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
+from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAdminSettings
 from backend.app.configuration.app.app_settings import AppSettings
 from backend.app.configuration.database.database_settings import DatabaseSettings
 from backend.app.configuration.email.email_settings import EmailSettings
@@ -47,4 +48,36 @@ def test_production_accepts_hardened_configuration() -> None:
         app=_production_app(),
         database=DatabaseSettings(url=_SAFE_DB_URL),
         email=EmailSettings(provider="smtp"),
+    )
+
+
+def _shipped_admin() -> BootstrapAdminSettings:
+    return BootstrapAdminSettings(
+        _env_file=None,
+        email="admin@example.org",
+        username="admin",
+        full_name="System Administrator",
+        password="change-me-123",
+    )
+
+
+def test_production_rejects_the_env_example_admin_password() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            app=_production_app(),
+            database=DatabaseSettings(url=_SAFE_DB_URL),
+            email=EmailSettings(provider="smtp"),
+            bootstrap_admin=_shipped_admin(),
+        )
+
+
+def test_production_accepts_a_bootstrap_admin_with_its_own_password() -> None:
+    admin = _shipped_admin()
+    admin.password = "a-real-secret-2026"
+
+    Settings(
+        app=_production_app(),
+        database=DatabaseSettings(url=_SAFE_DB_URL),
+        email=EmailSettings(provider="smtp"),
+        bootstrap_admin=admin,
     )
