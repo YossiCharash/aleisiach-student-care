@@ -45,7 +45,7 @@ export function DiagnosesArea(): ReactNode {
         </Button>
       </div>
 
-      <div className="max-w-2xl space-y-4">
+      <div className="max-w-2xl space-y-4 rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-brand-50/40 p-4 shadow-sm">
         <AddSettingInput
           placeholder="שם אבחנה חדשה"
           buttonLabel="הוספת אבחנה"

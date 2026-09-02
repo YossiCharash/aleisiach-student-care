@@ -28,7 +28,7 @@ export function ClassesArea(): ReactNode {
         </p>
       </div>
 
-      <div className="max-w-2xl space-y-4">
+      <div className="max-w-2xl space-y-4 rounded-card border border-s-4 border-slate-200 border-s-brand-400 bg-brand-50/40 p-4 shadow-sm">
         <AddSettingInput
           placeholder="שם כיתה חדשה"
           buttonLabel="הוספת כיתה"
