@@ -13,7 +13,8 @@ vi.mock("@/lib/api/endpoints", () => ({
   institutionsApi: {
     list: vi.fn(),
     create: vi.fn(),
-    rename: vi.fn(),
+    update: vi.fn(),
+    resendManagerInvitation: vi.fn(),
     deactivate: vi.fn(),
     activate: vi.fn(),
   },
@@ -22,6 +23,8 @@ vi.mock("@/lib/api/endpoints", () => ({
 const listMock = vi.mocked(institutionsApi.list);
 const createMock = vi.mocked(institutionsApi.create);
 const deactivateMock = vi.mocked(institutionsApi.deactivate);
+const updateMock = vi.mocked(institutionsApi.update);
+const resendMock = vi.mocked(institutionsApi.resendManagerInvitation);
 
 function institution(overrides: Partial<InstitutionSummary> = {}): InstitutionSummary {
   return {
@@ -30,8 +33,11 @@ function institution(overrides: Partial<InstitutionSummary> = {}): InstitutionSu
     code: "alef",
     is_active: true,
     created_at: "2026-09-01T00:00:00Z",
+    contact_name: null,
+    contact_phone: null,
     user_count: 4,
     student_count: 12,
+    pending_manager_email: null,
     ...overrides,
   };
 }
@@ -85,6 +91,8 @@ describe("InstitutionsPage", () => {
       name: "בית ספר בית",
       code: "bet",
       is_active: true,
+      contact_name: null,
+      contact_phone: null,
       created_at: "2026-09-02T00:00:00Z",
     });
 
@@ -104,6 +112,8 @@ describe("InstitutionsPage", () => {
         code: "bet",
         manager_full_name: "רותי",
         manager_email: "ruti@example.org",
+        contact_name: null,
+        contact_phone: null,
       })
     );
   });
@@ -115,6 +125,8 @@ describe("InstitutionsPage", () => {
       name: "בית ספר אלף",
       code: "alef",
       is_active: false,
+      contact_name: null,
+      contact_phone: null,
       created_at: "2026-09-01T00:00:00Z",
     });
 
@@ -127,5 +139,87 @@ describe("InstitutionsPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
 
     await waitFor(() => expect(deactivateMock).toHaveBeenCalledWith("i1"));
+  });
+});
+
+describe("InstitutionsPage — contact and invitations", () => {
+  beforeEach(() => {
+    listMock.mockReset();
+    updateMock.mockReset();
+    resendMock.mockReset();
+  });
+
+  it("shows the contact person and phone", async () => {
+    listMock.mockResolvedValue([
+      institution({ contact_name: "רותי לוי", contact_phone: "050-1234567" }),
+    ]);
+
+    renderPage(<InstitutionsPage />);
+
+    expect(await screen.findByText("רותי לוי")).toBeInTheDocument();
+    expect(screen.getByText("050-1234567")).toBeInTheDocument();
+  });
+
+  it("edits the name and contact details together", async () => {
+    listMock.mockResolvedValue([institution()]);
+    updateMock.mockResolvedValue({
+      id: "i1",
+      name: "שם חדש",
+      code: "alef",
+      is_active: true,
+      contact_name: "יוסי",
+      contact_phone: "03-1111111",
+      created_at: "2026-09-01T00:00:00Z",
+    });
+
+    renderPage(<InstitutionsPage />);
+    await screen.findByText("בית ספר אלף");
+
+    await userEvent.click(screen.getByRole("button", { name: "עריכת מוסד" }));
+    await userEvent.clear(screen.getByLabelText("שם המוסד"));
+    await userEvent.type(screen.getByLabelText("שם המוסד"), "שם חדש");
+    await userEvent.type(screen.getByLabelText("איש קשר"), "יוסי");
+    await userEvent.click(screen.getByRole("button", { name: "שמירה" }));
+
+    await waitFor(() =>
+      expect(updateMock).toHaveBeenCalledWith("i1", {
+        name: "שם חדש",
+        contact_name: "יוסי",
+        contact_phone: null,
+      })
+    );
+  });
+
+  it("offers to resend a pending manager invitation", async () => {
+    listMock.mockResolvedValue([
+      institution({ pending_manager_email: "ruti@example.org" }),
+    ]);
+    resendMock.mockResolvedValue({
+      id: "i1",
+      name: "בית ספר אלף",
+      code: "alef",
+      is_active: true,
+      contact_name: null,
+      contact_phone: null,
+      created_at: "2026-09-01T00:00:00Z",
+    });
+
+    renderPage(<InstitutionsPage />);
+    expect(await screen.findByText(/ruti@example.org/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "שליחת הזמנה מחדש" }));
+
+    await waitFor(() => expect(resendMock).toHaveBeenCalledWith("i1"));
+  });
+
+  it("hides the resend button when no invitation is pending", async () => {
+    listMock.mockResolvedValue([institution()]);
+
+    renderPage(<InstitutionsPage />);
+    await screen.findByText("בית ספר אלף");
+
+    expect(
+      screen.queryByRole("button", { name: "שליחת הזמנה מחדש" })
+    ).not.toBeInTheDocument();
   });
 });

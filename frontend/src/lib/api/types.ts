@@ -30,12 +30,15 @@ export interface InstitutionResponse {
   name: string;
   code: string;
   is_active: boolean;
+  contact_name: string | null;
+  contact_phone: string | null;
   created_at: string;
 }
 
 export interface InstitutionSummary extends InstitutionResponse {
   user_count: number;
   student_count: number;
+  pending_manager_email: string | null;
 }
 
 export interface InstitutionCreateRequest {
@@ -43,6 +46,14 @@ export interface InstitutionCreateRequest {
   code: string;
   manager_full_name: string;
   manager_email: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+}
+
+export interface InstitutionUpdateRequest {
+  name: string;
+  contact_name: string | null;
+  contact_phone: string | null;
 }
 
 export interface PasswordChangeResponse {

@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Pencil, Power, X } from "lucide-react";
+import { MailPlus, Pencil, Power } from "lucide-react";
 import { institutionsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { InstitutionSummary } from "@/lib/api/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { ConfirmDeactivationDialog } from "@/pages/institutions/ConfirmDeactivationDialog";
+import { EditInstitutionDialog } from "@/pages/institutions/EditInstitutionDialog";
 
 export function InstitutionRow({
   institution,
@@ -15,21 +15,12 @@ export function InstitutionRow({
   institution: InstitutionSummary;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [name, setName] = useState(institution.name);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   function refresh(): void {
     void queryClient.invalidateQueries({ queryKey: queryKeys.institutions });
   }
-
-  const rename = useMutation({
-    mutationFn: () => institutionsApi.rename(institution.id, name.trim()),
-    onSuccess: () => {
-      setIsEditing(false);
-      refresh();
-    },
-  });
 
   const toggleActive = useMutation({
     mutationFn: () =>
@@ -42,40 +33,30 @@ export function InstitutionRow({
     },
   });
 
-  function cancelEditing(): void {
-    setName(institution.name);
-    setIsEditing(false);
-  }
+  const resendInvitation = useMutation({
+    mutationFn: () => institutionsApi.resendManagerInvitation(institution.id),
+    onSuccess: refresh,
+  });
 
   return (
     <tr className="border-b border-slate-50 last:border-0">
       <td className="px-4 py-3 font-medium text-ink">
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              aria-label="שם המוסד"
-              autoFocus
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              title="שמירה"
-              onClick={() => rename.mutate()}
-              disabled={rename.isPending || name.trim().length < 2}
-            >
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" title="ביטול" onClick={cancelEditing}>
-              <X className="h-4 w-4" />
-            </Button>
+        {institution.name}
+        {institution.pending_manager_email !== null && (
+          <div className="text-xs font-normal text-ink-muted">
+            ממתין לאישור הזמנה: {institution.pending_manager_email}
           </div>
-        ) : (
-          institution.name
         )}
       </td>
       <td className="px-4 py-3 text-ink-muted">{institution.code}</td>
+      <td className="px-4 py-3 text-ink-muted">
+        {institution.contact_name ?? "—"}
+        {institution.contact_phone !== null && (
+          <div className="text-xs" dir="ltr">
+            {institution.contact_phone}
+          </div>
+        )}
+      </td>
       <td className="px-4 py-3 text-ink-muted">{institution.user_count}</td>
       <td className="px-4 py-3 text-ink-muted">{institution.student_count}</td>
       <td className="px-4 py-3">
@@ -88,12 +69,22 @@ export function InstitutionRow({
           <Button
             variant="ghost"
             size="icon"
-            title="שינוי שם"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
+            title="עריכת מוסד"
+            onClick={() => setEditOpen(true)}
           >
             <Pencil className="h-4 w-4" />
           </Button>
+          {institution.pending_manager_email !== null && (
+            <Button
+              variant="ghost"
+              size="icon"
+              title="שליחת הזמנה מחדש"
+              onClick={() => resendInvitation.mutate()}
+              disabled={resendInvitation.isPending}
+            >
+              <MailPlus className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -108,6 +99,11 @@ export function InstitutionRow({
         </div>
       </td>
 
+      <EditInstitutionDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        institution={institution}
+      />
       <ConfirmDeactivationDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

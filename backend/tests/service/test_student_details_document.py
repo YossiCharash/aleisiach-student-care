@@ -39,7 +39,7 @@ def _details(
 
 
 def test_full_details_include_guardianship() -> None:
-    html = StudentDetailsDocument().to_html(_details())
+    html = StudentDetailsDocument().to_html(_details(), "מוסד בדיקה")
 
     assert 'dir="rtl"' in html
     assert "123456789" in html
@@ -58,7 +58,7 @@ def test_full_details_include_guardianship() -> None:
 
 
 def test_redacted_details_omit_guardianship() -> None:
-    html = StudentDetailsDocument().to_html(_details(sensitive_visible=False))
+    html = StudentDetailsDocument().to_html(_details(sensitive_visible=False), "מוסד בדיקה")
 
     assert "אפוטרופסות ומעמד משפטי" not in html
     assert "מונה אפוטרופוס" not in html
@@ -67,7 +67,13 @@ def test_redacted_details_omit_guardianship() -> None:
 
 
 def test_details_html_escapes_content() -> None:
-    html = StudentDetailsDocument().to_html(_details(national_id="<b>x</b>"))
+    html = StudentDetailsDocument().to_html(_details(national_id="<b>x</b>"), "מוסד בדיקה")
 
     assert "<b>x</b>" not in html
     assert "&lt;b&gt;" in html
+
+
+def test_details_html_carries_the_institution_name() -> None:
+    html = StudentDetailsDocument().to_html(_details(), "בית ספר השרון")
+
+    assert "בית ספר השרון" in html

@@ -7,6 +7,7 @@ from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.institution import Institution
 from backend.app.schema.routes.institution_response import InstitutionResponse
 from backend.app.schema.routes.institution_summary import InstitutionSummary
+from backend.app.schema.routes.institution_update_request import InstitutionUpdateRequest
 from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
 
@@ -20,14 +21,17 @@ class InstitutionService:
 
     def list_institutions(self) -> list[InstitutionSummary]:
         counts = self._institutions.counts()
+        invited = self._institutions.invited_managers()
         summaries: list[InstitutionSummary] = []
         for institution in self._institutions.list_all():
             found = counts.get(institution.id)
+            manager = invited.get(institution.id)
             summaries.append(
                 InstitutionSummary(
                     **InstitutionResponse.model_validate(institution).model_dump(),
                     user_count=found.user_count if found else 0,
                     student_count=found.student_count if found else 0,
+                    pending_manager_email=None if manager is None else manager.email,
                 )
             )
         return summaries
@@ -35,14 +39,28 @@ class InstitutionService:
     def get(self, institution_id: uuid.UUID) -> InstitutionResponse:
         return InstitutionResponse.model_validate(self._require(institution_id))
 
-    def rename(
-        self, institution_id: uuid.UUID, name: str, actor_id: uuid.UUID
+    def update(
+        self, institution_id: uuid.UUID, request: InstitutionUpdateRequest, actor_id: uuid.UUID
     ) -> InstitutionResponse:
         institution = self._require(institution_id)
-        if institution.name != name:
-            institution.name = name
-            self._record(actor_id, AuditAction.UPDATE, institution.id, ["name"])
+        changes = self._apply(institution, request)
+        if changes:
+            self._record(actor_id, AuditAction.UPDATE, institution.id, changes)
         return InstitutionResponse.model_validate(institution)
+
+    @staticmethod
+    def _apply(institution: Institution, request: InstitutionUpdateRequest) -> list[str]:
+        changes: list[str] = []
+        if institution.name != request.name:
+            institution.name = request.name
+            changes.append("name")
+        if institution.contact_name != request.contact_name:
+            institution.contact_name = request.contact_name
+            changes.append("contact_name")
+        if institution.contact_phone != request.contact_phone:
+            institution.contact_phone = request.contact_phone
+            changes.append("contact_phone")
+        return changes
 
     def deactivate(self, institution_id: uuid.UUID, actor_id: uuid.UUID) -> InstitutionResponse:
         institution = self._require(institution_id)

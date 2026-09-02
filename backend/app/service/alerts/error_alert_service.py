@@ -21,20 +21,30 @@ class ErrorAlertService:
         self._environment = environment
         self._enabled = enabled
 
-    def report(self, error: Exception, method: str, path: str) -> str:
+    def report(
+        self, error: Exception, method: str, path: str, institution: str | None = None
+    ) -> str:
         reference = uuid.uuid4().hex[:12]
         logger.error("Unhandled error %s on %s %s", reference, method, path, exc_info=error)
         if self._enabled:
-            self._dispatch(self._build_alert(error, method, path, reference))
+            self._dispatch(self._build_alert(error, method, path, reference, institution))
         return reference
 
-    def _build_alert(self, error: Exception, method: str, path: str, reference: str) -> ErrorAlert:
+    def _build_alert(
+        self,
+        error: Exception,
+        method: str,
+        path: str,
+        reference: str,
+        institution: str | None,
+    ) -> ErrorAlert:
         return ErrorAlert(
             reference=reference,
             error_type=type(error).__name__,
             method=method,
             path=path,
             environment=self._environment,
+            institution=institution,
             occurred_at=self._clock.now(),
         )
 

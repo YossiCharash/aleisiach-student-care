@@ -95,6 +95,7 @@ def get_password_reset_service(
     tokens = AuthTokenRepository(session)
     return PasswordResetService(
         UserRepository(session),
+        InstitutionRepository(session),
         TokenIssuer(tokens, bootstrap.token_factory),
         TokenConsumer(tokens, bootstrap.token_factory),
         bootstrap.password_hasher,

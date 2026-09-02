@@ -14,12 +14,13 @@ _CSS = (
     "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
     "h1{color:#CC3366;font-size:20pt}"
     "h2{color:#85C441;font-size:14pt;border-bottom:2px solid #85C441;padding-bottom:2pt}"
+    ".institution{color:#5C5C5C;font-size:11pt;margin:0}"
     ".field{margin:3pt 0}.label{color:#5C5C5C}ul{margin:0;padding-inline-start:18pt}"
 )
 
 
 class StudentDetailsDocument:
-    def to_html(self, details: StudentDetailsResponse) -> str:
+    def to_html(self, details: StudentDetailsResponse, institution_name: str) -> str:
         sections = [
             self._identity(details),
             self._diagnoses(details),
@@ -34,7 +35,9 @@ class StudentDetailsDocument:
         body = "".join(sections)
         return (
             '<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8">'
-            f"<style>{_CSS}</style></head><body><h1>פרטי תלמיד</h1>{body}</body></html>"
+            f"<style>{_CSS}</style></head><body>"
+            f'<p class="institution">{escape(institution_name)}</p>'
+            f"<h1>פרטי תלמיד</h1>{body}</body></html>"
         )
 
     def _identity(self, details: StudentDetailsResponse) -> str:

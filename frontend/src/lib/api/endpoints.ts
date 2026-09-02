@@ -8,6 +8,7 @@ import type {
   InstitutionCreateRequest,
   InstitutionResponse,
   InstitutionSummary,
+  InstitutionUpdateRequest,
   DiagnosisCatalogUpdate,
   InvitationCommand,
   LabelResponse,
@@ -63,8 +64,15 @@ export const institutionsApi = {
     apiClient.get<InstitutionSummary[]>("/institutions"),
   create: (body: InstitutionCreateRequest): Promise<InstitutionResponse> =>
     apiClient.post<InstitutionResponse>("/institutions", body),
-  rename: (institutionId: string, name: string): Promise<InstitutionResponse> =>
-    apiClient.patch<InstitutionResponse>(`/institutions/${institutionId}`, { name }),
+  update: (
+    institutionId: string,
+    body: InstitutionUpdateRequest
+  ): Promise<InstitutionResponse> =>
+    apiClient.patch<InstitutionResponse>(`/institutions/${institutionId}`, body),
+  resendManagerInvitation: (institutionId: string): Promise<InstitutionResponse> =>
+    apiClient.post<InstitutionResponse>(
+      `/institutions/${institutionId}/manager-invitation`
+    ),
   deactivate: (institutionId: string): Promise<InstitutionResponse> =>
     apiClient.post<InstitutionResponse>(`/institutions/${institutionId}/deactivate`),
   activate: (institutionId: string): Promise<InstitutionResponse> =>

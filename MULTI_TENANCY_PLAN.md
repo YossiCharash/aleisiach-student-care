@@ -1,8 +1,8 @@
 # תוכנית מעבר לריבוי־מוסדות (Multi-Tenancy)
 
-> **סטטוס: מיושם.** שלבים 0–4 בוצעו בענף `feature/multi-tenancy-foundation`
+> **סטטוס: הושלם.** שלבים 0–5 בוצעו בענף `feature/multi-tenancy-foundation`
 > (ADR-017 ב-`DECISIONS.md`, `CLAUDE.md` §3 ו-`ARCHITECTURE.md` §4c).
-> נותרו: שלב 5 (הקשחה) והשאלות הפתוחות בסעיף 11.
+> ארבע השאלות בסעיף 11 נענו — ההחלטות מתועדות ב-ADR-017.
 > תאריך: 2026-09-02.
 
 ---

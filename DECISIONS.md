@@ -240,9 +240,19 @@ A shared taxonomy owned by the super admin — rejected, it removes the flexibil
 Per-institution usernames with an institution selector at login — rejected, it changes the login
 screen for every user to serve a rare case.
 **Consequences:** Migration `0016_institutions` backfills all existing rows into a default
-institution. Forgot-password may now match several accounts for one e-mail address and must send a
-link per account, naming the institution — still outstanding. Postgres row-level security remains
-available as a later hardening layer on top of the application filter.
+institution. Postgres row-level security remains available as a later hardening layer on top of the
+application filter.
+**Follow-up decisions (2026-09-02):**
+- A new institution starts with the structural detail-option catalog only; taxonomy, Tab 4 headings
+  and the diagnosis catalog are built by its manager in Settings. No default content is invented.
+- An institution carries a **contact name and phone** beyond its name and code; no address, no logo.
+- The super admin can **re-send a pending manager invitation** and nothing more — it never resets a
+  password and cannot re-invite a manager who already accepted, which would be an account takeover.
+  A manager who lost access uses forgot-password.
+- **Forgot-password sends one link per matching account**, each naming the institution and username;
+  the on-screen message stays neutral either way.
+- Unexpected-error alerts carry the **institution code** as metadata (never the name or any PII), and
+  PDF exports carry the institution name in their header.
 
 ---
 
@@ -250,10 +260,8 @@ available as a later hardening layer on top of the application filter.
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.
 - **Login/student-screen design variation** — pick among the design's variations (frontend).
-- **New-institution template content** — a new institution currently starts with the structural
-  detail-option catalog only; whether it should also start with a default taxonomy, Tab 4
-  headings and diagnosis catalog is open (ADR-017).
-- **Forgot-password with a repeated e-mail** — one address may now match accounts in several
-  institutions; the reset flow still resolves a single account (ADR-017).
 
-_Resolved: Hebrew font = **Heebo** default (ADR-016); email provider = **Gmail SMTP** (ADR-014)._
+
+_Resolved: Hebrew font = **Heebo** default (ADR-016); email provider = **Gmail SMTP** (ADR-014);
+new-institution template, institution fields, manager access recovery and multi-institution
+password reset (ADR-017 follow-ups)._

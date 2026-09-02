@@ -9,4 +9,5 @@ class ErrorAlert(BaseModel):
     method: str
     path: str
     environment: str
+    institution: str | None = None
     occurred_at: datetime

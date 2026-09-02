@@ -64,3 +64,21 @@ def test_alert_carries_no_free_text_exception_detail() -> None:
     dumped = notifier.alerts[0].model_dump_json()
     assert secret not in dumped
     assert "message" not in notifier.alerts[0].model_dump()
+
+
+def test_alert_carries_the_institution_code() -> None:
+    notifier = _CapturingNotifier()
+
+    _service(notifier).report(RuntimeError("boom"), "GET", "/students", "sharon")
+
+    assert notifier.alerts[0].institution == "sharon"
+    assert "sharon" in WhatsAppNotifier.format_text(notifier.alerts[0])
+
+
+def test_alert_omits_the_institution_line_for_platform_requests() -> None:
+    notifier = _CapturingNotifier()
+
+    _service(notifier).report(RuntimeError("boom"), "GET", "/institutions")
+
+    assert notifier.alerts[0].institution is None
+    assert "מוסד:" not in WhatsAppNotifier.format_text(notifier.alerts[0])

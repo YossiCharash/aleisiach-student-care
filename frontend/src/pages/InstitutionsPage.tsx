@@ -59,6 +59,7 @@ function InstitutionsTable({
             <tr>
               <th className="px-4 py-3 text-start font-medium">שם המוסד</th>
               <th className="px-4 py-3 text-start font-medium">קוד</th>
+              <th className="px-4 py-3 text-start font-medium">איש קשר</th>
               <th className="px-4 py-3 text-start font-medium">משתמשים</th>
               <th className="px-4 py-3 text-start font-medium">תלמידים</th>
               <th className="px-4 py-3 text-start font-medium">סטטוס</th>

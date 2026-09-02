@@ -226,8 +226,9 @@ on purpose: it has no access to any of these.
 
 - **Login screen** — username + password + a "forgot password" link. (2–3 design variations.)
 - **Institutions console** (`super_admin` only) — the list of institutions with their user and
-  student counts; create an institution (name · code · first manager's name and e-mail),
-  rename, deactivate and reactivate. Shows no institution content.
+  student counts and contact person; create an institution (name · code · first manager's name
+  and e-mail · optional contact), edit name and contact, re-send a pending manager invitation,
+  deactivate and reactivate. Shows no institution content.
 - **Invitation-acceptance screen** — reached from the email link; set username + password (+ confirm).
 - **Forgot-password screen** — enter email; neutral confirmation message either way.
 - **Main screen** — top-right: worker name + list of students assigned to their class; clicking
@@ -276,8 +277,10 @@ on purpose: it has no access to any of these.
       Retention period is a config value, number TBD.
 - [x] Multi-tenancy — **many institutions with a platform `super_admin`; taxonomy per
       institution; one user belongs to one institution; the institution is derived from the
-      account at login** (decided 2026-09-02, ADR-017). Open: what a new institution's default
-      template should contain beyond the detail-option catalog.
+      account at login** (decided 2026-09-02, ADR-017). A new institution starts with the
+      detail-option catalog only; an institution carries a contact name and phone; the super
+      admin may only re-send a pending manager invitation; forgot-password sends one link per
+      matching account.
 - [x] Stack — **LOCKED** (Vite React SPA + FastAPI/Pydantic + PostgreSQL; pnpm, uv, GitHub
       Actions; server-side WeasyPrint PDF) (decided).
 

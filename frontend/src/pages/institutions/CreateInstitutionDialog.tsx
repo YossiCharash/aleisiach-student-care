@@ -20,7 +20,14 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-const EMPTY_FORM = { name: "", code: "", managerFullName: "", managerEmail: "" };
+const EMPTY_FORM = {
+  name: "",
+  code: "",
+  managerFullName: "",
+  managerEmail: "",
+  contactName: "",
+  contactPhone: "",
+};
 
 export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
@@ -34,6 +41,8 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
         code: form.code.trim(),
         manager_full_name: form.managerFullName.trim(),
         manager_email: form.managerEmail.trim(),
+        contact_name: form.contactName.trim() || null,
+        contact_phone: form.contactPhone.trim() || null,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.institutions });
@@ -115,6 +124,24 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
               value={form.managerEmail}
               onChange={(event) => setForm({ ...form, managerEmail: event.target.value })}
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="institution-contact-name">איש קשר (לא חובה)</Label>
+            <Input
+              id="institution-contact-name"
+              value={form.contactName}
+              onChange={(event) => setForm({ ...form, contactName: event.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="institution-contact-phone">טלפון איש הקשר (לא חובה)</Label>
+            <Input
+              id="institution-contact-phone"
+              value={form.contactPhone}
+              onChange={(event) => setForm({ ...form, contactPhone: event.target.value })}
+              dir="ltr"
             />
           </div>
 

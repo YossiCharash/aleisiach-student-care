@@ -7,10 +7,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.models.client.auth_token import AuthToken
 from backend.app.models.client.detail_option import DetailOption
+from backend.app.models.client.token_kind import TokenKind
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -159,3 +162,79 @@ def test_new_institution_starts_without_students_or_taxonomy(
 
     assert created["student_count"] == 0
     assert created["user_count"] == 1
+
+
+def test_contact_details_are_stored_on_creation(
+    api: TestClient, admin_headers: dict[str, str]
+) -> None:
+    response = api.post(
+        "/institutions",
+        headers=admin_headers,
+        json={**NEW_INSTITUTION, "contact_name": "רותי לוי", "contact_phone": "050-1234567"},
+    )
+
+    assert response.json()["contact_name"] == "רותי לוי"
+    assert response.json()["contact_phone"] == "050-1234567"
+
+
+def test_contact_details_can_be_edited(api: TestClient, admin_headers: dict[str, str]) -> None:
+    created = api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION).json()
+
+    response = api.patch(
+        f"/institutions/{created['id']}",
+        headers=admin_headers,
+        json={"name": created["name"], "contact_name": "יוסי", "contact_phone": "03-1111111"},
+    )
+
+    assert response.json()["contact_name"] == "יוסי"
+    assert response.json()["contact_phone"] == "03-1111111"
+
+
+def test_listing_shows_the_pending_manager_invitation(
+    api: TestClient, admin_headers: dict[str, str]
+) -> None:
+    api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION)
+
+    listed = api.get("/institutions", headers=admin_headers).json()
+    created = [item for item in listed if item["code"] == "new-school"][0]
+
+    assert created["pending_manager_email"] == NEW_INSTITUTION["manager_email"]
+
+
+def test_manager_invitation_can_be_resent(
+    api: TestClient, admin_headers: dict[str, str], db_session: Session
+) -> None:
+    created = api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION).json()
+
+    response = api.post(f"/institutions/{created['id']}/manager-invitation", headers=admin_headers)
+
+    assert response.status_code == 200
+    with TenantBinding.platform(db_session):
+        pending = db_session.scalars(
+            select(AuthToken).where(AuthToken.kind == TokenKind.INVITE)
+        ).all()
+    assert len([token for token in pending if token.used_at is None]) == 1
+
+
+def test_resending_without_a_pending_invitation_is_rejected(
+    api: TestClient, admin_headers: dict[str, str], seed_user: SeedUser
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+
+    response = api.post(
+        f"/institutions/{DEFAULT_INSTITUTION_ID}/manager-invitation", headers=admin_headers
+    )
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "no_pending_manager_invitation"
+
+
+def test_resending_for_an_unknown_institution_is_not_found(
+    api: TestClient, admin_headers: dict[str, str]
+) -> None:
+    response = api.post(
+        "/institutions/11111111-2222-3333-4444-555555555555/manager-invitation",
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 404

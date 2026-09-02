@@ -7,6 +7,8 @@ from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.service.institution_counts import InstitutionCounts
 
 TenantColumn = InstrumentedAttribute[uuid.UUID] | InstrumentedAttribute[uuid.UUID | None]
@@ -42,6 +44,23 @@ class InstitutionRepository:
             )
             for institution_id in users.keys() | students.keys()
         }
+
+    def invited_managers(self) -> dict[uuid.UUID, User]:
+        with TenantBinding.platform(self._session):
+            statement = (
+                select(User)
+                .where(
+                    User.role == UserRole.MANAGER,
+                    User.status == UserStatus.INVITED,
+                    User.institution_id.is_not(None),
+                )
+                .order_by(User.email.desc())
+            )
+            found = self._session.scalars(statement).all()
+        return {manager.institution_id: manager for manager in found if manager.institution_id}
+
+    def invited_manager(self, institution_id: uuid.UUID) -> User | None:
+        return self.invited_managers().get(institution_id)
 
     def _grouped_count(
         self, column: TenantColumn, *filters: ColumnElement[bool]

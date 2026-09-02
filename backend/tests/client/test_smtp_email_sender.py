@@ -4,6 +4,7 @@ from backend.app.client.email.console_email_sender import ConsoleEmailSender
 from backend.app.client.email.smtp_email_sender import SmtpEmailSender
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.schema.service.password_reset_message import PasswordResetMessage
 
 
 class _CapturingSmtpSender(SmtpEmailSender):
@@ -30,7 +31,14 @@ def test_invitation_message_composition() -> None:
 def test_reset_message_composition() -> None:
     sender = _CapturingSmtpSender(EmailSettings())
 
-    sender.send_password_reset("user@example.com", "https://app/reset?token=xyz789")
+    sender.send_password_reset(
+        PasswordResetMessage(
+            email="user@example.com",
+            link="https://app/reset?token=xyz789",
+            institution_name="מוסד בדיקה",
+            username="tester",
+        )
+    )
 
     message = sender.sent[0]
     assert "איפוס" in message["Subject"]

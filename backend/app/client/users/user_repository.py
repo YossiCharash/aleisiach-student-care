@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.user import User
+from backend.app.models.client.user_status import UserStatus
 
 
 class UserRepository:
@@ -29,6 +30,15 @@ class UserRepository:
 
     def get_by_email(self, email: str) -> User | None:
         return self._session.scalar(select(User).where(User.email == email))
+
+    def list_active_by_email(self, email: str) -> list[User]:
+        with TenantBinding.platform(self._session):
+            statement = (
+                select(User)
+                .where(User.email == email, User.status == UserStatus.ACTIVE)
+                .order_by(User.username)
+            )
+            return list(self._session.scalars(statement).all())
 
     def get_by_username(self, username: str) -> User | None:
         with TenantBinding.platform(self._session):

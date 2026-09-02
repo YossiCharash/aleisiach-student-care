@@ -24,6 +24,7 @@ from backend.app.schema.service.institution_provisioning_command import (
 )
 from backend.app.seed.institution_template_seeder import InstitutionTemplateSeeder
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.auth.invitation_dispatcher_factory import InvitationDispatcherFactory
 from backend.app.service.auth.invitation_service_factory import InvitationServiceFactory
 from backend.app.service.institutions.institution_provisioning_service import (
     InstitutionProvisioningService,
@@ -48,6 +49,7 @@ def get_provisioning_service(
         TenantScope(session),
         InstitutionTemplateSeeder(DetailOptionRepository(session), InstitutionTemplateSettings()),
         InvitationServiceFactory.create(session, bootstrap),
+        InvitationDispatcherFactory.create(session, bootstrap),
         AuditLogger(AuditLogRepository(session)),
     )
 
@@ -80,13 +82,13 @@ def get_institution(institution_id: uuid.UUID, service: ServiceDep) -> Instituti
 
 
 @router.patch("/{institution_id}", response_model=InstitutionResponse)
-def rename_institution(
+def update_institution(
     institution_id: uuid.UUID,
     request: InstitutionUpdateRequest,
     service: ServiceDep,
     admin: SuperAdmin,
 ) -> InstitutionResponse:
-    return service.rename(institution_id, request.name, admin.id)
+    return service.update(institution_id, request, admin.id)
 
 
 @router.post("/{institution_id}/deactivate", response_model=InstitutionResponse)
@@ -101,3 +103,10 @@ def activate_institution(
     institution_id: uuid.UUID, service: ServiceDep, admin: SuperAdmin
 ) -> InstitutionResponse:
     return service.activate(institution_id, admin.id)
+
+
+@router.post("/{institution_id}/manager-invitation", response_model=InstitutionResponse)
+def resend_manager_invitation(
+    institution_id: uuid.UUID, service: ProvisioningDep, admin: SuperAdmin
+) -> InstitutionResponse:
+    return service.resend_manager_invitation(institution_id, admin.id)

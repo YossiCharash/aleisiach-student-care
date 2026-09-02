@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -63,12 +63,13 @@ def _apply_tenant_binding(session: Session, user: User) -> None:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-def require_tenant(user: CurrentUser, session: SessionDep) -> TenantContext:
+def require_tenant(request: Request, user: CurrentUser, session: SessionDep) -> TenantContext:
     if user.institution_id is None:
         raise AuthorizationError
     institution = InstitutionRepository(session).get(user.institution_id)
     if institution is None:
         raise AuthorizationError
+    request.state.institution_code = institution.code
     if not institution.is_active:
         raise InstitutionInactiveError
     return TenantContext(institution_id=institution.id, institution_name=institution.name)

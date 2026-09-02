@@ -14,6 +14,8 @@ class Institution(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     code: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    contact_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    contact_phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
     )
