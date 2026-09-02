@@ -2,6 +2,7 @@ import uuid
 
 from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.users.user_repository import UserRepository
+from backend.app.errors.service.authorization_error import AuthorizationError
 from backend.app.errors.service.cannot_change_own_role_error import CannotChangeOwnRoleError
 from backend.app.errors.service.cannot_disable_self_error import CannotDisableSelfError
 from backend.app.errors.service.email_already_used_error import EmailAlreadyUsedError
@@ -42,6 +43,8 @@ class UserManagementService:
     def update(
         self, user_id: uuid.UUID, request: UserUpdateRequest, actor_id: uuid.UUID
     ) -> UserResponse:
+        if request.role is UserRole.SUPER_ADMIN:
+            raise AuthorizationError
         user = self._require(user_id)
         class_id = request.class_id if request.role is UserRole.INSTRUCTOR else None
         if request.role is UserRole.INSTRUCTOR and class_id is None:

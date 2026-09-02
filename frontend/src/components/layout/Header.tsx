@@ -4,11 +4,12 @@ import { Archive, LogOut, Settings, UserCog } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { displayName } from "@/lib/auth/displayName";
 import { permissions } from "@/lib/auth/permissions";
+import { homePath } from "@/lib/auth/homePath";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
 
 export function Header(): ReactNode {
-  const { user, logout } = useAuth();
+  const { user, institutionName, logout } = useAuth();
   const navigate = useNavigate();
 
   async function handleLogout(): Promise<void> {
@@ -23,10 +24,12 @@ export function Header(): ReactNode {
   return (
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to={homePath(user)} className="flex items-center gap-2">
           <span className="text-xl font-bold text-brand">עלי שיח</span>
           <span className="hidden text-sm text-ink-muted sm:inline">
-            מערכת ניהול תלמידים
+            {user.role === "super_admin"
+              ? "ניהול מוסדות"
+              : (institutionName ?? "מערכת ניהול תלמידים")}
           </span>
         </Link>
 

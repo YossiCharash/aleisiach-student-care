@@ -2,14 +2,22 @@ import type {
   DetailOptionField,
   LegalStatus,
   MeetingRating,
+  InvitableRole,
   UserRole,
   UserStatus,
 } from "@/lib/api/types";
 
 export const roleLabels: Record<UserRole, string> = {
+  super_admin: "מנהל/ת מערכת",
   manager: "מנהל/ת",
   instructor: "מדריך/ה",
   professional_teacher: "מורה מקצועי/ת",
+};
+
+export const invitableRoleLabels: Record<InvitableRole, string> = {
+  manager: roleLabels.manager,
+  instructor: roleLabels.instructor,
+  professional_teacher: roleLabels.professional_teacher,
 };
 
 export const userStatusLabels: Record<UserStatus, string> = {

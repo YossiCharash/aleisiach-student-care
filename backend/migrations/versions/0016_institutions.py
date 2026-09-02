@@ -1,7 +1,7 @@
 """institutions: multi-tenancy for every institution-owned table
 
-Revision ID: 0015_institutions
-Revises: 0014_audit_auth_events
+Revision ID: 0016_institutions
+Revises: 0015_class_archiving
 Create Date: 2026-09-02
 """
 
@@ -13,8 +13,8 @@ from alembic import op
 
 from backend.app.models.client.user_role import UserRole
 
-revision: str = "0015_institutions"
-down_revision: str | None = "0014_audit_auth_events"
+revision: str = "0016_institutions"
+down_revision: str | None = "0015_class_archiving"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

@@ -182,3 +182,29 @@ def test_foreign_class_cannot_be_renamed(
     )
 
     assert response.status_code == 404
+
+
+def test_manager_cannot_invite_a_super_admin(
+    api: TestClient, manager_headers: dict[str, str]
+) -> None:
+    response = api.post(
+        "/auth/invitations",
+        headers=manager_headers,
+        json={"full_name": "מנהל על", "email": "root@example.org", "role": "super_admin"},
+    )
+
+    assert response.status_code == 403
+
+
+def test_manager_cannot_promote_a_user_to_super_admin(
+    api: TestClient, manager_headers: dict[str, str], seed_user: SeedUser
+) -> None:
+    target = seed_user("dana", UserRole.INSTRUCTOR)
+
+    response = api.patch(
+        f"/users/{target.id}",
+        headers=manager_headers,
+        json={"full_name": "דנה", "email": "dana@example.com", "role": "super_admin"},
+    )
+
+    assert response.status_code == 403

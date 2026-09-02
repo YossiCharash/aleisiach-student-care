@@ -20,6 +20,7 @@ const user: UserResponse = {
   role: "manager",
   class_id: null,
   status: "active",
+  institution_id: "i1",
 };
 
 vi.mock("@/lib/auth/AuthContext", () => ({

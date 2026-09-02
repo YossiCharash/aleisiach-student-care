@@ -1,4 +1,6 @@
-export type UserRole = "manager" | "instructor" | "professional_teacher";
+export type UserRole = "super_admin" | "manager" | "instructor" | "professional_teacher";
+
+export type InvitableRole = Exclude<UserRole, "super_admin">;
 
 export type UserStatus = "invited" | "active" | "disabled";
 
@@ -14,11 +16,33 @@ export interface UserResponse {
   role: UserRole;
   class_id: string | null;
   status: UserStatus;
+  institution_id: string | null;
 }
 
 export interface LoginResponse {
   token: string;
   user: UserResponse;
+  institution_name: string | null;
+}
+
+export interface InstitutionResponse {
+  id: string;
+  name: string;
+  code: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface InstitutionSummary extends InstitutionResponse {
+  user_count: number;
+  student_count: number;
+}
+
+export interface InstitutionCreateRequest {
+  name: string;
+  code: string;
+  manager_full_name: string;
+  manager_email: string;
 }
 
 export interface PasswordChangeResponse {
@@ -39,7 +63,7 @@ export interface InvitationAcceptRequest {
 export interface InvitationCommand {
   full_name: string;
   email: string;
-  role: UserRole;
+  role: InvitableRole;
   class_id: string | null;
 }
 

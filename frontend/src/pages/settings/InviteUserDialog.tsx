@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { authApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { UserRole } from "@/lib/api/types";
-import { roleLabels } from "@/lib/utils/hebrew";
+import type { InvitableRole } from "@/lib/api/types";
+import { invitableRoleLabels } from "@/lib/utils/hebrew";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ interface InviteRow {
   key: string;
   fullName: string;
   email: string;
-  role: UserRole;
+  role: InvitableRole;
   classId: string;
 }
 
@@ -193,15 +193,17 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
                       id={`invite-role-${row.key}`}
                       value={row.role}
                       onChange={(event) =>
-                        updateRow(row.key, { role: event.target.value as UserRole })
+                        updateRow(row.key, { role: event.target.value as InvitableRole })
                       }
                       className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
                     >
-                      {(Object.keys(roleLabels) as UserRole[]).map((value) => (
-                        <option key={value} value={value}>
-                          {roleLabels[value]}
-                        </option>
-                      ))}
+                      {(Object.keys(invitableRoleLabels) as InvitableRole[]).map(
+                        (value) => (
+                          <option key={value} value={value}>
+                            {invitableRoleLabels[value]}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
                   {row.role === "instructor" && (
