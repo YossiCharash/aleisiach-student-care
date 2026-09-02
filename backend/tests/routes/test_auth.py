@@ -1,9 +1,11 @@
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from backend.app.models.client.auth_token import AuthToken
+from backend.app.models.client.institution import Institution
 from backend.app.models.client.token_kind import TokenKind
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -86,3 +88,42 @@ def test_login_seeded_active_user(api: TestClient, db_session: Session) -> None:
     response = api.post("/auth/login", json={"username": "prof1", "password": "password123"})
     assert response.status_code == 200
     assert response.json()["user"]["role"] == "professional_teacher"
+
+
+def test_login_returns_the_institution_of_the_user(
+    api: TestClient, db_session: Session, seed_user: Callable[..., User]
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+
+    response = api.post("/auth/login", json={"username": "boss", "password": "password123"})
+
+    assert response.status_code == 200
+    assert response.json()["institution_name"] == "מוסד בדיקה"
+    assert response.json()["user"]["institution_id"] == str(DEFAULT_INSTITUTION_ID)
+
+
+def test_login_of_a_super_admin_has_no_institution(
+    api: TestClient, seed_user: Callable[..., User]
+) -> None:
+    seed_user("root", UserRole.SUPER_ADMIN)
+
+    response = api.post("/auth/login", json={"username": "root", "password": "password123"})
+
+    assert response.status_code == 200
+    assert response.json()["institution_name"] is None
+    assert response.json()["user"]["institution_id"] is None
+
+
+def test_login_is_refused_while_the_institution_is_inactive(
+    api: TestClient, db_session: Session, seed_user: Callable[..., User]
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    institution = db_session.get(Institution, DEFAULT_INSTITUTION_ID)
+    assert institution is not None
+    institution.is_active = False
+    db_session.flush()
+
+    response = api.post("/auth/login", json={"username": "boss", "password": "password123"})
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "institution_inactive"

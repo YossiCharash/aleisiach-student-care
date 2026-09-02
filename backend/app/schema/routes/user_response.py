@@ -16,3 +16,4 @@ class UserResponse(BaseModel):
     role: UserRole
     class_id: uuid.UUID | None
     status: UserStatus
+    institution_id: uuid.UUID | None
