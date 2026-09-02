@@ -208,24 +208,28 @@ and to be the UI default; licensing **Tubic** for an exact match stays a later, 
 **Consequences:** No font licensing needed now; Heebo embeds in WeasyPrint and is installed in the
 backend container for PDF rendering.
 
-## ADR-017 — Continuous deployment = Render, gated by CI on `main`
+## ADR-017 — Continuous deployment = Render deploy hooks, gated by CI on `main`
 **Status:** Accepted · 2026-09-02
 **Context:** The stack (§1) fixes a containerized FastAPI backend, a static/SPA frontend and a
 managed PostgreSQL, but nothing in the repo described how a merge reaches production — deploys were
 configured by hand in a provider dashboard.
 **Decision:** Production runs on **Render** (backend Docker service · nginx SPA service · managed
 PostgreSQL), described as infrastructure-as-code in `render.yaml`. Render's own auto-deploy is
-**off**; `.github/workflows/deploy.yml` triggers on a **successful CI run on `main`** and deploys
-through the Render API at the exact commit CI tested, backend first and the frontend only once the
-backend is live. The deploy job polls until Render reports `live` or a failure, so a broken release
-turns the pipeline red.
+**off**; `.github/workflows/deploy.yml` triggers on a **successful CI run on `main`** and calls each
+service's **Deploy Hook** with `ref` set to the exact commit CI tested, backend first and then the
+frontend.
 **Alternatives:** Render's push-based auto-deploy — rejected, it ships a red suite (rule 16);
-tag-triggered releases — rejected as premature for a single-environment prototype; GHCR images
-plus a self-managed host — rejected, more infrastructure than this project needs.
-**Consequences:** One environment (production) for now; adding staging means a second service set
-and a branch/approval rule. Migrations stay outside the pipeline — the container entrypoint runs
-`alembic upgrade head` on every start. Three repository secrets (`RENDER_API_KEY` and the two
-service ids) are the pipeline's only credentials; setup is documented in the README.
+the Render REST API with status polling — rejected in favour of the hook: the API would report
+whether a deploy reached `live`, but its key is account-wide, while a hook URL can only deploy the
+single service it belongs to; tag-triggered releases — rejected as premature for a single-environment
+prototype; GHCR images plus a self-managed host — more infrastructure than this project needs.
+**Consequences:** The pipeline reports that a deploy was **accepted**, not that it succeeded — a
+failed build or start surfaces in Render's dashboard and notification emails, not as a red
+workflow. Ordering between the two services is best-effort for the same reason. One environment
+(production) for now; adding staging means a second service set and a branch/approval rule.
+Migrations stay outside the pipeline — the container entrypoint runs `alembic upgrade head` on
+every start. Two repository secrets (the hook URLs) are the pipeline's only credentials; setup is
+documented in the README.
 
 ---
 

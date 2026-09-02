@@ -64,9 +64,16 @@ service for the SPA, and a managed PostgreSQL instance. `render.yaml` is the blu
 that infrastructure — it documents every environment variable the production guard requires.
 
 Deploys are **automatic but gated**: `.github/workflows/deploy.yml` runs only after the CI
-workflow finishes successfully on `main`, then deploys the backend and — once it is live —
-the frontend, pinned to the exact commit CI tested. A red suite never reaches production.
-Render's own auto-deploy stays off (`autoDeploy: false`) so this workflow is the only path in.
+workflow finishes successfully on `main`, then calls each service's **Render Deploy Hook** with
+`ref` set to the exact commit CI tested — backend first, then the frontend. A red suite never
+reaches production. Render's own auto-deploy stays off (`autoDeploy: false`) so this workflow is
+the only path in.
+
+A deploy hook is fire-and-forget: Render accepts the request and builds asynchronously. **The
+workflow reports that the deploy was accepted, not that it succeeded** — a build or start failure
+shows up in Render's dashboard and its notification emails, not as a red pipeline. Trading that
+feedback away buys a much narrower credential: a hook URL can only deploy its one service, while
+an API key can act on the whole Render account.
 
 ### One-time setup
 
@@ -79,13 +86,13 @@ Render's own auto-deploy stays off (`autoDeploy: false`) so this workflow is the
    - `BACKEND_ORIGIN` (frontend) and `APP_CORS_ORIGINS` / `EMAIL_*_BASE_URL` (backend) are the
      services' public origins, known only after the first deploy.
 3. **Turn off auto-deploy** on both services (Settings → Build & Deploy) so CI stays the gate.
-4. **Repository secrets** (Settings → Secrets and variables → Actions):
+4. **Repository secrets** (Settings → Secrets and variables → Actions). Each service's hook URL
+   is under Settings → Deploy Hook; it embeds its own key, so treat it as a password:
 
-   | Secret | Where to find it |
+   | Secret | Value |
    |---|---|
-   | `RENDER_API_KEY` | Render → Account Settings → API Keys |
-   | `RENDER_BACKEND_SERVICE_ID` | the `srv-…` id in the backend service's dashboard URL |
-   | `RENDER_FRONTEND_SERVICE_ID` | the `srv-…` id in the frontend service's dashboard URL |
+   | `RENDER_BACKEND_DEPLOY_HOOK` | the backend service's Deploy Hook URL |
+   | `RENDER_FRONTEND_DEPLOY_HOOK` | the frontend service's Deploy Hook URL |
 
 ### Notes
 

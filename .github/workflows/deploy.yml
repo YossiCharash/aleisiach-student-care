@@ -27,9 +27,8 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Deploy backend to Render
         env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          SERVICE_ID: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
-        run: .github/scripts/render_deploy.sh "$SERVICE_ID" "$COMMIT_SHA"
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+        run: .github/scripts/render_deploy.sh
 
   frontend:
     needs: backend
@@ -41,6 +40,5 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Deploy frontend to Render
         env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          SERVICE_ID: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
-        run: .github/scripts/render_deploy.sh "$SERVICE_ID" "$COMMIT_SHA"
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
+        run: .github/scripts/render_deploy.sh
