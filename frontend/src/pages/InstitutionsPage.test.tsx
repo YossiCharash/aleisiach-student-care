@@ -223,3 +223,67 @@ describe("InstitutionsPage — contact and invitations", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("InstitutionsPage — failed actions", () => {
+  beforeEach(() => {
+    listMock.mockReset();
+    resendMock.mockReset();
+    deactivateMock.mockReset();
+  });
+
+  it("reports a failed invitation resend instead of failing silently", async () => {
+    listMock.mockResolvedValue([
+      institution({ pending_manager_email: "ruti@example.org" }),
+    ]);
+    resendMock.mockRejectedValue(new Error("אין הזמנה ממתינה למנהל המוסד."));
+
+    renderPage(<InstitutionsPage />);
+    await screen.findByText("בית ספר אלף");
+
+    await userEvent.click(screen.getByRole("button", { name: "שליחת הזמנה מחדש" }));
+
+    expect(await screen.findByText("אין הזמנה ממתינה למנהל המוסד.")).toBeInTheDocument();
+  });
+
+  it("closes the confirmation and reports a failed deactivation", async () => {
+    listMock.mockResolvedValue([institution()]);
+    deactivateMock.mockRejectedValue(new Error("ההשבתה נכשלה."));
+
+    renderPage(<InstitutionsPage />);
+    await screen.findByText("בית ספר אלף");
+
+    await userEvent.click(screen.getByRole("button", { name: "השבתת המוסד" }));
+    await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
+
+    expect(await screen.findByText("ההשבתה נכשלה.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "השבתה" })).not.toBeInTheDocument();
+  });
+
+  it("seeds the edit form from the refreshed institution data", async () => {
+    listMock.mockResolvedValue([
+      institution({ name: "בית ספר אלף", pending_manager_email: "ruti@example.org" }),
+    ]);
+    resendMock.mockResolvedValue({
+      id: "i1",
+      name: "בית ספר אלף",
+      code: "alef",
+      is_active: true,
+      contact_name: null,
+      contact_phone: null,
+      created_at: "2026-09-01T00:00:00Z",
+    });
+
+    renderPage(<InstitutionsPage />);
+    await screen.findByText("בית ספר אלף");
+
+    listMock.mockResolvedValue([
+      institution({ name: "שם ששונה מבחוץ", pending_manager_email: "ruti@example.org" }),
+    ]);
+    await userEvent.click(screen.getByRole("button", { name: "שליחת הזמנה מחדש" }));
+    await screen.findByText("שם ששונה מבחוץ");
+
+    await userEvent.click(screen.getByRole("button", { name: "עריכת מוסד" }));
+
+    expect(screen.getByLabelText("שם המוסד")).toHaveValue("שם ששונה מבחוץ");
+  });
+});

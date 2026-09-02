@@ -22,6 +22,10 @@ class UserRepository:
     def commit(self) -> None:
         self._session.commit()
 
+    def get_account(self, user_id: uuid.UUID) -> User | None:
+        with TenantBinding.platform(self._session):
+            return self._session.get(User, user_id, populate_existing=True)
+
     def get(self, user_id: uuid.UUID) -> User | None:
         return self._session.get(User, user_id, populate_existing=True)
 

@@ -81,3 +81,19 @@ def test_institution_user_of_an_inactive_institution_is_blocked(
 
     assert response.status_code == 403
     assert response.json()["code"] == "institution_inactive"
+
+
+def test_super_admin_can_change_their_own_password(
+    api: TestClient, super_admin_headers: dict[str, str]
+) -> None:
+    response = api.post(
+        "/auth/password/change",
+        headers=super_admin_headers,
+        json={"current_password": "password123", "new_password": "password456"},
+    )
+
+    assert response.status_code == 200
+    assert (
+        api.post("/auth/login", json={"username": "root", "password": "password456"}).status_code
+        == 200
+    )

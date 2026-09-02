@@ -34,7 +34,7 @@ class PasswordChangeService:
         context: AuthEventContext | None = None,
     ) -> None:
         context = context or AuthEventContext()
-        user = self._users.get(user_id)
+        user = self._users.get_account(user_id)
         if user is None or user.password_hash is None:
             raise AuthenticationError
         if not self._password_hasher.verify(user.password_hash, current_password):

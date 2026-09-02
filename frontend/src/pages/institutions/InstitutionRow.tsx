@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/api/queryKeys";
 import type { InstitutionSummary } from "@/lib/api/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { errorMessage } from "@/components/ui/ErrorState";
 import { ConfirmDeactivationDialog } from "@/pages/institutions/ConfirmDeactivationDialog";
 import { EditInstitutionDialog } from "@/pages/institutions/EditInstitutionDialog";
 
@@ -17,9 +18,16 @@ export function InstitutionRow({
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   function refresh(): void {
+    setActionError(null);
     void queryClient.invalidateQueries({ queryKey: queryKeys.institutions });
+  }
+
+  function reportFailure(caught: unknown): void {
+    setConfirmOpen(false);
+    setActionError(errorMessage(caught));
   }
 
   const toggleActive = useMutation({
@@ -31,11 +39,13 @@ export function InstitutionRow({
       setConfirmOpen(false);
       refresh();
     },
+    onError: reportFailure,
   });
 
   const resendInvitation = useMutation({
     mutationFn: () => institutionsApi.resendManagerInvitation(institution.id),
     onSuccess: refresh,
+    onError: reportFailure,
   });
 
   return (
@@ -46,6 +56,9 @@ export function InstitutionRow({
           <div className="text-xs font-normal text-ink-muted">
             ממתין לאישור הזמנה: {institution.pending_manager_email}
           </div>
+        )}
+        {actionError !== null && (
+          <div className="text-xs font-normal text-rating-red">{actionError}</div>
         )}
       </td>
       <td className="px-4 py-3 text-ink-muted">{institution.code}</td>
@@ -99,11 +112,13 @@ export function InstitutionRow({
         </div>
       </td>
 
-      <EditInstitutionDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        institution={institution}
-      />
+      {editOpen && (
+        <EditInstitutionDialog
+          open
+          onOpenChange={setEditOpen}
+          institution={institution}
+        />
+      )}
       <ConfirmDeactivationDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

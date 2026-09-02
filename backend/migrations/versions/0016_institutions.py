@@ -11,8 +11,6 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-from backend.app.models.client.user_role import UserRole
-
 revision: str = "0016_institutions"
 down_revision: str | None = "0015_class_archiving"
 branch_labels: str | Sequence[str] | None = None
@@ -76,7 +74,7 @@ COMPOSITE_FOREIGN_KEYS: tuple[tuple[str, str, str, str, str], ...] = (
     ),
 )
 
-SUPER_ADMIN = f"'{UserRole.SUPER_ADMIN.name}'"
+SUPER_ADMIN = "'SUPER_ADMIN'"
 SUPER_ADMIN_HAS_NO_INSTITUTION = (
     f"(role = {SUPER_ADMIN} AND institution_id IS NULL)"
     f" OR (role <> {SUPER_ADMIN} AND institution_id IS NOT NULL)"

@@ -45,8 +45,7 @@ def get_current_user(
     user_id = build_session_service(session, bootstrap).resolve(credentials.credentials)
     if user_id is None:
         raise AuthenticationError
-    with TenantBinding.platform(session):
-        user = UserRepository(session).get(user_id)
+    user = UserRepository(session).get_account(user_id)
     if user is None or user.status != UserStatus.ACTIVE:
         raise AuthenticationError
     _apply_tenant_binding(session, user)

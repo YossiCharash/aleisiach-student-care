@@ -47,16 +47,6 @@ export function EditInstitutionDialog({
     onError: (caught) => setError(errorMessage(caught)),
   });
 
-  function handleOpenChange(next: boolean): void {
-    if (!next) {
-      setName(institution.name);
-      setContactName(institution.contact_name ?? "");
-      setContactPhone(institution.contact_phone ?? "");
-      setError(null);
-    }
-    onOpenChange(next);
-  }
-
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
     setError(null);
@@ -64,7 +54,7 @@ export function EditInstitutionDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>עריכת מוסד</DialogTitle>
@@ -108,7 +98,7 @@ export function EditInstitutionDialog({
             <Button type="submit" disabled={mutation.isPending || name.trim().length < 2}>
               {mutation.isPending ? "שומר…" : "שמירה"}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               ביטול
             </Button>
           </div>
