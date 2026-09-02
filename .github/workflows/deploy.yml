@@ -28,7 +28,7 @@ jobs:
       - name: Deploy backend to Render
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
-        run: .github/scripts/render_deploy.sh
+        run: bash .github/scripts/render_deploy.sh
 
   frontend:
     needs: backend
@@ -41,4 +41,4 @@ jobs:
       - name: Deploy frontend to Render
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
-        run: .github/scripts/render_deploy.sh
+        run: bash .github/scripts/render_deploy.sh
