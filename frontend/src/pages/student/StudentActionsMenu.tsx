@@ -75,7 +75,7 @@ function ArchiveStudentDialog({
     mutationFn: () => studentsApi.archive(studentId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.students });
-      navigate("/", { replace: true });
+      navigate("/students", { replace: true });
     },
   });
 

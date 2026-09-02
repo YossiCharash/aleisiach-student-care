@@ -42,7 +42,7 @@ export function StudentPage(): ReactNode {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <Link
-            to="/"
+            to="/students"
             className="mb-2 inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink"
           >
             <ChevronRight className="h-4 w-4" />
