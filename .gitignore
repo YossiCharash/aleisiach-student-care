@@ -28,6 +28,10 @@ playwright-report/
 test-results/
 .playwright/
 
+# Local UI preview harness (dev-only; not part of the app build)
+/frontend/preview.html
+/frontend/src/_preview/
+
 # Editors / OS
 .idea/
 .vscode/
