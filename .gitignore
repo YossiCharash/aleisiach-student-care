@@ -34,4 +34,3 @@ test-results/
 .DS_Store
 Thumbs.db
 .claude
-/backend/app/configuration/auth/common_passwords.txt
