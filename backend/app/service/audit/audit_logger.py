@@ -15,5 +15,7 @@ class AuditLogger:
                 entity_type=entry.entity_type,
                 entity_id=entry.entity_id,
                 changes=list(entry.changes),
+                ip=entry.ip,
+                user_agent=entry.user_agent,
             )
         )

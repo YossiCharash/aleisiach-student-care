@@ -6,4 +6,4 @@ class InvalidTokenError(AppError):
     code = "invalid_token"
 
     def __init__(self) -> None:
-        super().__init__("The link is invalid or has expired")
+        super().__init__("הקישור אינו תקין או שפג תוקפו.")

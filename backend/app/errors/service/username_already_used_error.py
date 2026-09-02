@@ -6,4 +6,4 @@ class UsernameAlreadyUsedError(AppError):
     code = "username_already_used"
 
     def __init__(self) -> None:
-        super().__init__("This username is already taken")
+        super().__init__("שם המשתמש הזה כבר תפוס.")

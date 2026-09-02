@@ -22,6 +22,7 @@ def _seed(
     username: str,
     role: UserRole = UserRole.INSTRUCTOR,
     status: UserStatus = UserStatus.ACTIVE,
+    password_hash: str | None = "hashed-password",
 ) -> User:
     user = User(
         full_name="User",
@@ -29,6 +30,7 @@ def _seed(
         username=username,
         role=role,
         status=status,
+        password_hash=password_hash,
     )
     session.add(user)
     session.flush()
@@ -86,3 +88,13 @@ def test_enable_reactivates(db_session: Session) -> None:
     result = service.enable(target.id, actor.id)
 
     assert result.status == UserStatus.ACTIVE
+
+
+def test_enable_keeps_uninitialised_account_invited(db_session: Session) -> None:
+    actor = _seed(db_session, "boss", UserRole.MANAGER)
+    target = _seed(db_session, "invitee", status=UserStatus.INVITED, password_hash=None)
+    service = _service(db_session)
+
+    result = service.enable(target.id, actor.id)
+
+    assert result.status == UserStatus.INVITED

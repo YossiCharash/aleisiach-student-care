@@ -8,7 +8,8 @@ from backend.app.configuration.settings import Settings
 
 def get_bootstrap(request: Request) -> Bootstrap:
     bootstrap = request.app.state.bootstrap
-    assert isinstance(bootstrap, Bootstrap)
+    if not isinstance(bootstrap, Bootstrap):
+        raise RuntimeError("Application bootstrap is not initialised")
     return bootstrap
 
 

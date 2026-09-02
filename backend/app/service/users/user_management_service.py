@@ -31,7 +31,7 @@ class UserManagementService:
 
     def enable(self, user_id: uuid.UUID, actor_id: uuid.UUID) -> UserResponse:
         user = self._require(user_id)
-        user.status = UserStatus.ACTIVE
+        user.status = UserStatus.ACTIVE if user.password_hash is not None else UserStatus.INVITED
         self._record(actor_id, AuditAction.UPDATE, user.id)
         return UserResponse.model_validate(user)
 

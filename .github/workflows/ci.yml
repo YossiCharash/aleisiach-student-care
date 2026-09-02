@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -24,6 +27,10 @@ jobs:
         run: uv run black --check .
       - name: Mypy
         run: uv run mypy -p backend.app
+      - name: Dependency audit
+        run: |
+          uv export --frozen --all-extras --no-emit-project --format requirements-txt -o audit-requirements.txt
+          uvx pip-audit -r audit-requirements.txt
       - name: Pytest
         run: uv run pytest -q
 
@@ -46,6 +53,8 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Dependency audit
+        run: pnpm audit --prod
       - name: Lint
         run: pnpm lint
       - name: Format check

@@ -6,4 +6,4 @@ class AuthorizationError(AppError):
     code = "forbidden"
 
     def __init__(self) -> None:
-        super().__init__("You do not have permission to perform this action")
+        super().__init__("אין לך הרשאה לבצע פעולה זו.")

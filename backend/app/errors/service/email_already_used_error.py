@@ -6,4 +6,4 @@ class EmailAlreadyUsedError(AppError):
     code = "email_already_used"
 
     def __init__(self) -> None:
-        super().__init__("A user with this email already exists")
+        super().__init__("כתובת המייל הזו כבר רשומה במערכת.")

@@ -1,15 +1,20 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.auth.auth_settings import AuthSettings
-from backend.app.errors.service.account_locked_error import AccountLockedError
 from backend.app.errors.service.authentication_error import AuthenticationError
+from backend.app.models.client.audit_action import AuditAction
+from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.schema.service.auth_event_context import AuthEventContext
+from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.utils.service.clock import Clock
 from backend.app.utils.service.password_hasher import PasswordHasher
@@ -43,7 +48,13 @@ def _seed_active_user(session: Session, hasher: PasswordHasher) -> None:
 
 
 def _service(session: Session, hasher: PasswordHasher, clock: Clock) -> AuthenticationService:
-    return AuthenticationService(UserRepository(session), hasher, AuthSettings(), clock)
+    return AuthenticationService(
+        UserRepository(session),
+        hasher,
+        AuthSettings(),
+        clock,
+        AuditLogger(AuditLogRepository(session)),
+    )
 
 
 def test_authenticate_success(db_session: Session) -> None:
@@ -91,7 +102,7 @@ def test_locks_after_max_failed_attempts(db_session: Session) -> None:
         with pytest.raises(AuthenticationError):
             service.authenticate("manager1", "wrong-password")
 
-    with pytest.raises(AccountLockedError):
+    with pytest.raises(AuthenticationError):
         service.authenticate("manager1", "password123")
 
 
@@ -122,3 +133,34 @@ def test_success_resets_failed_count(db_session: Session) -> None:
     user = UserRepository(db_session).get_by_username("manager1")
     assert user is not None
     assert user.failed_login_count == 0
+
+
+def test_successful_login_is_audited_with_source_ip(db_session: Session) -> None:
+    hasher = PasswordHasher()
+    _seed_active_user(db_session, hasher)
+    service = _service(db_session, hasher, FakeClock(_BASE))
+
+    service.authenticate(
+        "manager1", "password123", AuthEventContext(ip="203.0.113.7", user_agent="pytest")
+    )
+
+    logs = list(db_session.scalars(select(AuditLog)))
+    login = [log for log in logs if log.action == AuditAction.LOGIN]
+    assert len(login) == 1
+    assert login[0].entity_type == "auth"
+    assert login[0].ip == "203.0.113.7"
+    assert login[0].user_agent == "pytest"
+
+
+def test_lockout_is_audited(db_session: Session) -> None:
+    hasher = PasswordHasher()
+    _seed_active_user(db_session, hasher)
+    service = _service(db_session, hasher, FakeClock(_BASE))
+
+    for _ in range(AuthSettings().max_failed_logins):
+        with pytest.raises(AuthenticationError):
+            service.authenticate("manager1", "wrong-password")
+
+    actions = list(db_session.scalars(select(AuditLog.action)))
+    assert AuditAction.LOGIN_FAILED in actions
+    assert AuditAction.LOCKOUT in actions

@@ -39,12 +39,12 @@ def test_accept_invitation_then_login(api: TestClient, db_session: Session) -> N
 
     accepted = api.post(
         "/auth/invitations/accept",
-        json={"token": raw_token, "username": "manager1", "password": "password123"},
+        json={"token": raw_token, "username": "manager1", "password": "manager-pass-2026"},
     )
     assert accepted.status_code == 200
     assert accepted.json()["status"] == "active"
 
-    ok = api.post("/auth/login", json={"username": "manager1", "password": "password123"})
+    ok = api.post("/auth/login", json={"username": "manager1", "password": "manager-pass-2026"})
     assert ok.status_code == 200
     assert ok.json()["token"]
     assert ok.json()["user"]["username"] == "manager1"
@@ -56,7 +56,7 @@ def test_accept_invitation_then_login(api: TestClient, db_session: Session) -> N
 def test_accept_with_invalid_token_returns_400(api: TestClient) -> None:
     response = api.post(
         "/auth/invitations/accept",
-        json={"token": "invalid", "username": "someone", "password": "password123"},
+        json={"token": "invalid", "username": "someone", "password": "manager-pass-2026"},
     )
     assert response.status_code == 400
 

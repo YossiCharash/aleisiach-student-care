@@ -10,7 +10,7 @@ from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
 
 
-def _client_ip(request: Request, trusted_proxy_count: int) -> str:
+def client_ip(request: Request, trusted_proxy_count: int) -> str:
     if trusted_proxy_count > 0:
         forwarded = request.headers.get("x-forwarded-for")
         if forwarded:
@@ -29,9 +29,9 @@ def rate_limited(bucket: str) -> Callable[..., None]:
         bootstrap: Annotated[Bootstrap, Depends(get_bootstrap)],
     ) -> None:
         settings = bootstrap.settings
-        client_ip = _client_ip(request, settings.app.trusted_proxy_count)
+        ip = client_ip(request, settings.app.trusted_proxy_count)
         limiter.check(
-            key=f"{bucket}:{client_ip}",
+            key=f"{bucket}:{ip}",
             limit=settings.auth.rate_limit_max_attempts,
             window=timedelta(seconds=settings.auth.rate_limit_window_seconds),
         )

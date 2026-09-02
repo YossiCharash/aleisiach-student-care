@@ -2,13 +2,17 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
+from backend.app.client.auth.session_repository import SessionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.configuration.email.email_settings import EmailSettings
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
 from backend.app.service.auth.password_reset_service import PasswordResetService
 from backend.app.service.auth.token_consumer import TokenConsumer
 from backend.app.service.auth.token_issuer import TokenIssuer
@@ -36,6 +40,8 @@ def _service(
 ) -> PasswordResetService:
     tokens = AuthTokenRepository(session)
     factory = TokenFactory()
+    resolved_clock = clock or _FakeClock(_BASE)
+    finalizer = CredentialResetFinalizer(SessionRepository(session), tokens, resolved_clock)
     return PasswordResetService(
         UserRepository(session),
         TokenIssuer(tokens, factory),
@@ -44,7 +50,9 @@ def _service(
         sender,
         AuthSettings(),
         EmailSettings(),
-        clock or _FakeClock(_BASE),
+        resolved_clock,
+        finalizer,
+        AuditLogger(AuditLogRepository(session)),
     )
 
 
