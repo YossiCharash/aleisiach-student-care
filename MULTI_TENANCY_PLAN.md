@@ -1,7 +1,8 @@
 # תוכנית מעבר לריבוי־מוסדות (Multi-Tenancy)
 
-> מסמך תכנון. אינו משנה קוד. לאחר אישור — יתורגם ל-ADR ב-`DECISIONS.md`,
-> לעדכון `CLAUDE.md` §3 ו-`ARCHITECTURE.md` §2, ולסדרת ענפי עבודה.
+> **סטטוס: מיושם.** שלבים 0–4 בוצעו בענף `feature/multi-tenancy-foundation`
+> (ADR-017 ב-`DECISIONS.md`, `CLAUDE.md` §3 ו-`ARCHITECTURE.md` §4c).
+> נותרו: שלב 5 (הקשחה) והשאלות הפתוחות בסעיף 11.
 > תאריך: 2026-09-02.
 
 ---
@@ -201,7 +202,7 @@ def _apply_tenant_filter(state): ...   # with_loader_criteria על כל מחלק
   מעתה מזריע **`super_admin`** אם אין. `BootstrapAdminSettings` מתעדכן בהתאם.
 - `seed/demo_seeder.py` — יוצר מוסד דמו ומשייך אליו את כל נתוני הדמו.
 
-## 6. מיגרציה — `0015_institutions`
+## 6. מיגרציה — `0016_institutions`
 
 הנתונים כיום הם נתוני דמו בלבד (כלל 8), ולכן המהלך פשוט: **מוסד ברירת מחדל** אחד.
 

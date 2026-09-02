@@ -74,6 +74,24 @@ Design source: Claude Design — file `Student Care System.dc.html`.
 
 ## 3. Auth & Roles Model — **password-based (decided)**
 
+### Multi-tenancy — the system serves several institutions (decided 2026-09-02)
+
+One deployment serves many **institutions**. Every institution-owned row carries an
+`institution_id`, and a signed-in user sees **only their own institution** — students, classes,
+staff, taxonomy, settings and audit log alike. Cross-institution access answers **404**, never 403.
+
+A fourth role, **`super_admin`**, is the only account without an institution. It manages the list
+of institutions (create · rename · deactivate · reactivate) and invites each institution's first
+manager. It has **no access to any institution's data** — not students, not meetings, not the
+social-worker note, in any institution.
+
+Isolation is enforced server-side in three layers and must stay that way: the session carries the
+bound institution, a global ORM filter applies it to every read and stamps every write, and
+composite foreign keys make a cross-institution link impossible in the database. See ADR-017.
+
+Usernames are unique platform-wide (so the login screen needs no institution field); e-mail is
+unique **within** an institution.
+
 The original username + national-ID flow is **dropped**. **National ID (ת"ז) is not an auth
 factor** — it remains only as a Tab 4 student data field. Login is **username + password** for all
 users.
@@ -104,15 +122,19 @@ sent. The UI shows the **same neutral message either way** (no email-enumeration
 **no separate social-worker role** — the social-worker note (Tab 3) is written by managers (the
 manager *is* the social worker; every manager may write it).
 
+All rows below are scoped to the acting user's institution. The `super_admin` column is absent
+on purpose: it has no access to any of these.
+
 | Capability | Manager | Instructor | Professional teacher |
 |---|---|---|---|
-| Student list | All | Own class only | All |
+| Student list | All in the institution | Own class only | All in the institution |
 | Tab 1 — Program | Read/Write | Read | Read |
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
 | Settings page (taxonomy, passwords) | ✔ | ✘ | ✘ |
+| Institutions console | ✘ | ✘ | ✘ |
 
 > **Professional teacher = read-only everywhere** (decided): sees all students, reads Tabs 1, 2
 > and the non-sensitive part of Tab 4; blocked from Tab 3 and from the guardianship/legal-status
@@ -133,6 +155,9 @@ manager *is* the social worker; every manager may write it).
    are managed on the Settings page.
 7. **Sensitive-data security** — never log national IDs/diagnoses/guardianship details; never
    expose data beyond the user's permission; enforce permissions server-side too (not only in UI).
+   **Never let data cross institutions** — a new table that belongs to an institution carries
+   `institution_id` and inherits `TenantScoped`; a new query that does not go through the ORM
+   entity filter (a raw aggregate, a column-only select) filters by institution explicitly.
    **Deletion is archive-only** (soft-delete, manager only) — no hard delete from the app. **Audit
    log records every change** (create/update/archive of student/details/meeting/taxonomy/
    permission) — actor + what changed + when; reads are not logged, and raw sensitive values are
@@ -200,6 +225,9 @@ manager *is* the social worker; every manager may write it).
 ## 5. Screen Map (for tracking)
 
 - **Login screen** — username + password + a "forgot password" link. (2–3 design variations.)
+- **Institutions console** (`super_admin` only) — the list of institutions with their user and
+  student counts; create an institution (name · code · first manager's name and e-mail),
+  rename, deactivate and reactivate. Shows no institution content.
 - **Invitation-acceptance screen** — reached from the email link; set username + password (+ confirm).
 - **Forgot-password screen** — enter email; neutral confirmation message either way.
 - **Main screen** — top-right: worker name + list of students assigned to their class; clicking
@@ -246,6 +274,10 @@ manager *is* the social worker; every manager may write it).
       (not stored/edited) (decided; per-skill-latest confirmed).
 - [x] Deletion & audit — **archive-only (manager); audit log records changes only** (decided).
       Retention period is a config value, number TBD.
+- [x] Multi-tenancy — **many institutions with a platform `super_admin`; taxonomy per
+      institution; one user belongs to one institution; the institution is derived from the
+      account at login** (decided 2026-09-02, ADR-017). Open: what a new institution's default
+      template should contain beyond the detail-option catalog.
 - [x] Stack — **LOCKED** (Vite React SPA + FastAPI/Pydantic + PostgreSQL; pnpm, uv, GitHub
       Actions; server-side WeasyPrint PDF) (decided).
 

@@ -109,6 +109,11 @@ frontend/
 
 ```mermaid
 erDiagram
+    INSTITUTION ||--o{ USER : "staff"
+    INSTITUTION ||--o{ CLASS : "classes"
+    INSTITUTION ||--o{ STUDENT : "students"
+    INSTITUTION ||--o{ LABEL : "taxonomy"
+    INSTITUTION ||--o{ EXTRA_SECTION_TYPE : "Tab 4 headings"
     USER ||--o{ CLASS : "instructor owns"
     USER ||--o{ AUTH_TOKEN : "invite/reset tokens"
     CLASS ||--o{ STUDENT : "assigned to"
@@ -128,10 +133,11 @@ erDiagram
     USER {
         uuid id
         string full_name
-        string email "unique — for invite/reset"
-        string username "unique — chosen at invite acceptance"
+        string email "unique within the institution — for invite/reset"
+        string username "unique platform-wide — chosen at invite acceptance"
         string password_hash "argon2/bcrypt; null until invite accepted"
-        enum role "manager|instructor|professional_teacher"
+        enum role "super_admin|manager|instructor|professional_teacher"
+        uuid institution_id "null only for super_admin"
         uuid class_id "instructor only"
         enum status "invited|active|disabled"
     }
@@ -288,6 +294,47 @@ flowchart TD
 
 ---
 
+## 4c. Tenant isolation (multi-institution)
+
+```mermaid
+flowchart LR
+    R["Client request"] --> A["get_current_user
+(resolved at platform scope)"]
+    A --> B{"user.institution_id"}
+    B -->|set| BIND["TenantBinding.bind(session, institution)"]
+    B -->|null: super_admin| DENY["TenantBinding.deny(session)"]
+    BIND --> T["require_tenant
+(institution must be active)"]
+    DENY --> SA["/institutions only"]
+    T --> F["TenantFilter
+WHERE institution_id = bound"]
+    F --> DB[("Postgres")]
+```
+
+- **`TenantBinding`** (`client/database/`) stores the bound institution on the SQLAlchemy session —
+  on the session, not in a context variable, because a sync FastAPI dependency runs in its own
+  worker thread. `deny()` binds a sentinel that matches nothing, so a super admin's session is
+  default-deny rather than unfiltered; `platform()` lifts the binding for the few genuinely
+  platform-level reads (resolving the signed-in user, the institutions console).
+- **`TenantFilter`** registers two ORM listeners once, from `Bootstrap`: `do_orm_execute` adds
+  `WHERE institution_id = …` to every select over a `TenantScoped` entity (including
+  `Session.get` and lazy loads), and `before_flush` stamps new rows. A repository that forgets to
+  filter is therefore still safe.
+- **The filter does not reach column-only selects** (`select(func.max(Skill.order))`). Those few
+  queries filter by institution explicitly via `TenantBinding.require(session)`.
+- **Composite foreign keys** carry `institution_id` into every parent/child link
+  (`students(class_id, institution_id) → classes(id, institution_id)` and the same for the
+  taxonomy chain), so a cross-institution link cannot be written even by a buggy service.
+- **Repository `get()` uses `populate_existing=True`** so an identity-map hit cannot bypass the
+  filter.
+- Cross-institution access raises `NotFoundError` → **404**, matching `StudentAccessGuard` and
+  never disclosing that a foreign row exists.
+- **Rows owned through a student** (details, extra sections, meetings, social notes) carry no
+  `institution_id`; they are reached only through `StudentAccessGuard`, and
+  `tests/routes/test_tenant_isolation.py` asserts 404 for each of those routes.
+
+---
+
 ## 5. Permission enforcement (RBAC / RLS)
 
 ```mermaid
@@ -306,7 +353,10 @@ flowchart LR
 - Implement as an authorization policy object (Strategy per role) injected into services — SOLID,
   and easy to unit-test in isolation.
 - **The UI** hides tabs/fields by role — but this is a convenience layer only, not security.
-- **Three roles only** (`manager`, `instructor`, `professional_teacher`); no social-worker role —
+- **Four roles** (`super_admin`, `manager`, `instructor`, `professional_teacher`). `super_admin`
+  is platform-level: it reaches `/institutions` and nothing else, and every institution router
+  carries the `require_tenant` dependency that rejects it. The three institution roles are
+  unchanged; no social-worker role —
   Tab 3 is written by managers. Professional teacher is read-only everywhere, blocked from Tab 3
   and the guardianship/legal-status fields (see `CLAUDE.md` §3 matrix).
 
