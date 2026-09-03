@@ -10,7 +10,7 @@ from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser, Tenant, require_tenant
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -45,7 +45,7 @@ def create_meeting(
     student_id: uuid.UUID,
     request: MeetingCreateRequest,
     service: ServiceDep,
-    writer: ContentWriter,
+    writer: ManagerOrInstructor,
 ) -> MeetingResponse:
     scope = StudentAccessPolicy.scope_for(writer)
     return service.create(student_id, request, scope, writer.id)

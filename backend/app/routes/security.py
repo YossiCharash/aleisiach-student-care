@@ -94,24 +94,13 @@ def require_manager(user: CurrentUser, _: Tenant) -> User:
 
 Manager = Annotated[User, Depends(require_manager)]
 
-_CONTENT_WRITER_ROLES = frozenset({UserRole.MANAGER, UserRole.INSTRUCTOR})
+_MANAGER_OR_INSTRUCTOR = frozenset({UserRole.MANAGER, UserRole.INSTRUCTOR})
 
 
-def require_content_writer(user: CurrentUser, _: Tenant) -> User:
-    if user.role not in _CONTENT_WRITER_ROLES:
+def require_manager_or_instructor(user: CurrentUser, _: Tenant) -> User:
+    if user.role not in _MANAGER_OR_INSTRUCTOR:
         raise AuthorizationError
     return user
 
 
-ContentWriter = Annotated[User, Depends(require_content_writer)]
-
-_SOCIAL_NOTE_READER_ROLES = frozenset({UserRole.MANAGER, UserRole.INSTRUCTOR})
-
-
-def require_social_note_reader(user: CurrentUser, _: Tenant) -> User:
-    if user.role not in _SOCIAL_NOTE_READER_ROLES:
-        raise AuthorizationError
-    return user
-
-
-SocialNoteReader = Annotated[User, Depends(require_social_note_reader)]
+ManagerOrInstructor = Annotated[User, Depends(require_manager_or_instructor)]

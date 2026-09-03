@@ -13,7 +13,7 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser, Tenant, require_tenant
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -66,7 +66,7 @@ def upsert_details(
     student_id: uuid.UUID,
     request: StudentDetailsUpsertRequest,
     service: ServiceDep,
-    writer: ContentWriter,
+    writer: ManagerOrInstructor,
 ) -> StudentDetailsResponse:
     return service.upsert(student_id, request, StudentAccessPolicy.scope_for(writer), writer.id)
 

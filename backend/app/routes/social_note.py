@@ -8,7 +8,7 @@ from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.notes.social_note_repository import SocialNoteRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import Manager, SocialNoteReader, require_tenant
+from backend.app.routes.security import Manager, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.social_note_response import SocialNoteResponse
 from backend.app.schema.routes.social_note_upsert_request import SocialNoteUpsertRequest
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -40,7 +40,7 @@ router = APIRouter(
 
 @router.get("", response_model=SocialNoteResponse)
 def get_social_note(
-    student_id: uuid.UUID, service: ServiceDep, reader: SocialNoteReader
+    student_id: uuid.UUID, service: ServiceDep, reader: ManagerOrInstructor
 ) -> SocialNoteResponse:
     return service.get(student_id, StudentAccessPolicy.scope_for(reader))
 
