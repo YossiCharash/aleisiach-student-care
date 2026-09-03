@@ -18,12 +18,12 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.notes.social_note_service import SocialNoteService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.utils.service.clock import Clock
+from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
-_ACTOR = uuid.uuid4()
 
 
-def _setup(session: Session) -> tuple[SocialNoteService, uuid.UUID]:
+def _setup(session: Session) -> tuple[SocialNoteService, uuid.UUID, uuid.UUID]:
     class_entity = ClassEntity(name="Aleph")
     session.add(class_entity)
     session.flush()
@@ -36,18 +36,18 @@ def _setup(session: Session) -> tuple[SocialNoteService, uuid.UUID]:
         AuditLogger(AuditLogRepository(session)),
         Clock(),
     )
-    return service, student.id
+    return service, student.id, seed_actor(session)
 
 
 def test_upsert_then_get_roundtrip(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
+    service, student_id, actor = _setup(db_session)
 
     saved = service.upsert(
-        student_id, SocialNoteUpsertRequest(content="שיחה עם ההורים"), _ALL, _ACTOR
+        student_id, SocialNoteUpsertRequest(content="שיחה עם ההורים"), _ALL, actor
     )
 
     assert saved.content == "שיחה עם ההורים"
-    assert saved.updated_by == _ACTOR
+    assert saved.updated_by == actor
     assert saved.updated_at is not None
 
     fetched = service.get(student_id, _ALL)
@@ -55,7 +55,7 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
 
 
 def test_get_empty_note_returns_blank(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
+    service, student_id, actor = _setup(db_session)
 
     response = service.get(student_id, _ALL)
 
@@ -65,16 +65,16 @@ def test_get_empty_note_returns_blank(db_session: Session) -> None:
 
 
 def test_update_replaces_content(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
-    service.upsert(student_id, SocialNoteUpsertRequest(content="ראשון"), _ALL, _ACTOR)
+    service, student_id, actor = _setup(db_session)
+    service.upsert(student_id, SocialNoteUpsertRequest(content="ראשון"), _ALL, actor)
 
-    updated = service.upsert(student_id, SocialNoteUpsertRequest(content="שני"), _ALL, _ACTOR)
+    updated = service.upsert(student_id, SocialNoteUpsertRequest(content="שני"), _ALL, actor)
 
     assert updated.content == "שני"
 
 
 def test_out_of_scope_student_is_hidden(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
+    service, student_id, actor = _setup(db_session)
     foreign = StudentAccessScope(all_classes=False, class_id=uuid.uuid4())
 
     with pytest.raises(NotFoundError):
@@ -82,10 +82,10 @@ def test_out_of_scope_student_is_hidden(db_session: Session) -> None:
 
 
 def test_upsert_is_audited_create_then_update(db_session: Session) -> None:
-    service, student_id = _setup(db_session)
+    service, student_id, actor = _setup(db_session)
 
-    service.upsert(student_id, SocialNoteUpsertRequest(content="ראשון"), _ALL, _ACTOR)
-    service.upsert(student_id, SocialNoteUpsertRequest(content="שני"), _ALL, _ACTOR)
+    service.upsert(student_id, SocialNoteUpsertRequest(content="ראשון"), _ALL, actor)
+    service.upsert(student_id, SocialNoteUpsertRequest(content="שני"), _ALL, actor)
 
     logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
     assert [log.action for log in logs] == [AuditAction.CREATE, AuditAction.UPDATE]

@@ -1,3 +1,4 @@
+import sqlite3
 import uuid
 from collections.abc import Callable, Iterator
 from datetime import timedelta
@@ -5,7 +6,7 @@ from datetime import timedelta
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -44,6 +45,11 @@ def client() -> TestClient:
     return TestClient(_unseeded_app())
 
 
+def _enforce_sqlite_foreign_keys(connection: object, _: object) -> None:
+    if isinstance(connection, sqlite3.Connection):
+        connection.execute("PRAGMA foreign_keys=ON")
+
+
 @pytest.fixture
 def db_session() -> Iterator[Session]:
     engine = create_engine(
@@ -52,6 +58,7 @@ def db_session() -> Iterator[Session]:
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    event.listen(engine, "connect", _enforce_sqlite_foreign_keys)
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     session = factory()

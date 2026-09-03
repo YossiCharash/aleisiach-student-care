@@ -25,6 +25,7 @@ from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
 
@@ -34,6 +35,7 @@ class _Fixture:
         self,
         service: MeetingService,
         student_id: uuid.UUID,
+        author_id: uuid.UUID,
         skill_id: uuid.UUID,
         other_skill_id: uuid.UUID,
         solution_id: uuid.UUID,
@@ -41,6 +43,7 @@ class _Fixture:
     ) -> None:
         self.service = service
         self.student_id = student_id
+        self.author_id = author_id
         self.skill_id = skill_id
         self.other_skill_id = other_skill_id
         self.solution_id = solution_id
@@ -73,7 +76,15 @@ def _setup(session: Session) -> _Fixture:
         TaxonomyRepository(session),
         AuditLogger(AuditLogRepository(session)),
     )
-    return _Fixture(service, student.id, skill.id, other_skill.id, solution.id, other_solution.id)
+    return _Fixture(
+        service,
+        student.id,
+        seed_actor(session),
+        skill.id,
+        other_skill.id,
+        solution.id,
+        other_solution.id,
+    )
 
 
 def test_create_captures_snapshots(db_session: Session) -> None:
@@ -90,7 +101,7 @@ def test_create_captures_snapshots(db_session: Session) -> None:
         ],
     )
 
-    meeting = fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+    meeting = fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
     assert meeting.entries[0].skill_name_snapshot == "רחיצת ידיים"
     assert meeting.entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
@@ -98,19 +109,18 @@ def test_create_captures_snapshots(db_session: Session) -> None:
 
 def test_create_is_audited(db_session: Session) -> None:
     fx = _setup(db_session)
-    author = uuid.uuid4()
     request = MeetingCreateRequest(
         year=2026,
         month=8,
         entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
     )
 
-    fx.service.create(fx.student_id, request, _ALL, author)
+    fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
     log = db_session.scalars(select(AuditLog)).one()
     assert log.action == AuditAction.CREATE
     assert log.entity_type == "team_meeting"
-    assert log.actor_id == author
+    assert log.actor_id == fx.author_id
 
 
 def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
@@ -122,7 +132,7 @@ def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
     )
 
     with pytest.raises(InvalidMeetingError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_green_with_solution_is_rejected(db_session: Session) -> None:
@@ -140,7 +150,7 @@ def test_green_with_solution_is_rejected(db_session: Session) -> None:
     )
 
     with pytest.raises(InvalidMeetingError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
@@ -158,7 +168,7 @@ def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
     )
 
     with pytest.raises(InvalidMeetingError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_unknown_skill_is_not_found(db_session: Session) -> None:
@@ -170,7 +180,7 @@ def test_unknown_skill_is_not_found(db_session: Session) -> None:
     )
 
     with pytest.raises(NotFoundError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_student_outside_scope_is_hidden(db_session: Session) -> None:
@@ -183,7 +193,7 @@ def test_student_outside_scope_is_hidden(db_session: Session) -> None:
     )
 
     with pytest.raises(NotFoundError):
-        fx.service.create(fx.student_id, request, foreign_scope, uuid.uuid4())
+        fx.service.create(fx.student_id, request, foreign_scope, fx.author_id)
 
 
 def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
@@ -202,7 +212,7 @@ def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
     )
 
     with pytest.raises(InvalidMeetingError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
@@ -220,7 +230,7 @@ def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
     )
 
     with pytest.raises(InvalidMeetingError):
-        fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
 def test_entries_are_persisted_in_request_order(db_session: Session) -> None:
@@ -233,7 +243,7 @@ def test_entries_are_persisted_in_request_order(db_session: Session) -> None:
             MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
         ],
     )
-    fx.service.create(fx.student_id, request, _ALL, uuid.uuid4())
+    fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
     reloaded = fx.service.list_for_student(fx.student_id, _ALL)[0]
 
