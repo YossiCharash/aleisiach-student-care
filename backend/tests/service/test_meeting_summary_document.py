@@ -63,3 +63,9 @@ def test_headings_use_the_primary_brand_green() -> None:
     html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
 
     assert "h1{color:#3F8420" in html
+
+
+def test_table_header_puts_white_text_on_the_primary_green() -> None:
+    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
+
+    assert "th{background:#3F8420;color:#ffffff}" in html

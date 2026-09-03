@@ -17,7 +17,7 @@ _CSS = (
     ".period{color:#5C5C5C;margin-bottom:1cm}"
     "table{width:100%;border-collapse:collapse}"
     "th,td{border:1px solid #85C441;padding:6pt;text-align:right}"
-    "th{background:#85C441;color:#ffffff}"
+    "th{background:#3F8420;color:#ffffff}"
 )
 
 
