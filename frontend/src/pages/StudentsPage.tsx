@@ -14,10 +14,12 @@ import { Card } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { CreateStudentDialog } from "@/pages/students/CreateStudentDialog";
+import { CreateClassDialog } from "@/pages/classes/CreateClassDialog";
 
 export function StudentsPage(): ReactNode {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+  const [createClassOpen, setCreateClassOpen] = useState(false);
   const studentsQuery = useQuery({
     queryKey: queryKeys.students,
     queryFn: studentsApi.list,
@@ -42,10 +44,16 @@ export function StudentsPage(): ReactNode {
           </p>
         </div>
         {canCreate && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
-            תלמיד חדש
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+              תלמיד חדש
+            </Button>
+            <Button variant="outline" onClick={() => setCreateClassOpen(true)}>
+              <Plus className="h-4 w-4" />
+              כיתה חדשה
+            </Button>
+          </div>
         )}
       </div>
 
@@ -56,7 +64,10 @@ export function StudentsPage(): ReactNode {
       )}
 
       {canCreate && (
-        <CreateStudentDialog open={createOpen} onOpenChange={setCreateOpen} />
+        <>
+          <CreateStudentDialog open={createOpen} onOpenChange={setCreateOpen} />
+          <CreateClassDialog open={createClassOpen} onOpenChange={setCreateClassOpen} />
+        </>
       )}
     </div>
   );

@@ -15,6 +15,7 @@ from backend.app.schema.routes.meeting_create_request import MeetingCreateReques
 from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.schema.service.audit_entry import AuditEntry
+from backend.app.schema.service.meeting_overview_item import MeetingOverviewItem
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
@@ -72,6 +73,9 @@ class MeetingService:
         self._guard.require(student_id, scope)
         meetings = self._meetings.list_for_student(student_id)
         return [MeetingResponse.model_validate(meeting) for meeting in meetings]
+
+    def overview(self, scope: StudentAccessScope) -> list[MeetingOverviewItem]:
+        return self._meetings.list_overview(scope)
 
     def get(
         self, student_id: uuid.UUID, meeting_id: uuid.UUID, scope: StudentAccessScope

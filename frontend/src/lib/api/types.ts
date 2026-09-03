@@ -210,6 +210,14 @@ export interface MeetingResponse {
   entries: MeetingEntryResponse[];
 }
 
+export interface MeetingOverviewItem {
+  student_id: string;
+  student_name: string;
+  meeting_id: string;
+  year: number;
+  month: number;
+}
+
 export interface MeetingEntryRequest {
   skill_id: string;
   rating: MeetingRating;
