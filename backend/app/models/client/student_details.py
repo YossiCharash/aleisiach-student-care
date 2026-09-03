@@ -1,17 +1,25 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import JSON, Boolean, Date, Enum, ForeignKey, String, Text
+from sqlalchemy import JSON, Boolean, Date, Enum, ForeignKeyConstraint, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
 from backend.app.models.client.legal_status import LegalStatus
+from backend.app.models.client.tenant_scoped import TenantScoped
 
 
-class StudentDetails(Base):
+class StudentDetails(TenantScoped, Base):
     __tablename__ = "student_details"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["student_id", "institution_id"],
+            ["students.id", "students.institution_id"],
+            name="fk_student_details_student_institution",
+        ),
+    )
 
-    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("students.id"), primary_key=True)
+    student_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     national_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
     date_of_birth: Mapped[date | None] = mapped_column(Date, nullable=True)
     address: Mapped[str | None] = mapped_column(String(300), nullable=True)

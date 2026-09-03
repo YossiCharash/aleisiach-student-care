@@ -49,9 +49,9 @@ class DemoSeeder:
         self._seed_users(classes["כיתה א׳"].id, institution.id)
         skills = self._seed_taxonomy(institution.id)
         students = self._seed_students(classes, institution.id)
-        self._seed_meeting(students["נועה כהן"].id, skills)
-        self._seed_details(students["נועה כהן"].id)
-        self._seed_social_note(students["נועה כהן"].id)
+        self._seed_meeting(students["נועה כהן"].id, skills, institution.id)
+        self._seed_details(students["נועה כהן"].id, institution.id)
+        self._seed_social_note(students["נועה כהן"].id, institution.id)
 
     def _seed_institution(self) -> Institution:
         institution = Institution(name=DEMO_INSTITUTION_NAME, code=DEMO_INSTITUTION_CODE)
@@ -126,46 +126,69 @@ class DemoSeeder:
         self._session.flush()
         return students
 
-    def _seed_meeting(self, student_id: uuid.UUID, skills: dict[str, Skill]) -> None:
+    def _seed_meeting(
+        self, student_id: uuid.UUID, skills: dict[str, Skill], institution_id: uuid.UUID
+    ) -> None:
         author = self._find_user(INSTRUCTOR.email)
         assert author is not None
-        meeting = TeamMeeting(student_id=student_id, year=2026, month=6, author_id=author.id)
+        meeting = TeamMeeting(
+            student_id=student_id,
+            year=2026,
+            month=6,
+            author_id=author.id,
+            institution_id=institution_id,
+        )
         meeting.entries = [
-            self._entry(skills["expression"], MeetingRating.GREEN, 0, []),
-            self._entry(skills["listening"], MeetingRating.YELLOW, 1, ["ישיבה בקדמת הקבוצה"]),
-            self._entry(skills["organization"], MeetingRating.RED, 2, ["לוח משימות מצויר"]),
+            self._entry(skills["expression"], MeetingRating.GREEN, 0, [], institution_id),
+            self._entry(
+                skills["listening"], MeetingRating.YELLOW, 1, ["ישיבה בקדמת הקבוצה"], institution_id
+            ),
+            self._entry(
+                skills["organization"], MeetingRating.RED, 2, ["לוח משימות מצויר"], institution_id
+            ),
         ]
         self._session.add(meeting)
         self._session.flush()
 
     def _entry(
-        self, skill: Skill, rating: MeetingRating, position: int, solution_texts: list[str]
+        self,
+        skill: Skill,
+        rating: MeetingRating,
+        position: int,
+        solution_texts: list[str],
+        institution_id: uuid.UUID,
     ) -> MeetingEntry:
         entry = MeetingEntry(
             skill_id=skill.id,
             skill_name_snapshot=skill.name,
             rating=rating,
             position=position,
+            institution_id=institution_id,
         )
         entry.solutions = [
-            self._entry_solution(skill.id, text, index) for index, text in enumerate(solution_texts)
+            self._entry_solution(skill.id, text, index, institution_id)
+            for index, text in enumerate(solution_texts)
         ]
         return entry
 
     def _entry_solution(
-        self, skill_id: uuid.UUID, text: str, position: int
+        self, skill_id: uuid.UUID, text: str, position: int, institution_id: uuid.UUID
     ) -> MeetingEntrySolution:
         solution = self._session.scalars(
             select(Solution).where(Solution.skill_id == skill_id, Solution.text == text)
         ).one()
         return MeetingEntrySolution(
-            solution_id=solution.id, solution_text_snapshot=text, position=position
+            solution_id=solution.id,
+            solution_text_snapshot=text,
+            position=position,
+            institution_id=institution_id,
         )
 
-    def _seed_details(self, student_id: uuid.UUID) -> None:
+    def _seed_details(self, student_id: uuid.UUID, institution_id: uuid.UUID) -> None:
         self._session.add(
             StudentDetails(
                 student_id=student_id,
+                institution_id=institution_id,
                 national_id="000000000",
                 date_of_birth=date(2015, 3, 12),
                 address="רחוב הדגמה 1, עיר הדגמה",
@@ -196,12 +219,13 @@ class DemoSeeder:
         )
         self._session.flush()
 
-    def _seed_social_note(self, student_id: uuid.UUID) -> None:
+    def _seed_social_note(self, student_id: uuid.UUID, institution_id: uuid.UUID) -> None:
         manager = self._find_user(MANAGER.email)
         assert manager is not None
         self._session.add(
             SocialNote(
                 student_id=student_id,
+                institution_id=institution_id,
                 content="הערת עו״ס לדוגמה — התלמידה משתלבת יפה ומראה התקדמות.",
                 updated_by=manager.id,
                 updated_at=datetime.now(UTC),

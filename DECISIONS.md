@@ -240,9 +240,9 @@ details), so a leak across institutions is a security failure, not a display bug
 **Decision:**
 - A new `INSTITUTION` table. Every institution-owned row carries `institution_id`: classes,
   students, the four taxonomy levels, extra-section types, detail options, the diagnosis catalog,
-  users and audit logs. Rows that hang off a student (details, extra sections, meetings, social
-  notes) inherit the institution through their parent and are reached only through
-  `StudentAccessGuard`.
+  users and audit logs. Rows that hang off a student — details, extra sections, meetings, meeting
+  entries, entry solutions and social notes — carry it too (added by `0018_tenant_scope_content`;
+  they originally inherited it through their parent and relied on `StudentAccessGuard` alone).
 - A fourth role, **`super_admin`** — the only account with no institution. It manages the list of
   institutions and **has no access to any institution's data**, in any institution.
 - Isolation is enforced in three layers: `TenantBinding` puts the signed-in user's institution on
@@ -276,6 +276,16 @@ application filter.
   the on-screen message stays neutral either way.
 - Unexpected-error alerts carry the **institution code** as metadata (never the name or any PII), and
   PDF exports carry the institution name in their header.
+
+**Follow-up decision (2026-09-03) — the student-owned tables join the other two layers:**
+A security review found that `team_meetings`, `meeting_entries`, `meeting_entry_solutions`,
+`social_notes`, `student_details` and `student_extra_sections` carried no `institution_id`, so the
+ORM filter and the composite keys did not reach them and `StudentAccessGuard` was the only thing
+holding tenants apart. No leak existed — every service did call the guard — but a future query that
+skipped it would have crossed institutions silently. `0018_tenant_scope_content` gives all six the
+column, backfilling each row from its parent so existing institutions keep their own data, and
+links them with composite keys. The guard stays the first gate and still answers 404; the other two
+layers are now the backstop the ADR always claimed.
 
 ---
 
