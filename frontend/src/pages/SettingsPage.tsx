@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
@@ -29,10 +29,22 @@ export function SettingsPage(): ReactNode {
   const defaultTab: SettingsTab = canManage ? "users" : "account";
 
   const tabParam = searchParams.get("tab");
-  const activeTab: SettingsTab =
-    tabParam !== null && (availableTabs as readonly string[]).includes(tabParam)
-      ? (tabParam as SettingsTab)
-      : defaultTab;
+  const isValidTab =
+    tabParam !== null && (availableTabs as readonly string[]).includes(tabParam);
+  const activeTab: SettingsTab = isValidTab ? (tabParam as SettingsTab) : defaultTab;
+
+  useEffect(() => {
+    if (tabParam !== null && !isValidTab) {
+      setSearchParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          next.delete("tab");
+          return next;
+        },
+        { replace: true }
+      );
+    }
+  }, [tabParam, isValidTab, setSearchParams]);
 
   function handleTabChange(value: string): void {
     setSearchParams(

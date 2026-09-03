@@ -30,6 +30,10 @@ export function AppRoutes(): ReactNode {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/settings/personal"
+            element={<Navigate to="/settings?tab=account" replace />}
+          />
           <Route element={<SuperAdminRoute />}>
             <Route path="/institutions" element={<InstitutionsPage />} />
           </Route>

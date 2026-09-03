@@ -106,7 +106,8 @@ link**.
 
 **Login:** username + password.
 
-**Change password:** self-service, in the user's personal settings.
+**Change password:** self-service, in the **"my account"** tab on the Settings page (reachable by
+every role; the management tabs stay manager-only).
 
 **Forgot password:** on the login page → enter email → **if it exists**, a password-reset email is
 sent. The UI shows the **same neutral message either way** (no email-enumeration leak).
@@ -133,12 +134,14 @@ on purpose: it has no access to any of these.
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
-| Settings page (taxonomy, passwords) | ✔ | ✘ | ✘ |
+| Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
+| Settings — "my account" tab (change own password) | ✔ | ✔ | ✔ |
 | Institutions console | ✘ | ✘ | ✘ |
 
 > **Professional teacher = read-only everywhere** (decided): sees all students, reads Tabs 1, 2
 > and the non-sensitive part of Tab 4; blocked from Tab 3 and from the guardianship/legal-status
-> section of Tab 4; no write anywhere; no Settings.
+> section of Tab 4; no write anywhere; no management Settings (may still open the Settings page
+> to reach the **"my account"** tab and change their own password).
 
 ---
 
@@ -249,10 +252,11 @@ on purpose: it has no access to any of these.
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
     Exact heading names to be supplied by the user (draft reading was 5. preferred communication
     channel · 6. prior educational/occupational background · 7. preferences & sensitivities).
-- **Settings page** (manager): **Users area** (add/remove users; per user: full name · email ·
-  role · class; bulk-invite by email) + manage the taxonomy (labels / sub-labels / skills /
-  solutions) + manage Tab 4 section headings.
-- **Personal settings** (every user): change own password.
+- **Settings page**: for **managers** — **Users area** (add/remove users; per user: full name ·
+  email · role · class; bulk-invite by email) + manage the taxonomy (labels / sub-labels / skills /
+  solutions) + manage Tab 4 section headings. For **every role** — a **"my account"** tab to change
+  own password (the only tab instructors and professional teachers see; `/settings/personal`
+  redirects here for backward compatibility).
 
 ---
 
