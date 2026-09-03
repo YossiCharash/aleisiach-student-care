@@ -1,23 +1,23 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { classesApi, studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { StudentResponse } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
 import { groupByClass, type ClassGroup } from "@/lib/students/groupByClass";
 import { studentCountLabel } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+import { StudentLinkCard } from "@/components/StudentLinkCard";
 import { CreateStudentDialog } from "@/pages/students/CreateStudentDialog";
+import { CreateClassDialog } from "@/pages/classes/CreateClassDialog";
 
 export function StudentsPage(): ReactNode {
   const { user } = useAuth();
   const [createOpen, setCreateOpen] = useState(false);
+  const [createClassOpen, setCreateClassOpen] = useState(false);
   const studentsQuery = useQuery({
     queryKey: queryKeys.students,
     queryFn: studentsApi.list,
@@ -42,10 +42,16 @@ export function StudentsPage(): ReactNode {
           </p>
         </div>
         {canCreate && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
-            תלמיד חדש
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+              תלמיד חדש
+            </Button>
+            <Button variant="outline" onClick={() => setCreateClassOpen(true)}>
+              <Plus className="h-4 w-4" />
+              כיתה חדשה
+            </Button>
+          </div>
         )}
       </div>
 
@@ -56,7 +62,10 @@ export function StudentsPage(): ReactNode {
       )}
 
       {canCreate && (
-        <CreateStudentDialog open={createOpen} onOpenChange={setCreateOpen} />
+        <>
+          <CreateStudentDialog open={createOpen} onOpenChange={setCreateOpen} />
+          <CreateClassDialog open={createClassOpen} onOpenChange={setCreateClassOpen} />
+        </>
       )}
     </div>
   );
@@ -79,22 +88,15 @@ function StudentGroups({ groups }: { groups: ClassGroup[] }): ReactNode {
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {group.students.map((student) => (
-              <StudentCard key={student.id} student={student} />
+              <StudentLinkCard
+                key={student.id}
+                id={student.id}
+                name={student.full_name}
+              />
             ))}
           </div>
         </section>
       ))}
     </div>
-  );
-}
-
-function StudentCard({ student }: { student: StudentResponse }): ReactNode {
-  return (
-    <Link to={`/students/${student.id}`}>
-      <Card className="flex items-center justify-between px-5 py-4 transition-colors hover:border-brand-300 hover:bg-brand-50/40">
-        <span className="font-medium text-ink">{student.full_name}</span>
-        <ChevronLeft className="h-5 w-5 text-slate-400" />
-      </Card>
-    </Link>
   );
 }

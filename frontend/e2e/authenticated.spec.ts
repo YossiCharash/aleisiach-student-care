@@ -2,8 +2,14 @@ import { expect, test } from "@playwright/test";
 import { login } from "./helpers/auth";
 
 test.describe("manager (mor) authenticated flows", () => {
-  test("lands on the student list grouped by class", async ({ page }) => {
+  test("lands on the hub and reaches the students grouped by class", async ({ page }) => {
     await login(page, "mor");
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("link", { name: /^כיתות/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^ישיבות צוות/ })).toBeVisible();
+
+    await page.getByRole("link", { name: /^תלמידים/ }).click();
 
     await expect(page).toHaveURL(/\/students$/);
     await expect(page.getByRole("heading", { name: /^כיתה א׳/ })).toBeVisible();
@@ -11,6 +17,17 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByText("נועה כהן")).toBeVisible();
     await expect(page.getByText("איתי לוי")).toBeVisible();
     await expect(page.getByText("מאיה ברק")).toBeVisible();
+  });
+
+  test("reaches the classes and team-meetings hubs", async ({ page }) => {
+    await login(page, "mor");
+
+    await page.goto("/classes");
+    await expect(page.getByRole("heading", { name: "כיתות" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "כיתה חדשה" })).toBeVisible();
+
+    await page.goto("/meetings");
+    await expect(page.getByRole("heading", { name: "ישיבות צוות" })).toBeVisible();
   });
 
   test("opens a student and sees the four tabs", async ({ page }) => {
@@ -24,17 +41,21 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("tab", { name: "פרטי תלמיד" })).toBeVisible();
   });
 
-  test("reaches settings with users, classes and skills areas", async ({ page }) => {
+  test("reaches settings with users and taxonomy areas", async ({ page }) => {
     await login(page, "mor");
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "הגדרות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "משתמשים" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "כיתות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "כישורים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "אבחונים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "עריכת פרטי תלמיד" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "כיתות" })).toHaveCount(0);
+  });
 
-    await page.getByRole("tab", { name: "כיתות" }).click();
+  test("manages classes on the classes page", async ({ page }) => {
+    await login(page, "mor");
+    await page.goto("/classes");
+    await expect(page.getByRole("heading", { name: "כיתות" })).toBeVisible();
     await expect(page.getByText("כיתה א׳")).toBeVisible();
   });
 
@@ -65,10 +86,14 @@ test.describe("role-based access in the UI", () => {
     page,
   }) => {
     await login(page, "dana");
+    await expect(page.getByRole("link", { name: /^כיתות/ })).toHaveCount(0);
+
+    await page.goto("/students");
     await expect(page.getByText("נועה כהן")).toBeVisible();
     await expect(page.getByText("איתי לוי")).toBeVisible();
     await expect(page.getByText("מאיה ברק")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "תלמיד חדש" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "כיתה חדשה" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "הגדרות", exact: true }).click();
     await expect(page.getByRole("tab", { name: "החשבון שלי" })).toBeVisible();
@@ -79,6 +104,7 @@ test.describe("role-based access in the UI", () => {
     page,
   }) => {
     await login(page, "yoav");
+    await page.goto("/students");
     await expect(page.getByText("מאיה ברק")).toBeVisible();
     await expect(page.getByRole("button", { name: "תלמיד חדש" })).toHaveCount(0);
 

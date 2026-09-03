@@ -11,9 +11,6 @@ vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 vi.mock("@/pages/settings/UsersArea", () => ({
   UsersArea: () => <div>אזור משתמשים</div>,
 }));
-vi.mock("@/pages/settings/ClassesArea", () => ({
-  ClassesArea: () => <div>אזור כיתות</div>,
-}));
 vi.mock("@/pages/settings/TaxonomyArea", () => ({
   TaxonomyArea: () => <div>אזור כישורים</div>,
 }));
@@ -40,7 +37,7 @@ function renderSettings(path = "/settings"): void {
   );
 }
 
-const managerTabs = ["משתמשים", "כיתות", "כישורים", "אבחונים", "עריכת פרטי תלמיד"];
+const managerTabs = ["משתמשים", "כישורים", "אבחונים", "עריכת פרטי תלמיד"];
 
 describe("SettingsPage", () => {
   beforeEach(() => useAuth.mockReset());

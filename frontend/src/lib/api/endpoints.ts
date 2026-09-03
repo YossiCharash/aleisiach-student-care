@@ -16,6 +16,7 @@ import type {
   LoginRequest,
   LoginResponse,
   MeetingCreateRequest,
+  MeetingOverviewItem,
   MeetingResponse,
   NamedTaxonomyUpdate,
   PasswordChangeRequest,
@@ -127,6 +128,8 @@ export const programApi = {
 export const meetingsApi = {
   list: (studentId: string): Promise<MeetingResponse[]> =>
     apiClient.get<MeetingResponse[]>(`/students/${studentId}/meetings`),
+  overview: (): Promise<MeetingOverviewItem[]> =>
+    apiClient.get<MeetingOverviewItem[]>("/meetings/overview"),
   get: (studentId: string, meetingId: string): Promise<MeetingResponse> =>
     apiClient.get<MeetingResponse>(`/students/${studentId}/meetings/${meetingId}`),
   create: (studentId: string, body: MeetingCreateRequest): Promise<MeetingResponse> =>
