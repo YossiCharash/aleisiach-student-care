@@ -73,7 +73,7 @@ class InvitationService:
         context = context or AuthEventContext()
         token = self._token_consumer.consume(raw_token, TokenKind.INVITE)
         user = self._users.get(token.user_id)
-        if user is None:
+        if user is None or user.status is not UserStatus.INVITED:
             raise InvalidTokenError
         if self._users.get_by_username(username) is not None:
             raise UsernameAlreadyUsedError

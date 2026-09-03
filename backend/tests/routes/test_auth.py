@@ -2,6 +2,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.models.client.auth_token import AuthToken
@@ -55,6 +56,31 @@ def test_accept_invitation_then_login(api: TestClient, db_session: Session) -> N
 
     bad = api.post("/auth/login", json={"username": "manager1", "password": "nope"})
     assert bad.status_code == 401
+
+
+def test_disabled_invitee_cannot_accept_the_invitation(
+    api: TestClient,
+    db_session: Session,
+    seed_user: Callable[..., User],
+    auth_headers: Callable[..., dict[str, str]],
+) -> None:
+    raw_token = _seed_invited_user(db_session)
+    invitee = db_session.scalars(select(User).where(User.email == "m@example.com")).one()
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    disabled = api.post(f"/users/{invitee.id}/disable", headers=headers)
+    assert disabled.status_code == 200
+    assert disabled.json()["status"] == "disabled"
+
+    accepted = api.post(
+        "/auth/invitations/accept",
+        json={"token": raw_token, "username": "manager1", "password": "manager-pass-2026"},
+    )
+    assert accepted.status_code == 400
+
+    login = api.post("/auth/login", json={"username": "manager1", "password": "manager-pass-2026"})
+    assert login.status_code == 401
 
 
 def test_accept_with_invalid_token_returns_400(api: TestClient) -> None:
