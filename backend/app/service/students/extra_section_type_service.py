@@ -15,11 +15,10 @@ from backend.app.schema.routes.extra_section_type_node import ExtraSectionTypeNo
 from backend.app.schema.routes.extra_section_type_response import (
     ExtraSectionTypeResponse,
 )
-from backend.app.schema.routes.extra_section_type_update_request import (
-    ExtraSectionTypeUpdateRequest,
-)
-from backend.app.schema.service.audit_entry import AuditEntry
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
+from backend.app.utils.service.ordered_node_updater import OrderedNodeUpdater
 
 _ENTITY_TYPE = "extra_section_type"
 
@@ -29,7 +28,7 @@ class ExtraSectionTypeService:
         self, type_repository: ExtraSectionTypeRepository, audit_logger: AuditLogger
     ) -> None:
         self._types = type_repository
-        self._audit = audit_logger
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_types(self, include_inactive: bool) -> list[ExtraSectionTypeResponse]:
         return [
@@ -52,30 +51,21 @@ class ExtraSectionTypeService:
             order=self._types.next_order(request.parent_id),
         )
         self._types.add(section_type)
-        self._record(actor_id, AuditAction.CREATE, section_type.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, section_type.id, ["name"])
         return ExtraSectionTypeResponse.model_validate(section_type)
 
     def update(
         self,
         section_type_id: uuid.UUID,
-        request: ExtraSectionTypeUpdateRequest,
+        request: OrderedNodeUpdateRequest,
         actor_id: uuid.UUID,
     ) -> ExtraSectionTypeResponse:
         section_type = self._types.get(section_type_id)
         if section_type is None:
             raise NotFoundError("section_type")
-        changes: list[str] = []
-        if request.name is not None:
-            section_type.name = request.name
-            changes.append("name")
-        if request.order is not None:
-            section_type.order = request.order
-            changes.append("order")
-        if request.is_active is not None:
-            section_type.is_active = request.is_active
-            changes.append("is_active")
+        changes = OrderedNodeUpdater.apply(section_type, request)
         self._types.flush()
-        self._record(actor_id, AuditAction.UPDATE, section_type.id, changes)
+        self._audit.record(actor_id, AuditAction.UPDATE, section_type.id, changes)
         return ExtraSectionTypeResponse.model_validate(section_type)
 
     def tree(self) -> list[ExtraSectionTypeNode]:
@@ -98,16 +88,3 @@ class ExtraSectionTypeService:
             )
             for heading in headings
         ]
-
-    def _record(
-        self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID, changes: list[str]
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )

@@ -1,24 +1,18 @@
 import uuid
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 
-from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.client.database.ordered_node_repository import OrderedNodeRepository
 from backend.app.models.client.detail_option import DetailOption
 from backend.app.models.client.detail_option_field import DetailOptionField
 
 
-class DetailOptionRepository:
-    def __init__(self, session: Session) -> None:
-        self._session = session
-
+class DetailOptionRepository(OrderedNodeRepository):
     def add(self, option: DetailOption) -> DetailOption:
-        self._session.add(option)
-        self._session.flush()
-        return option
+        return self._add(option)
 
     def get(self, option_id: uuid.UUID) -> DetailOption | None:
-        return self._session.get(DetailOption, option_id, populate_existing=True)
+        return self._get(DetailOption, option_id)
 
     def get_by_field_and_name(self, field: DetailOptionField, name: str) -> DetailOption | None:
         statement = select(DetailOption).where(
@@ -34,12 +28,4 @@ class DetailOptionRepository:
         return list(self._session.scalars(statement).all())
 
     def next_order(self, field: DetailOptionField) -> int:
-        statement = select(func.coalesce(func.max(DetailOption.order), -1)).where(
-            DetailOption.institution_id == TenantBinding.require(self._session),
-            DetailOption.field == field,
-        )
-        current_max = self._session.scalar(statement)
-        return int(current_max if current_max is not None else -1) + 1
-
-    def flush(self) -> None:
-        self._session.flush()
+        return self._next_order(DetailOption, DetailOption.field == field)

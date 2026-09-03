@@ -1,8 +1,10 @@
 from html import escape
 
+from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.schema.routes.meeting_entry_response import MeetingEntryResponse
 from backend.app.schema.routes.meeting_response import MeetingResponse
+from backend.app.utils.service.document_shell import DocumentShell
 
 _RATING_LABELS = {
     MeetingRating.GREEN: "עצמאי",
@@ -10,29 +12,28 @@ _RATING_LABELS = {
     MeetingRating.RED: "תלוי",
 }
 
-_CSS = (
-    "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
-    "h1{color:#3F8420;font-size:20pt}"
-    ".institution{color:#5C5C5C;font-size:11pt;margin:0}"
-    ".period{color:#5C5C5C;margin-bottom:1cm}"
-    "table{width:100%;border-collapse:collapse}"
-    "th,td{border:1px solid #85C441;padding:6pt;text-align:right}"
-    "th{background:#3F8420;color:#ffffff}"
-)
-
 
 class MeetingSummaryDocument:
+    def __init__(self, brand: BrandSettings) -> None:
+        self._brand = brand
+        self._shell = DocumentShell(brand)
+
     def to_html(self, meeting: MeetingResponse, institution_name: str) -> str:
         rows = "".join(self._row(entry) for entry in meeting.entries)
-        return (
-            '<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8">'
-            f"<style>{_CSS}</style></head><body>"
-            f'<p class="institution">{escape(institution_name)}</p>'
-            "<h1>סיכום ישיבת צוות</h1>"
+        body = (
             f'<p class="period">{meeting.month:02d}/{meeting.year}</p>'
             "<table><thead><tr><th>כישור</th><th>דירוג</th>"
             "<th>מוקדים לחיזוק</th></tr></thead>"
-            f"<tbody>{rows}</tbody></table></body></html>"
+            f"<tbody>{rows}</tbody></table>"
+        )
+        return self._shell.render(self._css(), institution_name, "סיכום ישיבת צוות", body)
+
+    def _css(self) -> str:
+        return (
+            f".period{{color:{self._brand.muted_color};margin-bottom:1cm}}"
+            "table{width:100%;border-collapse:collapse}"
+            f"th,td{{border:1px solid {self._brand.accent_color};padding:6pt;text-align:right}}"
+            f"th{{background:{self._brand.primary_color};color:{self._brand.surface_color}}}"
         )
 
     def _row(self, entry: MeetingEntryResponse) -> str:

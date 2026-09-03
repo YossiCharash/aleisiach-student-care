@@ -8,8 +8,8 @@ from backend.app.models.client.institution import Institution
 from backend.app.schema.routes.institution_response import InstitutionResponse
 from backend.app.schema.routes.institution_summary import InstitutionSummary
 from backend.app.schema.routes.institution_update_request import InstitutionUpdateRequest
-from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 
 _ENTITY_TYPE = "institution"
 
@@ -17,7 +17,7 @@ _ENTITY_TYPE = "institution"
 class InstitutionService:
     def __init__(self, institutions: InstitutionRepository, audit_logger: AuditLogger) -> None:
         self._institutions = institutions
-        self._audit = audit_logger
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_institutions(self) -> list[InstitutionSummary]:
         counts = self._institutions.counts()
@@ -45,7 +45,7 @@ class InstitutionService:
         institution = self._require(institution_id)
         changes = self._apply(institution, request)
         if changes:
-            self._record(actor_id, AuditAction.UPDATE, institution.id, changes)
+            self._audit.record(actor_id, AuditAction.UPDATE, institution.id, changes)
         return InstitutionResponse.model_validate(institution)
 
     @staticmethod
@@ -68,7 +68,7 @@ class InstitutionService:
             institution.is_active = False
             institution.deactivated_at = datetime.now(UTC)
             institution.deactivated_by = actor_id
-            self._record(actor_id, AuditAction.ARCHIVE, institution.id, ["is_active"])
+            self._audit.record(actor_id, AuditAction.ARCHIVE, institution.id, ["is_active"])
         return InstitutionResponse.model_validate(institution)
 
     def activate(self, institution_id: uuid.UUID, actor_id: uuid.UUID) -> InstitutionResponse:
@@ -77,7 +77,7 @@ class InstitutionService:
             institution.is_active = True
             institution.deactivated_at = None
             institution.deactivated_by = None
-            self._record(actor_id, AuditAction.UPDATE, institution.id, ["is_active"])
+            self._audit.record(actor_id, AuditAction.UPDATE, institution.id, ["is_active"])
         return InstitutionResponse.model_validate(institution)
 
     def _require(self, institution_id: uuid.UUID) -> Institution:
@@ -85,16 +85,3 @@ class InstitutionService:
         if institution is None:
             raise NotFoundError(_ENTITY_TYPE)
         return institution
-
-    def _record(
-        self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID, changes: list[str]
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )

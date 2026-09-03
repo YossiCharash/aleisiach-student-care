@@ -10,6 +10,7 @@ from backend.app.configuration.database.database_settings import DatabaseSetting
 from backend.app.configuration.email.email_settings import EmailSettings
 from backend.app.configuration.maintenance.retention_settings import RetentionSettings
 from backend.app.configuration.notifications.whatsapp_settings import WhatsAppSettings
+from backend.app.configuration.pdf.brand_settings import BrandSettings
 
 _PRODUCTION = "production"
 _DEFAULT_DB_CREDENTIALS = "aleisiach:aleisiach@"
@@ -24,6 +25,7 @@ class Settings(BaseSettings):
     auth: AuthSettings = Field(default_factory=AuthSettings)
     email: EmailSettings = Field(default_factory=EmailSettings)
     whatsapp: WhatsAppSettings = Field(default_factory=WhatsAppSettings)
+    brand: BrandSettings = Field(default_factory=BrandSettings)
     retention: RetentionSettings = Field(default_factory=RetentionSettings)
     bootstrap_admin: BootstrapAdminSettings = Field(default_factory=BootstrapAdminSettings)
 

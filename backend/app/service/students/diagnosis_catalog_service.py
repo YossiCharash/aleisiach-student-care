@@ -10,11 +10,10 @@ from backend.app.schema.routes.diagnosis_catalog_create_request import (
     DiagnosisCatalogCreateRequest,
 )
 from backend.app.schema.routes.diagnosis_catalog_response import DiagnosisCatalogResponse
-from backend.app.schema.routes.diagnosis_catalog_update_request import (
-    DiagnosisCatalogUpdateRequest,
-)
-from backend.app.schema.service.audit_entry import AuditEntry
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
+from backend.app.utils.service.ordered_node_updater import OrderedNodeUpdater
 
 _ENTITY_TYPE = "diagnosis_catalog"
 
@@ -22,7 +21,7 @@ _ENTITY_TYPE = "diagnosis_catalog"
 class DiagnosisCatalogService:
     def __init__(self, repository: DiagnosisCatalogRepository, audit_logger: AuditLogger) -> None:
         self._catalog = repository
-        self._audit = audit_logger
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_all(self, include_inactive: bool) -> list[DiagnosisCatalogResponse]:
         return [
@@ -39,24 +38,15 @@ class DiagnosisCatalogService:
     def update(
         self,
         diagnosis_id: uuid.UUID,
-        request: DiagnosisCatalogUpdateRequest,
+        request: OrderedNodeUpdateRequest,
         actor_id: uuid.UUID,
     ) -> DiagnosisCatalogResponse:
         entry = self._catalog.get(diagnosis_id)
         if entry is None:
             raise NotFoundError("diagnosis")
-        changes: list[str] = []
-        if request.name is not None:
-            entry.name = request.name.strip()
-            changes.append("name")
-        if request.order is not None:
-            entry.order = request.order
-            changes.append("order")
-        if request.is_active is not None:
-            entry.is_active = request.is_active
-            changes.append("is_active")
+        changes = OrderedNodeUpdater.apply(entry, request)
         self._catalog.flush()
-        self._record(actor_id, AuditAction.UPDATE, entry.id, changes)
+        self._audit.record(actor_id, AuditAction.UPDATE, entry.id, changes)
         return DiagnosisCatalogResponse.model_validate(entry)
 
     def ensure_names(self, names: list[str], actor_id: uuid.UUID) -> list[str]:
@@ -75,22 +65,9 @@ class DiagnosisCatalogService:
             if not existing.is_active:
                 existing.is_active = True
                 self._catalog.flush()
-                self._record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
+                self._audit.record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
             return existing
         entry = DiagnosisCatalog(name=name, order=self._catalog.next_order())
         self._catalog.add(entry)
-        self._record(actor_id, AuditAction.CREATE, entry.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, entry.id, ["name"])
         return entry
-
-    def _record(
-        self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID, changes: list[str]
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )

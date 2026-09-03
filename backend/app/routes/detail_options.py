@@ -12,9 +12,7 @@ from backend.app.schema.routes.detail_option_create_request import (
     DetailOptionCreateRequest,
 )
 from backend.app.schema.routes.detail_option_response import DetailOptionResponse
-from backend.app.schema.routes.detail_option_update_request import (
-    DetailOptionUpdateRequest,
-)
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.detail_option_service import DetailOptionService
 
@@ -51,7 +49,7 @@ def create_option(
 @router.patch("/{option_id}", response_model=DetailOptionResponse)
 def update_option(
     option_id: uuid.UUID,
-    request: DetailOptionUpdateRequest,
+    request: OrderedNodeUpdateRequest,
     service: ServiceDep,
     manager: Manager,
 ) -> DetailOptionResponse:

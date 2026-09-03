@@ -13,7 +13,7 @@ from backend.app.client.students.student_extra_section_repository import (
     StudentExtraSectionRepository,
 )
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import ContentWriter, CurrentUser, require_tenant
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.student_extra_section_entry import StudentExtraSectionEntry
 from backend.app.schema.routes.student_extra_section_upsert_request import (
     StudentExtraSectionUpsertRequest,
@@ -59,7 +59,7 @@ def set_section(
     section_type_id: uuid.UUID,
     request: StudentExtraSectionUpsertRequest,
     service: ServiceDep,
-    writer: ContentWriter,
+    writer: ManagerOrInstructor,
 ) -> StudentExtraSectionEntry:
     return service.set(
         student_id,

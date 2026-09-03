@@ -12,8 +12,8 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 )
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.pdf import RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, RendererDep
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -66,7 +66,7 @@ def upsert_details(
     student_id: uuid.UUID,
     request: StudentDetailsUpsertRequest,
     service: ServiceDep,
-    writer: ContentWriter,
+    writer: ManagerOrInstructor,
 ) -> StudentDetailsResponse:
     return service.upsert(student_id, request, StudentAccessPolicy.scope_for(writer), writer.id)
 
@@ -77,6 +77,7 @@ def get_details_pdf(
     service: ServiceDep,
     user: CurrentUser,
     renderer: RendererDep,
+    brand: BrandDep,
     tenant: Tenant,
 ) -> Response:
     details = service.get(
@@ -84,7 +85,7 @@ def get_details_pdf(
         StudentAccessPolicy.scope_for(user),
         StudentAccessPolicy.can_see_sensitive(user),
     )
-    pdf = renderer.render(StudentDetailsDocument().to_html(details, tenant.institution_name))
+    pdf = renderer.render(StudentDetailsDocument(brand).to_html(details, tenant.institution_name))
     return Response(
         content=pdf,
         media_type="application/pdf",

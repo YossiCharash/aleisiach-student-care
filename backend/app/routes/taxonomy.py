@@ -11,16 +11,14 @@ from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.label_create_request import LabelCreateRequest
 from backend.app.schema.routes.label_response import LabelResponse
 from backend.app.schema.routes.label_tree_node import LabelTreeNode
-from backend.app.schema.routes.label_update_request import LabelUpdateRequest
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.schema.routes.skill_create_request import SkillCreateRequest
 from backend.app.schema.routes.skill_response import SkillResponse
-from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
 from backend.app.schema.routes.solution_response import SolutionResponse
 from backend.app.schema.routes.solution_update_request import SolutionUpdateRequest
 from backend.app.schema.routes.sub_label_create_request import SubLabelCreateRequest
 from backend.app.schema.routes.sub_label_response import SubLabelResponse
-from backend.app.schema.routes.sub_label_update_request import SubLabelUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.taxonomy.taxonomy_service import TaxonomyService
 
@@ -57,7 +55,7 @@ def create_label(
 
 @router.patch("/labels/{label_id}", response_model=LabelResponse)
 def update_label(
-    label_id: uuid.UUID, request: LabelUpdateRequest, service: ServiceDep, manager: Manager
+    label_id: uuid.UUID, request: OrderedNodeUpdateRequest, service: ServiceDep, manager: Manager
 ) -> LabelResponse:
     return service.update_label(label_id, request, manager.id)
 
@@ -79,7 +77,7 @@ def create_sub_label(
 @router.patch("/sub-labels/{sub_label_id}", response_model=SubLabelResponse)
 def update_sub_label(
     sub_label_id: uuid.UUID,
-    request: SubLabelUpdateRequest,
+    request: OrderedNodeUpdateRequest,
     service: ServiceDep,
     manager: Manager,
 ) -> SubLabelResponse:
@@ -102,7 +100,7 @@ def create_skill(
 
 @router.patch("/skills/{skill_id}", response_model=SkillResponse)
 def update_skill(
-    skill_id: uuid.UUID, request: SkillUpdateRequest, service: ServiceDep, manager: Manager
+    skill_id: uuid.UUID, request: OrderedNodeUpdateRequest, service: ServiceDep, manager: Manager
 ) -> SkillResponse:
     return service.update_skill(skill_id, request, manager.id)
 

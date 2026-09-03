@@ -1,6 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
+from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.schema.routes.meeting_entry_response import MeetingEntryResponse
 from backend.app.schema.routes.meeting_entry_solution_response import (
@@ -37,7 +38,7 @@ def _meeting(skill_name: str = "רחיצת ידיים") -> MeetingResponse:
 
 
 def test_html_is_rtl_and_contains_content() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
 
     assert 'dir="rtl"' in html
     assert "רחיצת ידיים" in html
@@ -47,25 +48,27 @@ def test_html_is_rtl_and_contains_content() -> None:
 
 
 def test_html_escapes_snapshot_text() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(skill_name="<script>x</script>"), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(
+        _meeting(skill_name="<script>x</script>"), "מוסד בדיקה"
+    )
 
     assert "<script>x</script>" not in html
     assert "&lt;script&gt;" in html
 
 
 def test_summary_html_carries_the_institution_name() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(), "בית ספר השרון")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "בית ספר השרון")
 
     assert "בית ספר השרון" in html
 
 
 def test_headings_use_the_primary_brand_green() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
 
     assert "h1{color:#3F8420" in html
 
 
 def test_table_header_puts_white_text_on_the_primary_green() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
 
     assert "th{background:#3F8420;color:#ffffff}" in html

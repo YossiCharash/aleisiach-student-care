@@ -9,9 +9,8 @@ from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.schema.routes.label_create_request import LabelCreateRequest
-from backend.app.schema.routes.label_update_request import LabelUpdateRequest
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.schema.routes.skill_create_request import SkillCreateRequest
-from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
 from backend.app.schema.routes.sub_label_create_request import SubLabelCreateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -56,7 +55,7 @@ def test_active_tree_nests_children_and_hides_inactive(db_session: Session) -> N
     )
     service.create_solution(SolutionCreateRequest(skill_id=skill.id, text="תרגול יומי"), _ACTOR)
     hidden = service.create_label(LabelCreateRequest(name="מוסתר"), _ACTOR)
-    service.update_label(hidden.id, LabelUpdateRequest(is_active=False), _ACTOR)
+    service.update_label(hidden.id, OrderedNodeUpdateRequest(is_active=False), _ACTOR)
 
     tree = service.active_tree()
 
@@ -74,7 +73,7 @@ def test_deactivating_skill_removes_it_from_tree(db_session: Session) -> None:
         SkillCreateRequest(sub_label_id=sub_label.id, name="רחיצת ידיים"), _ACTOR
     )
 
-    service.update_skill(skill.id, SkillUpdateRequest(is_active=False), _ACTOR)
+    service.update_skill(skill.id, OrderedNodeUpdateRequest(is_active=False), _ACTOR)
 
     tree = service.active_tree()
     assert tree[0].sub_labels[0].skills == []
@@ -84,7 +83,7 @@ def test_create_and_update_label_are_audited(db_session: Session) -> None:
     service = _service(db_session)
 
     label = service.create_label(LabelCreateRequest(name="עצמאות"), _ACTOR)
-    service.update_label(label.id, LabelUpdateRequest(name="חדש"), _ACTOR)
+    service.update_label(label.id, OrderedNodeUpdateRequest(name="חדש"), _ACTOR)
 
     logs = list(db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)))
     assert [log.action for log in logs] == [AuditAction.CREATE, AuditAction.UPDATE]

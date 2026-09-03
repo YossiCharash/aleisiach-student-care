@@ -14,9 +14,7 @@ from backend.app.schema.routes.diagnosis_catalog_create_request import (
     DiagnosisCatalogCreateRequest,
 )
 from backend.app.schema.routes.diagnosis_catalog_response import DiagnosisCatalogResponse
-from backend.app.schema.routes.diagnosis_catalog_update_request import (
-    DiagnosisCatalogUpdateRequest,
-)
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.diagnosis_catalog_service import DiagnosisCatalogService
 
@@ -51,7 +49,7 @@ def create_diagnosis(
 @router.patch("/{diagnosis_id}", response_model=DiagnosisCatalogResponse)
 def update_diagnosis(
     diagnosis_id: uuid.UUID,
-    request: DiagnosisCatalogUpdateRequest,
+    request: OrderedNodeUpdateRequest,
     service: ServiceDep,
     manager: Manager,
 ) -> DiagnosisCatalogResponse:
