@@ -2,16 +2,8 @@ import { expect, test } from "@playwright/test";
 import { login } from "./helpers/auth";
 
 test.describe("manager (mor) authenticated flows", () => {
-  test("lands on a home page, then reaches every student grouped by class", async ({
-    page,
-  }) => {
+  test("lands on the student list grouped by class", async ({ page }) => {
     await login(page, "mor");
-    const home = page.getByRole("main");
-    await expect(page).toHaveURL(/\/$/);
-    await expect(home.getByRole("link", { name: /^הגדרות/ })).toBeVisible();
-    await expect(home.getByRole("link", { name: /^ארכיון/ })).toBeVisible();
-
-    await home.getByRole("link", { name: /^תלמידים/ }).click();
 
     await expect(page).toHaveURL(/\/students$/);
     await expect(page.getByRole("heading", { name: /^כיתה א׳/ })).toBeVisible();
@@ -52,10 +44,10 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("heading", { name: "תלמידים בארכיון" })).toBeVisible();
   });
 
-  test("personal settings shows the change-password form", async ({ page }) => {
+  test("settings account tab shows the change-password form", async ({ page }) => {
     await login(page, "mor");
-    await page.goto("/settings/personal");
-    await expect(page.getByRole("heading", { name: "הגדרות אישיות" })).toBeVisible();
+    await page.goto("/settings");
+    await page.getByRole("tab", { name: "החשבון שלי" }).click();
     await expect(page.getByLabel("סיסמה נוכחית")).toBeVisible();
     await expect(page.getByLabel("סיסמה חדשה", { exact: true })).toBeVisible();
     await expect(page.getByLabel("אימות סיסמה חדשה")).toBeVisible();
@@ -69,13 +61,18 @@ test.describe("manager (mor) authenticated flows", () => {
 });
 
 test.describe("role-based access in the UI", () => {
-  test("instructor (dana) sees only her class and no settings", async ({ page }) => {
+  test("instructor (dana) sees only her class and account-only settings", async ({
+    page,
+  }) => {
     await login(page, "dana");
     await expect(page.getByText("נועה כהן")).toBeVisible();
     await expect(page.getByText("איתי לוי")).toBeVisible();
     await expect(page.getByText("מאיה ברק")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "הגדרות", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "תלמיד חדש" })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "הגדרות", exact: true }).click();
+    await expect(page.getByRole("tab", { name: "החשבון שלי" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "משתמשים" })).toHaveCount(0);
   });
 
   test("professional teacher (yoav) is read-only, no social-note tab", async ({

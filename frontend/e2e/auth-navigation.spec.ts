@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("public auth navigation", () => {
   test("unauthenticated visit redirects to the login screen", async ({ page }) => {
-    await page.goto("/settings/personal");
+    await page.goto("/settings");
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("heading", { name: "כניסה למערכת" })).toBeVisible();
   });
