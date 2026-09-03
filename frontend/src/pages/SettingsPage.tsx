@@ -4,20 +4,12 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { UsersArea } from "@/pages/settings/UsersArea";
-import { ClassesArea } from "@/pages/settings/ClassesArea";
 import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
 import { DiagnosesArea } from "@/pages/settings/DiagnosesArea";
 import { DetailOptionsArea } from "@/pages/settings/DetailOptionsArea";
 import { AccountArea } from "@/pages/settings/AccountArea";
 
-const allTabs = [
-  "users",
-  "classes",
-  "taxonomy",
-  "diagnoses",
-  "detail-options",
-  "account",
-] as const;
+const allTabs = ["users", "taxonomy", "diagnoses", "detail-options", "account"] as const;
 type SettingsTab = (typeof allTabs)[number];
 
 export function SettingsPage(): ReactNode {
@@ -65,7 +57,6 @@ export function SettingsPage(): ReactNode {
           {canManage && (
             <>
               <TabsTrigger value="users">משתמשים</TabsTrigger>
-              <TabsTrigger value="classes">כיתות</TabsTrigger>
               <TabsTrigger value="taxonomy">כישורים</TabsTrigger>
               <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
               <TabsTrigger value="detail-options">עריכת פרטי תלמיד</TabsTrigger>
@@ -77,9 +68,6 @@ export function SettingsPage(): ReactNode {
           <>
             <TabsContent value="users">
               <UsersArea />
-            </TabsContent>
-            <TabsContent value="classes">
-              <ClassesArea />
             </TabsContent>
             <TabsContent value="taxonomy">
               <TaxonomyArea />

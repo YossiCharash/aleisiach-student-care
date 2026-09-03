@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
 import { meetingsApi, studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { MeetingOverviewItem, StudentResponse } from "@/lib/api/types";
@@ -9,6 +7,7 @@ import { formatMonthYear } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+import { StudentLinkCard } from "@/components/StudentLinkCard";
 
 interface MonthGroup {
   key: number;
@@ -57,21 +56,21 @@ function Months({
   students: StudentResponse[];
 }): ReactNode {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  const currentKey = currentYear * 100 + currentMonth;
+  const currentKey = now.getFullYear() * 100 + (now.getMonth() + 1);
 
   const groups = new Map<number, MonthGroup>();
   groups.set(currentKey, {
     key: currentKey,
-    year: currentYear,
-    month: currentMonth,
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
     met: [],
   });
   for (const item of items) {
     const key = item.year * 100 + item.month;
     const group = groups.get(key) ?? { key, year: item.year, month: item.month, met: [] };
-    group.met.push(item);
+    if (!group.met.some((existing) => existing.student_id === item.student_id)) {
+      group.met.push(item);
+    }
     groups.set(key, group);
   }
 
@@ -110,8 +109,8 @@ function MetSection({ met }: { met: MeetingOverviewItem[] }): ReactNode {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {met.map((item) => (
-            <StudentLink
-              key={item.meeting_id}
+            <StudentLinkCard
+              key={item.student_id}
               id={item.student_id}
               name={item.student_name}
             />
@@ -131,21 +130,9 @@ function NotMetSection({ students }: { students: StudentResponse[] }): ReactNode
       <div className="mb-2 text-sm font-medium text-ink-muted">טרם נערכה ישיבה</div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {students.map((student) => (
-          <StudentLink key={student.id} id={student.id} name={student.full_name} />
+          <StudentLinkCard key={student.id} id={student.id} name={student.full_name} />
         ))}
       </div>
     </div>
-  );
-}
-
-function StudentLink({ id, name }: { id: string; name: string }): ReactNode {
-  return (
-    <Link
-      to={`/students/${id}`}
-      className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 transition-colors hover:border-brand-300 hover:bg-brand-50/40"
-    >
-      <span className="text-sm font-medium text-ink">{name}</span>
-      <ChevronLeft className="h-4 w-4 text-slate-400" />
-    </Link>
   );
 }

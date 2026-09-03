@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { classesApi, studentsApi, usersApi } from "@/lib/api/endpoints";
+import { classesApi, studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { ClassResponse, StudentResponse, UserResponse } from "@/lib/api/types";
+import type { ClassResponse, StudentResponse } from "@/lib/api/types";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,9 @@ export function EditClassDialog({ classItem, open, onOpenChange }: Props): React
       <DialogContent>
         <DialogHeader>
           <DialogTitle>עריכת כיתה</DialogTitle>
-          <DialogDescription>שם הכיתה, מדריך הכיתה ושיוך התלמידים.</DialogDescription>
+          <DialogDescription>
+            שם הכיתה ושיוך התלמידים. שיוך מדריך נעשה בהגדרות → משתמשים.
+          </DialogDescription>
         </DialogHeader>
         {open && (
           <EditClassForm classItem={classItem} onDone={() => onOpenChange(false)} />
@@ -50,7 +52,6 @@ function EditClassForm({
 }): ReactNode {
   const queryClient = useQueryClient();
   const [name, setName] = useState(classItem.name);
-  const [addStudentId, setAddStudentId] = useState("");
 
   useEffect(() => setName(classItem.name), [classItem.id, classItem.name]);
 
@@ -62,12 +63,11 @@ function EditClassForm({
     queryKey: queryKeys.students,
     queryFn: studentsApi.list,
   });
-  const usersQuery = useQuery({ queryKey: queryKeys.users, queryFn: usersApi.list });
 
   function invalidate(): void {
     void queryClient.invalidateQueries({ queryKey: queryKeys.classes });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.archivedClasses });
     void queryClient.invalidateQueries({ queryKey: queryKeys.students });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.users });
   }
 
   const rename = useMutation({
@@ -81,30 +81,16 @@ function EditClassForm({
     onSuccess: invalidate,
   });
 
-  const setInstructor = useMutation({
-    mutationFn: async (nextInstructorId: string) => {
-      const current = (usersQuery.data ?? []).filter(
-        (candidate) =>
-          candidate.role === "instructor" && candidate.class_id === classItem.id
-      );
-      for (const instructor of current) {
-        if (instructor.id !== nextInstructorId) {
-          await assignInstructorClass(instructor, null);
-        }
-      }
-      if (nextInstructorId !== "") {
-        const next = (usersQuery.data ?? []).find((item) => item.id === nextInstructorId);
-        if (next) {
-          await assignInstructorClass(next, classItem.id);
-        }
-      }
+  const archive = useMutation({
+    mutationFn: () => classesApi.archive(classItem.id),
+    onSuccess: () => {
+      invalidate();
+      onDone();
     },
-    onSuccess: invalidate,
   });
 
-  const error =
-    classesQuery.error ?? studentsQuery.error ?? usersQuery.error ?? rename.error;
-  const mutationError = moveStudent.error ?? setInstructor.error;
+  const error = classesQuery.error ?? studentsQuery.error ?? rename.error;
+  const mutationError = moveStudent.error ?? archive.error;
 
   const activeStudents = (studentsQuery.data ?? []).filter(
     (student) => !student.is_archived
@@ -114,11 +100,6 @@ function EditClassForm({
   const otherClasses = (classesQuery.data ?? []).filter(
     (item) => item.id !== classItem.id
   );
-  const instructors = (usersQuery.data ?? []).filter(
-    (user) => user.role === "instructor"
-  );
-  const currentInstructorId =
-    instructors.find((user) => user.class_id === classItem.id)?.id ?? "";
 
   return (
     <div className="space-y-6">
@@ -146,24 +127,6 @@ function EditClassForm({
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="edit-class-instructor">מדריך הכיתה</Label>
-        <select
-          id="edit-class-instructor"
-          className={selectClass}
-          value={currentInstructorId}
-          disabled={setInstructor.isPending}
-          onChange={(event) => setInstructor.mutate(event.target.value)}
-        >
-          <option value="">— ללא מדריך —</option>
-          {instructors.map((instructor) => (
-            <option key={instructor.id} value={instructor.id}>
-              {instructor.full_name}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className="space-y-2">
         <Label>תלמידי הכיתה</Label>
         {members.length === 0 ? (
@@ -177,6 +140,7 @@ function EditClassForm({
               >
                 <span className="text-sm font-medium text-ink">{student.full_name}</span>
                 <select
+                  aria-label={`העברת ${student.full_name} לכיתה אחרת`}
                   className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm disabled:bg-slate-100"
                   value=""
                   disabled={moveStudent.isPending || otherClasses.length === 0}
@@ -204,14 +168,13 @@ function EditClassForm({
         <select
           id="edit-class-add-student"
           className={selectClass}
-          value={addStudentId}
+          value=""
           disabled={moveStudent.isPending || outsiders.length === 0}
           onChange={(event) => {
             const student = outsiders.find((item) => item.id === event.target.value);
             if (student) {
               moveStudent.mutate({ student, classId: classItem.id });
             }
-            setAddStudentId("");
           }}
         >
           <option value="">בחירת תלמיד להוספה…</option>
@@ -223,23 +186,19 @@ function EditClassForm({
         </select>
       </div>
 
-      <div className="flex justify-start">
+      <div className="flex justify-between border-t border-slate-100 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={archive.isPending}
+          onClick={() => archive.mutate()}
+        >
+          העברה לארכיון
+        </Button>
         <Button type="button" variant="ghost" onClick={onDone}>
           סגירה
         </Button>
       </div>
     </div>
   );
-}
-
-function assignInstructorClass(
-  instructor: UserResponse,
-  classId: string | null
-): Promise<UserResponse> {
-  return usersApi.update(instructor.id, {
-    full_name: instructor.full_name,
-    email: instructor.email,
-    role: instructor.role,
-    class_id: classId,
-  });
 }

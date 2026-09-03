@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Settings2 } from "lucide-react";
 import { classesApi, studentsApi, usersApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
@@ -19,6 +19,10 @@ export function ClassesPage(): ReactNode {
   const classesQuery = useQuery({
     queryKey: queryKeys.classes,
     queryFn: classesApi.list,
+  });
+  const archivedQuery = useQuery({
+    queryKey: queryKeys.archivedClasses,
+    queryFn: classesApi.listArchived,
   });
   const studentsQuery = useQuery({
     queryKey: queryKeys.students,
@@ -40,7 +44,7 @@ export function ClassesPage(): ReactNode {
         <div>
           <h1 className="text-2xl font-bold text-ink">כיתות</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            ניהול הכיתות — שם, מדריך ושיוך תלמידים. לחצו על גלגל השיניים לעריכה.
+            ניהול הכיתות — שם ושיוך תלמידים. לחצו על גלגל השיניים לעריכה.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
@@ -58,6 +62,10 @@ export function ClassesPage(): ReactNode {
           users={usersQuery.data}
           onEdit={setEditing}
         />
+      )}
+
+      {archivedQuery.data && archivedQuery.data.length > 0 && (
+        <ArchivedClasses classes={archivedQuery.data} />
       )}
 
       <CreateClassDialog open={createOpen} onOpenChange={setCreateOpen} />
@@ -122,6 +130,41 @@ function ClassCards({
           </Card>
         );
       })}
+    </div>
+  );
+}
+
+function ArchivedClasses({ classes }: { classes: ClassResponse[] }): ReactNode {
+  const queryClient = useQueryClient();
+  const restore = useMutation({
+    mutationFn: (classId: string) => classesApi.restore(classId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.classes });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.archivedClasses });
+    },
+  });
+
+  return (
+    <div className="mt-8 border-t border-slate-200 pt-6">
+      <h2 className="mb-3 text-sm font-medium text-ink-muted">כיתות בארכיון</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {classes.map((classItem) => (
+          <Card
+            key={classItem.id}
+            className="flex items-center justify-between p-4 text-ink-muted"
+          >
+            <span className="font-medium">{classItem.name}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={restore.isPending}
+              onClick={() => restore.mutate(classItem.id)}
+            >
+              שחזור
+            </Button>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
