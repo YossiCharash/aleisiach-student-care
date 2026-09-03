@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Archive, LogOut, Settings, UserCog } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { displayName } from "@/lib/auth/displayName";
-import { permissions } from "@/lib/auth/permissions";
 import { homePath } from "@/lib/auth/homePath";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
@@ -39,24 +38,9 @@ export function Header(): ReactNode {
             <div className="text-xs text-ink-muted">{roleLabels[user.role]}</div>
           </div>
 
-          {permissions.canManage(user) && (
-            <>
-              <Button asChild variant="ghost" size="icon" title="תלמידים בארכיון">
-                <Link to="/students/archived">
-                  <Archive className="h-5 w-5" />
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" size="icon" title="הגדרות">
-                <Link to="/settings">
-                  <Settings className="h-5 w-5" />
-                </Link>
-              </Button>
-            </>
-          )}
-
-          <Button asChild variant="ghost" size="icon" title="הגדרות אישיות">
-            <Link to="/settings/personal">
-              <UserCog className="h-5 w-5" />
+          <Button asChild variant="ghost" size="icon" title="הגדרות">
+            <Link to="/settings">
+              <Settings className="h-5 w-5" />
             </Link>
           </Button>
 

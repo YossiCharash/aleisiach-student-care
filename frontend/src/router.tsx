@@ -16,7 +16,6 @@ import { StudentsPage } from "@/pages/StudentsPage";
 import { ArchivedStudentsPage } from "@/pages/ArchivedStudentsPage";
 import { StudentPage } from "@/pages/StudentPage";
 import { SettingsPage } from "@/pages/SettingsPage";
-import { PersonalSettingsPage } from "@/pages/PersonalSettingsPage";
 import { InstitutionsPage } from "@/pages/InstitutionsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
@@ -30,7 +29,11 @@ export function AppRoutes(): ReactNode {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/settings/personal" element={<PersonalSettingsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/settings/personal"
+            element={<Navigate to="/settings?tab=account" replace />}
+          />
           <Route element={<SuperAdminRoute />}>
             <Route path="/institutions" element={<InstitutionsPage />} />
           </Route>
@@ -39,7 +42,6 @@ export function AppRoutes(): ReactNode {
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/students/:studentId" element={<StudentPage />} />
             <Route element={<ManagerRoute />}>
-              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/students/archived" element={<ArchivedStudentsPage />} />
             </Route>
           </Route>
