@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKeyConstraint, String
+from sqlalchemy import Boolean, ForeignKeyConstraint, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
@@ -15,6 +15,7 @@ class Solution(TenantScoped, Base):
             ["skills.id", "skills.institution_id"],
             name="fk_solutions_skill_institution",
         ),
+        UniqueConstraint("id", "institution_id", name="uq_solutions_id_institution"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

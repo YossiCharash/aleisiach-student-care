@@ -323,15 +323,20 @@ WHERE institution_id = bound"]
 - **The filter does not reach column-only selects** (`select(func.max(Skill.order))`). Those few
   queries filter by institution explicitly via `TenantBinding.require(session)`.
 - **Composite foreign keys** carry `institution_id` into every parent/child link
-  (`students(class_id, institution_id) → classes(id, institution_id)` and the same for the
-  taxonomy chain), so a cross-institution link cannot be written even by a buggy service.
+  (`students(class_id, institution_id) → classes(id, institution_id)`, the taxonomy chain, and the
+  student-owned content chain), so a cross-institution link cannot be written even by a buggy
+  service.
 - **Repository `get()` uses `populate_existing=True`** so an identity-map hit cannot bypass the
   filter.
 - Cross-institution access raises `NotFoundError` → **404**, matching `StudentAccessGuard` and
   never disclosing that a foreign row exists.
-- **Rows owned through a student** (details, extra sections, meetings, social notes) carry no
-  `institution_id`; they are reached only through `StudentAccessGuard`, and
-  `tests/routes/test_tenant_isolation.py` asserts 404 for each of those routes.
+- **Rows owned through a student** — details, extra sections, meetings, meeting entries, entry
+  solutions and social notes — are `TenantScoped` like everything else (migration
+  `0018_tenant_scope_content`), so all three layers apply to them too. `StudentAccessGuard` remains
+  the first gate and answers 404; the filter and the composite keys are the backstop for a query
+  that ever skips it. `tests/client/test_tenant_foreign_keys.py` runs against SQLite with
+  `PRAGMA foreign_keys=ON` and asserts each composite key rejects a cross-institution row —
+  the rest of the suite leaves foreign keys unenforced, so those constraints are proven only there.
 
 ---
 
