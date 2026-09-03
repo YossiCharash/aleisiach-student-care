@@ -17,9 +17,7 @@ from backend.app.schema.routes.extra_section_type_node import ExtraSectionTypeNo
 from backend.app.schema.routes.extra_section_type_response import (
     ExtraSectionTypeResponse,
 )
-from backend.app.schema.routes.extra_section_type_update_request import (
-    ExtraSectionTypeUpdateRequest,
-)
+from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.extra_section_type_service import (
     ExtraSectionTypeService,
@@ -65,7 +63,7 @@ def create_type(
 @router.patch("/{section_type_id}", response_model=ExtraSectionTypeResponse)
 def update_type(
     section_type_id: uuid.UUID,
-    request: ExtraSectionTypeUpdateRequest,
+    request: OrderedNodeUpdateRequest,
     service: ServiceDep,
     manager: Manager,
 ) -> ExtraSectionTypeResponse:
