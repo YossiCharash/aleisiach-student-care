@@ -16,8 +16,8 @@ from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.routes.user_update_request import UserUpdateRequest
-from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 from backend.app.service.auth.invitation_dispatcher import InvitationDispatcher
 
 _PERMISSION_ENTITY_TYPE = "permission"
@@ -35,7 +35,8 @@ class UserManagementService:
         self._users = users
         self._classes = classes
         self._dispatcher = invitation_dispatcher
-        self._audit = audit_logger
+        self._users_audit = EntityAuditRecorder(audit_logger, _USER_ENTITY_TYPE)
+        self._permissions_audit = EntityAuditRecorder(audit_logger, _PERMISSION_ENTITY_TYPE)
 
     def list_users(self) -> list[UserResponse]:
         return [UserResponse.model_validate(user) for user in self._users.list_all()]
@@ -59,15 +60,7 @@ class UserManagementService:
             return UserResponse.model_validate(user)
         if "email" in changes and user.status is UserStatus.INVITED:
             self._dispatcher.dispatch(user.id, user.email)
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=AuditAction.UPDATE,
-                entity_type=_USER_ENTITY_TYPE,
-                entity_id=user.id,
-                changes=changes,
-            )
-        )
+        self._users_audit.record(actor_id, AuditAction.UPDATE, user.id, changes)
         return UserResponse.model_validate(user)
 
     def _require_email_available(self, email: str, user: User) -> None:
@@ -99,13 +92,13 @@ class UserManagementService:
             raise CannotDisableSelfError
         user = self._require(user_id)
         user.status = UserStatus.DISABLED
-        self._record(actor_id, AuditAction.ARCHIVE, user.id)
+        self._permissions_audit.record(actor_id, AuditAction.ARCHIVE, user.id, ["status"])
         return UserResponse.model_validate(user)
 
     def enable(self, user_id: uuid.UUID, actor_id: uuid.UUID) -> UserResponse:
         user = self._require(user_id)
         user.status = UserStatus.ACTIVE if user.password_hash is not None else UserStatus.INVITED
-        self._record(actor_id, AuditAction.UPDATE, user.id)
+        self._permissions_audit.record(actor_id, AuditAction.UPDATE, user.id, ["status"])
         return UserResponse.model_validate(user)
 
     def _require(self, user_id: uuid.UUID) -> User:
@@ -113,14 +106,3 @@ class UserManagementService:
         if user is None:
             raise NotFoundError("user")
         return user
-
-    def _record(self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_PERMISSION_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=["status"],
-            )
-        )

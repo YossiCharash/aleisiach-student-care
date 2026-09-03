@@ -24,8 +24,8 @@ from backend.app.schema.routes.sub_label_create_request import SubLabelCreateReq
 from backend.app.schema.routes.sub_label_response import SubLabelResponse
 from backend.app.schema.routes.sub_label_tree_node import SubLabelTreeNode
 from backend.app.schema.routes.sub_label_update_request import SubLabelUpdateRequest
-from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 
 _ENTITY_TYPE = "taxonomy"
 
@@ -33,24 +33,7 @@ _ENTITY_TYPE = "taxonomy"
 class TaxonomyService:
     def __init__(self, taxonomy_repository: TaxonomyRepository, audit_logger: AuditLogger) -> None:
         self._taxonomy = taxonomy_repository
-        self._audit = audit_logger
-
-    def _audit_change(
-        self,
-        actor_id: uuid.UUID,
-        action: AuditAction,
-        entity_id: uuid.UUID,
-        changes: list[str],
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_labels(self, include_inactive: bool) -> list[LabelResponse]:
         labels = self._taxonomy.list_labels(include_inactive)
@@ -59,7 +42,7 @@ class TaxonomyService:
     def create_label(self, request: LabelCreateRequest, actor_id: uuid.UUID) -> LabelResponse:
         label = Label(name=request.name, order=self._taxonomy.next_label_order())
         self._taxonomy.add_label(label)
-        self._audit_change(actor_id, AuditAction.CREATE, label.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, label.id, ["name"])
         return LabelResponse.model_validate(label)
 
     def update_label(
@@ -70,7 +53,7 @@ class TaxonomyService:
             raise NotFoundError("label")
         self._apply_ordered_update(label, request.name, request.order, request.is_active)
         self._taxonomy.flush()
-        self._audit_change(actor_id, AuditAction.UPDATE, label.id, self._ordered_changes(request))
+        self._audit.record(actor_id, AuditAction.UPDATE, label.id, self._ordered_changes(request))
         return LabelResponse.model_validate(label)
 
     def list_sub_labels(
@@ -92,7 +75,7 @@ class TaxonomyService:
             order=self._taxonomy.next_sub_label_order(request.label_id),
         )
         self._taxonomy.add_sub_label(sub_label)
-        self._audit_change(actor_id, AuditAction.CREATE, sub_label.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, sub_label.id, ["name"])
         return SubLabelResponse.model_validate(sub_label)
 
     def update_sub_label(
@@ -103,7 +86,7 @@ class TaxonomyService:
             raise NotFoundError("sub_label")
         self._apply_ordered_update(sub_label, request.name, request.order, request.is_active)
         self._taxonomy.flush()
-        self._audit_change(
+        self._audit.record(
             actor_id, AuditAction.UPDATE, sub_label.id, self._ordered_changes(request)
         )
         return SubLabelResponse.model_validate(sub_label)
@@ -123,7 +106,7 @@ class TaxonomyService:
             order=self._taxonomy.next_skill_order(request.sub_label_id),
         )
         self._taxonomy.add_skill(skill)
-        self._audit_change(actor_id, AuditAction.CREATE, skill.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, skill.id, ["name"])
         return SkillResponse.model_validate(skill)
 
     def update_skill(
@@ -134,7 +117,7 @@ class TaxonomyService:
             raise NotFoundError("skill")
         self._apply_ordered_update(skill, request.name, request.order, request.is_active)
         self._taxonomy.flush()
-        self._audit_change(actor_id, AuditAction.UPDATE, skill.id, self._ordered_changes(request))
+        self._audit.record(actor_id, AuditAction.UPDATE, skill.id, self._ordered_changes(request))
         return SkillResponse.model_validate(skill)
 
     def list_solutions(self, skill_id: uuid.UUID, include_inactive: bool) -> list[SolutionResponse]:
@@ -150,7 +133,7 @@ class TaxonomyService:
             raise NotFoundError("skill")
         solution = Solution(skill_id=request.skill_id, text=request.text)
         self._taxonomy.add_solution(solution)
-        self._audit_change(actor_id, AuditAction.CREATE, solution.id, ["text"])
+        self._audit.record(actor_id, AuditAction.CREATE, solution.id, ["text"])
         return SolutionResponse.model_validate(solution)
 
     def update_solution(
@@ -167,7 +150,7 @@ class TaxonomyService:
             solution.is_active = request.is_active
             changes.append("is_active")
         self._taxonomy.flush()
-        self._audit_change(actor_id, AuditAction.UPDATE, solution.id, changes)
+        self._audit.record(actor_id, AuditAction.UPDATE, solution.id, changes)
         return SolutionResponse.model_validate(solution)
 
     def active_tree(self) -> list[LabelTreeNode]:

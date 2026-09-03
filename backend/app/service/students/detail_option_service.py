@@ -11,8 +11,8 @@ from backend.app.schema.routes.detail_option_response import DetailOptionRespons
 from backend.app.schema.routes.detail_option_update_request import (
     DetailOptionUpdateRequest,
 )
-from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 
 _ENTITY_TYPE = "detail_option"
 
@@ -20,7 +20,7 @@ _ENTITY_TYPE = "detail_option"
 class DetailOptionService:
     def __init__(self, repository: DetailOptionRepository, audit_logger: AuditLogger) -> None:
         self._options = repository
-        self._audit = audit_logger
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_all(self, include_inactive: bool) -> list[DetailOptionResponse]:
         return [
@@ -37,7 +37,7 @@ class DetailOptionService:
             if not existing.is_active:
                 existing.is_active = True
                 self._options.flush()
-                self._record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
+                self._audit.record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
             return DetailOptionResponse.model_validate(existing)
         option = DetailOption(
             field=request.field,
@@ -45,7 +45,7 @@ class DetailOptionService:
             order=self._options.next_order(request.field),
         )
         self._options.add(option)
-        self._record(actor_id, AuditAction.CREATE, option.id, ["field", "name"])
+        self._audit.record(actor_id, AuditAction.CREATE, option.id, ["field", "name"])
         return DetailOptionResponse.model_validate(option)
 
     def update(
@@ -68,18 +68,5 @@ class DetailOptionService:
             option.is_active = request.is_active
             changes.append("is_active")
         self._options.flush()
-        self._record(actor_id, AuditAction.UPDATE, option.id, changes)
+        self._audit.record(actor_id, AuditAction.UPDATE, option.id, changes)
         return DetailOptionResponse.model_validate(option)
-
-    def _record(
-        self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID, changes: list[str]
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )

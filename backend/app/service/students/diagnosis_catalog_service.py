@@ -13,8 +13,8 @@ from backend.app.schema.routes.diagnosis_catalog_response import DiagnosisCatalo
 from backend.app.schema.routes.diagnosis_catalog_update_request import (
     DiagnosisCatalogUpdateRequest,
 )
-from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 
 _ENTITY_TYPE = "diagnosis_catalog"
 
@@ -22,7 +22,7 @@ _ENTITY_TYPE = "diagnosis_catalog"
 class DiagnosisCatalogService:
     def __init__(self, repository: DiagnosisCatalogRepository, audit_logger: AuditLogger) -> None:
         self._catalog = repository
-        self._audit = audit_logger
+        self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
 
     def list_all(self, include_inactive: bool) -> list[DiagnosisCatalogResponse]:
         return [
@@ -56,7 +56,7 @@ class DiagnosisCatalogService:
             entry.is_active = request.is_active
             changes.append("is_active")
         self._catalog.flush()
-        self._record(actor_id, AuditAction.UPDATE, entry.id, changes)
+        self._audit.record(actor_id, AuditAction.UPDATE, entry.id, changes)
         return DiagnosisCatalogResponse.model_validate(entry)
 
     def ensure_names(self, names: list[str], actor_id: uuid.UUID) -> list[str]:
@@ -75,22 +75,9 @@ class DiagnosisCatalogService:
             if not existing.is_active:
                 existing.is_active = True
                 self._catalog.flush()
-                self._record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
+                self._audit.record(actor_id, AuditAction.UPDATE, existing.id, ["is_active"])
             return existing
         entry = DiagnosisCatalog(name=name, order=self._catalog.next_order())
         self._catalog.add(entry)
-        self._record(actor_id, AuditAction.CREATE, entry.id, ["name"])
+        self._audit.record(actor_id, AuditAction.CREATE, entry.id, ["name"])
         return entry
-
-    def _record(
-        self, actor_id: uuid.UUID, action: AuditAction, entity_id: uuid.UUID, changes: list[str]
-    ) -> None:
-        self._audit.record(
-            AuditEntry(
-                actor_id=actor_id,
-                action=action,
-                entity_type=_ENTITY_TYPE,
-                entity_id=entity_id,
-                changes=changes,
-            )
-        )
