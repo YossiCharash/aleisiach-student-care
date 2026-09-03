@@ -4,41 +4,87 @@ on:
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches: [main]
+    branches: [release/**]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
-env:
-  COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
-
 jobs:
-  backend:
-    if: github.event.workflow_run.conclusion == 'success'
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
-    environment: production
+    outputs:
+      sha: ${{ steps.merge.outputs.sha }}
+      tag: ${{ steps.merge.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: main
+          fetch-depth: 0
+      - name: Merge release branch into main
+        id: merge
+        env:
+          RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$RELEASE_BRANCH"
+          git merge --no-ff "$RELEASE_SHA" -m "Release $RELEASE_BRANCH"
+          git push origin HEAD:main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tag=${RELEASE_BRANCH//\//-}" >> "$GITHUB_OUTPUT"
+
+  backend:
+    needs: merge
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      COMMIT_SHA: ${{ needs.merge.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.merge.outputs.sha }}
       - name: Deploy backend to Render
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
         run: bash .github/scripts/render_deploy.sh
 
   frontend:
-    needs: backend
+    needs: [merge, backend]
     runs-on: ubuntu-latest
     environment: production
+    env:
+      COMMIT_SHA: ${{ needs.merge.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ needs.merge.outputs.sha }}
       - name: Deploy frontend to Render
         env:
           DEPLOY_HOOK_URL: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
         run: bash .github/scripts/render_deploy.sh
+
+  tag:
+    needs: [merge, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.merge.outputs.sha }}
+          fetch-depth: 0
+      - name: Tag the released commit
+        env:
+          TAG: ${{ needs.merge.outputs.tag }}
+          RELEASE_SHA: ${{ needs.merge.outputs.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" "$RELEASE_SHA" -m "Release $TAG"
+          git push origin "refs/tags/$TAG"
