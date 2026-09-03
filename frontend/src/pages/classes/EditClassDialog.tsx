@@ -33,7 +33,9 @@ export function EditClassDialog({ classItem, open, onOpenChange }: Props): React
           <DialogTitle>עריכת כיתה</DialogTitle>
           <DialogDescription>שם הכיתה, מדריך הכיתה ושיוך התלמידים.</DialogDescription>
         </DialogHeader>
-        {open && <EditClassForm classItem={classItem} onDone={() => onOpenChange(false)} />}
+        {open && (
+          <EditClassForm classItem={classItem} onDone={() => onOpenChange(false)} />
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -52,8 +54,14 @@ function EditClassForm({
 
   useEffect(() => setName(classItem.name), [classItem.id, classItem.name]);
 
-  const classesQuery = useQuery({ queryKey: queryKeys.classes, queryFn: classesApi.list });
-  const studentsQuery = useQuery({ queryKey: queryKeys.students, queryFn: studentsApi.list });
+  const classesQuery = useQuery({
+    queryKey: queryKeys.classes,
+    queryFn: classesApi.list,
+  });
+  const studentsQuery = useQuery({
+    queryKey: queryKeys.students,
+    queryFn: studentsApi.list,
+  });
   const usersQuery = useQuery({ queryKey: queryKeys.users, queryFn: usersApi.list });
 
   function invalidate(): void {
@@ -98,11 +106,17 @@ function EditClassForm({
     classesQuery.error ?? studentsQuery.error ?? usersQuery.error ?? rename.error;
   const mutationError = moveStudent.error ?? setInstructor.error;
 
-  const activeStudents = (studentsQuery.data ?? []).filter((student) => !student.is_archived);
+  const activeStudents = (studentsQuery.data ?? []).filter(
+    (student) => !student.is_archived
+  );
   const members = activeStudents.filter((student) => student.class_id === classItem.id);
   const outsiders = activeStudents.filter((student) => student.class_id !== classItem.id);
-  const otherClasses = (classesQuery.data ?? []).filter((item) => item.id !== classItem.id);
-  const instructors = (usersQuery.data ?? []).filter((user) => user.role === "instructor");
+  const otherClasses = (classesQuery.data ?? []).filter(
+    (item) => item.id !== classItem.id
+  );
+  const instructors = (usersQuery.data ?? []).filter(
+    (user) => user.role === "instructor"
+  );
   const currentInstructorId =
     instructors.find((user) => user.class_id === classItem.id)?.id ?? "";
 

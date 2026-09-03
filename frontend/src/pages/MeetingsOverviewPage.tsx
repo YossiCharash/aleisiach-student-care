@@ -22,7 +22,10 @@ export function MeetingsOverviewPage(): ReactNode {
     queryKey: queryKeys.meetingsOverview,
     queryFn: meetingsApi.overview,
   });
-  const studentsQuery = useQuery({ queryKey: queryKeys.students, queryFn: studentsApi.list });
+  const studentsQuery = useQuery({
+    queryKey: queryKeys.students,
+    queryFn: studentsApi.list,
+  });
 
   const isLoading = overviewQuery.isLoading || studentsQuery.isLoading;
   const error = overviewQuery.error ?? studentsQuery.error;
@@ -107,7 +110,11 @@ function MetSection({ met }: { met: MeetingOverviewItem[] }): ReactNode {
       ) : (
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {met.map((item) => (
-            <StudentLink key={item.meeting_id} id={item.student_id} name={item.student_name} />
+            <StudentLink
+              key={item.meeting_id}
+              id={item.student_id}
+              name={item.student_name}
+            />
           ))}
         </div>
       )}

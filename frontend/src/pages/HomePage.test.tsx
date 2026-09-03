@@ -32,7 +32,10 @@ describe("HomePage", () => {
       "href",
       "/students"
     );
-    expect(screen.getByRole("link", { name: /^כיתות/ })).toHaveAttribute("href", "/classes");
+    expect(screen.getByRole("link", { name: /^כיתות/ })).toHaveAttribute(
+      "href",
+      "/classes"
+    );
     expect(screen.getByRole("link", { name: /^ישיבות צוות/ })).toHaveAttribute(
       "href",
       "/meetings"

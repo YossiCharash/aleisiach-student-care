@@ -16,8 +16,14 @@ export function ClassesPage(): ReactNode {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<ClassResponse | null>(null);
 
-  const classesQuery = useQuery({ queryKey: queryKeys.classes, queryFn: classesApi.list });
-  const studentsQuery = useQuery({ queryKey: queryKeys.students, queryFn: studentsApi.list });
+  const classesQuery = useQuery({
+    queryKey: queryKeys.classes,
+    queryFn: classesApi.list,
+  });
+  const studentsQuery = useQuery({
+    queryKey: queryKeys.students,
+    queryFn: studentsApi.list,
+  });
   const usersQuery = useQuery({ queryKey: queryKeys.users, queryFn: usersApi.list });
 
   const isLoading =

@@ -15,8 +15,20 @@ const overviewMock = vi.mocked(meetingsApi.overview);
 const listMock = vi.mocked(studentsApi.list);
 
 const overview: MeetingOverviewItem[] = [
-  { student_id: "s-noa", student_name: "נועה כהן", meeting_id: "m1", year: 2026, month: 9 },
-  { student_id: "s-itai", student_name: "איתי לוי", meeting_id: "m2", year: 2026, month: 8 },
+  {
+    student_id: "s-noa",
+    student_name: "נועה כהן",
+    meeting_id: "m1",
+    year: 2026,
+    month: 9,
+  },
+  {
+    student_id: "s-itai",
+    student_name: "איתי לוי",
+    meeting_id: "m2",
+    year: 2026,
+    month: 8,
+  },
 ];
 
 const students: StudentResponse[] = [
