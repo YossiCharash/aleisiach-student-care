@@ -11,7 +11,7 @@ venv/
 htmlcov/
 
 # Environment
-backend/.env
+.env
 .env.*
 !.env.example
 
