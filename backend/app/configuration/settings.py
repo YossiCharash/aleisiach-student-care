@@ -11,6 +11,7 @@ from backend.app.configuration.email.email_settings import EmailSettings
 from backend.app.configuration.maintenance.retention_settings import RetentionSettings
 from backend.app.configuration.notifications.whatsapp_settings import WhatsAppSettings
 from backend.app.configuration.pdf.brand_settings import BrandSettings
+from backend.app.configuration.ratelimit.rate_limit_settings import RateLimitSettings
 
 _PRODUCTION = "production"
 _DEFAULT_DB_CREDENTIALS = "aleisiach:aleisiach@"
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     auth: AuthSettings = Field(default_factory=AuthSettings)
     email: EmailSettings = Field(default_factory=EmailSettings)
     whatsapp: WhatsAppSettings = Field(default_factory=WhatsAppSettings)
+    rate_limit: RateLimitSettings = Field(default_factory=RateLimitSettings)
     brand: BrandSettings = Field(default_factory=BrandSettings)
     retention: RetentionSettings = Field(default_factory=RetentionSettings)
     bootstrap_admin: BootstrapAdminSettings = Field(default_factory=BootstrapAdminSettings)
@@ -47,6 +49,8 @@ class Settings(BaseSettings):
             problems.append("EMAIL_SMTP_STARTTLS=false שולח סיסמאות וטוקנים ללא הצפנה")
         if _DEFAULT_DB_CREDENTIALS in self.database.url:
             problems.append("DATABASE_URL עדיין מכיל את סיסמת ברירת המחדל")
+        if self.rate_limit.provider == "memory":
+            problems.append("RATELIMIT_PROVIDER=memory אינו משותף בין מופעים ומכפיל את המכסה")
         if self.app.trusted_proxy_count == 0:
             problems.append("APP_TRUSTED_PROXY_COUNT=0 מאחד את כל התעבורה לדלי rate-limit אחד")
         if any("localhost" in origin for origin in self.app.cors_origins):

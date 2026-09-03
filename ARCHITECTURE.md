@@ -376,6 +376,14 @@ flowchart LR
   via email invitation; hashed passwords; single-use expiring invite/reset tokens (stored hashed);
   rate-limit + lockout on login and forgot-password; forgot-password returns a neutral message to
   avoid email enumeration. See §3 (`CLAUDE.md`) and the §4b flow.
+- **Rate limiting is a `RateLimiter` strategy chosen by `RATELIMIT_PROVIDER`.** `memory` keeps the
+  counters in the process, so every extra worker or instance multiplies the quota — it is the local
+  default and the production config validator rejects it. `database` shares one counter across
+  instances through `rate_limit_hits`. The database limiter opens its **own** session rather than
+  the request's: a failed login rolls the request session back, and the attempt must still count.
+  `python -m backend.app.cleanup` prunes hits older than `RATELIMIT_RETENTION_MINUTES`.
+  Account lockout (`failed_login_count`, `locked_until`) is separate and has always been shared,
+  since it lives on the user row.
 - **Deletion = archive only (decided):** students are never hard-deleted from the UI — a manager
   sets `is_archived=true` (soft-delete), which hides them from lists while keeping the data. Hard
   deletion happens only manually in the DB by a system admin.
