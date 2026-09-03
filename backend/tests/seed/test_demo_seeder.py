@@ -2,7 +2,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
-from backend.app.client.database.tenant_filter import TenantFilter
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
@@ -28,6 +27,7 @@ from backend.app.seed.demo_credentials import (
 )
 from backend.app.seed.demo_seeder import DemoSeeder
 from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.tests.support.tenant_filter_disabled import tenant_filter_disabled
 
 
 def _count(session: Session, model: type) -> int:
@@ -153,11 +153,8 @@ def test_seeded_users_belong_to_the_demo_institution(db_session: Session) -> Non
 def test_seeding_states_the_institution_without_relying_on_the_orm_filter(
     db_session: Session,
 ) -> None:
-    TenantFilter.unregister()
-    try:
+    with tenant_filter_disabled():
         _seed(db_session)
-    finally:
-        TenantFilter.register()
 
     with TenantBinding.platform(db_session):
         institution = db_session.scalars(
