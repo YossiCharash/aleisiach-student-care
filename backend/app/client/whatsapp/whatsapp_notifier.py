@@ -18,4 +18,6 @@ class WhatsAppNotifier(ABC):
             f"סוג: {alert.error_type}",
             f"זמן: {occurred_at}",
         ]
+        if alert.institution is not None:
+            lines.insert(2, f"מוסד: {alert.institution}")
         return "\n".join(lines)

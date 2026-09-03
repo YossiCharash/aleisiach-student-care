@@ -9,7 +9,7 @@ from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
 from backend.app.schema.routes.student_update_request import StudentUpdateRequest
@@ -33,7 +33,7 @@ def get_student_service(
 
 ServiceDep = Annotated[StudentService, Depends(get_student_service)]
 
-router = APIRouter(prefix="/students", tags=["students"])
+router = APIRouter(prefix="/students", tags=["students"], dependencies=[Depends(require_tenant)])
 
 
 @router.post("", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)

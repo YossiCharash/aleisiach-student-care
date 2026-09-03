@@ -12,6 +12,7 @@ from backend.app.models.client.user_session import UserSession
 from backend.app.models.client.user_status import UserStatus
 from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
 from backend.app.utils.service.password_hasher import PasswordHasher
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 from backend.tests.support.fake_clock import FakeClock
 
 _NOW = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
@@ -25,6 +26,7 @@ def _user(session: Session) -> User:
         password_hash=PasswordHasher().hash("x"),
         role=UserRole.MANAGER,
         status=UserStatus.ACTIVE,
+        institution_id=DEFAULT_INSTITUTION_ID,
         failed_login_count=3,
         locked_until=_NOW + timedelta(minutes=10),
     )

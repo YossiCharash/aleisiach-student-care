@@ -4,9 +4,10 @@ from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
+from backend.app.models.client.tenant_scoped import TenantScoped
 
 
-class OrderedTaxonomyNode(Base):
+class OrderedTaxonomyNode(TenantScoped, Base):
     __abstract__ = True
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)

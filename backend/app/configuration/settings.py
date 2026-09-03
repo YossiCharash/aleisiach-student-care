@@ -13,7 +13,7 @@ from backend.app.configuration.notifications.whatsapp_settings import WhatsAppSe
 
 _PRODUCTION = "production"
 _DEFAULT_DB_CREDENTIALS = "aleisiach:aleisiach@"
-_SHIPPED_ADMIN_PASSWORD = "change-me-123"
+_PLACEHOLDER_ADMIN_PASSWORD = "change-me-123"
 
 
 class Settings(BaseSettings):
@@ -49,6 +49,6 @@ class Settings(BaseSettings):
             problems.append("APP_TRUSTED_PROXY_COUNT=0 מאחד את כל התעבורה לדלי rate-limit אחד")
         if any("localhost" in origin for origin in self.app.cors_origins):
             problems.append("APP_CORS_ORIGINS עדיין מפנה ל-localhost")
-        if self.bootstrap_admin.password == _SHIPPED_ADMIN_PASSWORD:
-            problems.append("BOOTSTRAP_ADMIN_PASSWORD עדיין הסיסמה שמופיעה ב-.env.example")
+        if self.bootstrap_admin.password == _PLACEHOLDER_ADMIN_PASSWORD:
+            problems.append("BOOTSTRAP_ADMIN_PASSWORD הוא סיסמת מציין מקום ידועה")
         return problems

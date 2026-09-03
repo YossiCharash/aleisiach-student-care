@@ -11,6 +11,7 @@ function userWithRole(role: UserRole): UserResponse {
     role,
     class_id: null,
     status: "active",
+    institution_id: "i1",
   };
 }
 

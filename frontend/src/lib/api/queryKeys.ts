@@ -16,4 +16,5 @@ export const queryKeys = {
   archivedClasses: ["classes", "archived"] as const,
   diagnoses: ["diagnoses"] as const,
   detailOptions: ["detail-options"] as const,
+  institutions: ["institutions"] as const,
 };

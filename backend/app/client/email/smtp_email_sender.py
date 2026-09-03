@@ -4,6 +4,7 @@ from email.message import EmailMessage
 
 from backend.app.client.email.email_sender import EmailSender
 from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.schema.service.password_reset_message import PasswordResetMessage
 
 _INVITE_SUBJECT = "הזמנה למערכת עלי שיח"
 _RESET_SUBJECT = "איפוס סיסמה — עלי שיח"
@@ -17,9 +18,10 @@ class SmtpEmailSender(EmailSender):
         body = f"הוזמנת למערכת עלי שיח. להשלמת ההרשמה: {link}"
         self._deliver(self._message(email, _INVITE_SUBJECT, body))
 
-    def send_password_reset(self, email: str, link: str) -> None:
-        body = f"התקבלה בקשה לאיפוס סיסמה. לאיפוס: {link}"
-        self._deliver(self._message(email, _RESET_SUBJECT, body))
+    def send_password_reset(self, message: PasswordResetMessage) -> None:
+        account = f"{message.username} · {message.institution_name}"
+        body = f"התקבלה בקשה לאיפוס סיסמה עבור החשבון {account}. לאיפוס: {message.link}"
+        self._deliver(self._message(message.email, _RESET_SUBJECT, body))
 
     def _message(self, to: str, subject: str, body: str) -> EmailMessage:
         message = EmailMessage()

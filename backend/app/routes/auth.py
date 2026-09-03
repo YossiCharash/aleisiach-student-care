@@ -7,6 +7,7 @@ from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
 from backend.app.client.auth.session_repository import SessionRepository
 from backend.app.client.database.provider import get_session
+from backend.app.client.institutions.institution_repository import InstitutionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
@@ -29,10 +30,8 @@ from backend.app.schema.service.invitation_command import InvitationCommand
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.authentication_service import AuthenticationService
 from backend.app.service.auth.credential_reset_finalizer import CredentialResetFinalizer
-from backend.app.service.auth.invitation_dispatcher_factory import (
-    InvitationDispatcherFactory,
-)
 from backend.app.service.auth.invitation_service import InvitationService
+from backend.app.service.auth.invitation_service_factory import InvitationServiceFactory
 from backend.app.service.auth.password_change_service import PasswordChangeService
 from backend.app.service.auth.password_reset_service import PasswordResetService
 from backend.app.service.auth.session_service import SessionService
@@ -45,15 +44,15 @@ SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
 
 
+def get_institution_repository(session: SessionDep) -> InstitutionRepository:
+    return InstitutionRepository(session)
+
+
+InstitutionsDep = Annotated[InstitutionRepository, Depends(get_institution_repository)]
+
+
 def get_invitation_service(session: SessionDep, bootstrap: BootstrapDep) -> InvitationService:
-    tokens = AuthTokenRepository(session)
-    return InvitationService(
-        UserRepository(session),
-        InvitationDispatcherFactory.create(session, bootstrap),
-        TokenConsumer(tokens, bootstrap.token_factory),
-        bootstrap.password_hasher,
-        AuditLogger(AuditLogRepository(session)),
-    )
+    return InvitationServiceFactory.create(session, bootstrap)
 
 
 def get_authentication_service(
@@ -61,6 +60,7 @@ def get_authentication_service(
 ) -> AuthenticationService:
     return AuthenticationService(
         UserRepository(session),
+        InstitutionRepository(session),
         bootstrap.password_hasher,
         bootstrap.settings.auth,
         bootstrap.clock,
@@ -95,6 +95,7 @@ def get_password_reset_service(
     tokens = AuthTokenRepository(session)
     return PasswordResetService(
         UserRepository(session),
+        InstitutionRepository(session),
         TokenIssuer(tokens, bootstrap.token_factory),
         TokenConsumer(tokens, bootstrap.token_factory),
         bootstrap.password_hasher,
@@ -131,10 +132,16 @@ def login(
     auth: AuthenticationDep,
     sessions: SessionServiceDep,
     context: AuthEventContextDep,
+    institutions: InstitutionsDep,
 ) -> LoginResponse:
     user = auth.authenticate(request.username, request.password, context)
     token = sessions.create(user.id)
-    return LoginResponse(token=token, user=user)
+    institution = None if user.institution_id is None else institutions.get(user.institution_id)
+    return LoginResponse(
+        token=token,
+        user=user,
+        institution_name=None if institution is None else institution.name,
+    )
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)

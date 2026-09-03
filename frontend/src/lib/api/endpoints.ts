@@ -5,6 +5,10 @@ import type {
   DetailOptionResponse,
   DetailOptionUpdate,
   DiagnosisCatalogResponse,
+  InstitutionCreateRequest,
+  InstitutionResponse,
+  InstitutionSummary,
+  InstitutionUpdateRequest,
   DiagnosisCatalogUpdate,
   InvitationCommand,
   LabelResponse,
@@ -53,6 +57,26 @@ export const authApi = {
     apiClient.post<UserResponse>("/auth/invitations", body),
   changePassword: (body: PasswordChangeRequest): Promise<PasswordChangeResponse> =>
     apiClient.post<PasswordChangeResponse>("/auth/password/change", body),
+};
+
+export const institutionsApi = {
+  list: (): Promise<InstitutionSummary[]> =>
+    apiClient.get<InstitutionSummary[]>("/institutions"),
+  create: (body: InstitutionCreateRequest): Promise<InstitutionResponse> =>
+    apiClient.post<InstitutionResponse>("/institutions", body),
+  update: (
+    institutionId: string,
+    body: InstitutionUpdateRequest
+  ): Promise<InstitutionResponse> =>
+    apiClient.patch<InstitutionResponse>(`/institutions/${institutionId}`, body),
+  resendManagerInvitation: (institutionId: string): Promise<InstitutionResponse> =>
+    apiClient.post<InstitutionResponse>(
+      `/institutions/${institutionId}/manager-invitation`
+    ),
+  deactivate: (institutionId: string): Promise<InstitutionResponse> =>
+    apiClient.post<InstitutionResponse>(`/institutions/${institutionId}/deactivate`),
+  activate: (institutionId: string): Promise<InstitutionResponse> =>
+    apiClient.post<InstitutionResponse>(`/institutions/${institutionId}/activate`),
 };
 
 export const usersApi = {

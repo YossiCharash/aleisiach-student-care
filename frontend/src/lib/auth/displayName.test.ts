@@ -10,6 +10,7 @@ const baseUser: UserResponse = {
   role: "instructor",
   class_id: "c1",
   status: "active",
+  institution_id: "i1",
 };
 
 describe("displayName", () => {

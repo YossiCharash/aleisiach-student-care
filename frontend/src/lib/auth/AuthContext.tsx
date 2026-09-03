@@ -16,10 +16,16 @@ import {
   getStoredUser,
   setStoredUser,
 } from "@/lib/auth/sessionUserStorage";
+import {
+  clearStoredInstitutionName,
+  getStoredInstitutionName,
+  setStoredInstitutionName,
+} from "@/lib/auth/sessionInstitutionStorage";
 import { onUnauthorized } from "@/lib/auth/sessionEvents";
 
 interface AuthContextValue {
   user: UserResponse | null;
+  institutionName: string | null;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<UserResponse>;
   logout: () => Promise<void>;
@@ -33,6 +39,9 @@ function initialUser(): UserResponse | null {
 
 export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
   const [user, setUser] = useState<UserResponse | null>(initialUser);
+  const [institutionName, setInstitutionName] = useState<string | null>(
+    getStoredInstitutionName
+  );
   const queryClient = useQueryClient();
 
   const login = useCallback(
@@ -40,7 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
       const response: LoginResponse = await authApi.login({ username, password });
       setToken(response.token);
       setStoredUser(response.user);
+      setStoredInstitutionName(response.institution_name);
       setUser(response.user);
+      setInstitutionName(response.institution_name);
       return response.user;
     },
     []
@@ -50,7 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     return onUnauthorized(() => {
       clearToken();
       clearStoredUser();
+      clearStoredInstitutionName();
       setUser(null);
+      setInstitutionName(null);
       queryClient.clear();
     });
   }, [queryClient]);
@@ -61,14 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }): ReactNode {
     } finally {
       clearToken();
       clearStoredUser();
+      clearStoredInstitutionName();
       setUser(null);
+      setInstitutionName(null);
       queryClient.clear();
     }
   }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: user !== null, login, logout }),
-    [user, login, logout]
+    () => ({ user, institutionName, isAuthenticated: user !== null, login, logout }),
+    [user, institutionName, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

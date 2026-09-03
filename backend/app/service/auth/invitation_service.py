@@ -1,12 +1,14 @@
 import uuid
 
 from backend.app.client.users.user_repository import UserRepository
+from backend.app.errors.service.authorization_error import AuthorizationError
 from backend.app.errors.service.email_already_used_error import EmailAlreadyUsedError
 from backend.app.errors.service.invalid_token_error import InvalidTokenError
 from backend.app.errors.service.username_already_used_error import UsernameAlreadyUsedError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.token_kind import TokenKind
 from backend.app.models.client.user import User
+from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.service.audit_entry import AuditEntry
@@ -36,6 +38,8 @@ class InvitationService:
         self._audit = audit_logger
 
     def invite(self, command: InvitationCommand, actor_id: uuid.UUID) -> UserResponse:
+        if command.role == UserRole.SUPER_ADMIN:
+            raise AuthorizationError
         if self._users.get_by_email(command.email) is not None:
             raise EmailAlreadyUsedError
         user = self._users.add(

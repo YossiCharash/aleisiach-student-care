@@ -20,6 +20,7 @@ _HTTP_MESSAGES: dict[int, str] = {
     409: "הפעולה מתנגשת עם המצב הקיים.",
 }
 _HTTP_FALLBACK_MESSAGE = "הבקשה נכשלה."
+_INSTITUTION_STATE_KEY = "institution_code"
 
 
 def _json(status_code: int, body: ErrorResponse) -> JSONResponse:
@@ -54,7 +55,8 @@ def _report(request: Request, error: Exception) -> str | None:
     service = _alert_service(request)
     if service is None:
         return None
-    return service.report(error, request.method, request.url.path)
+    institution = getattr(request.state, _INSTITUTION_STATE_KEY, None)
+    return service.report(error, request.method, request.url.path, institution)
 
 
 def _alert_service(request: Request) -> ErrorAlertService | None:

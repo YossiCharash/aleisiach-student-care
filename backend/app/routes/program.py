@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.database.provider import get_session
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import CurrentUser
+from backend.app.routes.security import CurrentUser, require_tenant
 from backend.app.schema.routes.program_response import ProgramResponse
 from backend.app.service.program.program_service import ProgramService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
@@ -24,7 +24,11 @@ def get_program_service(
 
 ServiceDep = Annotated[ProgramService, Depends(get_program_service)]
 
-router = APIRouter(prefix="/students/{student_id}/program", tags=["program"])
+router = APIRouter(
+    prefix="/students/{student_id}/program",
+    tags=["program"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.get("", response_model=ProgramResponse)

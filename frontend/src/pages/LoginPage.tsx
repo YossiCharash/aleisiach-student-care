@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
+import { homePath } from "@/lib/auth/homePath";
 
 export function LoginPage(): ReactNode {
   const { login } = useAuth();
@@ -22,9 +23,11 @@ export function LoginPage(): ReactNode {
     setError(null);
     setSubmitting(true);
     try {
-      await login(username, password);
+      const user = await login(username, password);
       const from = (location.state as { from?: string } | null)?.from;
-      const target = from && from.startsWith("/") && !from.startsWith("//") ? from : "/";
+      const fallback = homePath(user);
+      const target =
+        from && from.startsWith("/") && !from.startsWith("//") ? from : fallback;
       navigate(target, { replace: true });
     } catch (caught) {
       setError(errorMessage(caught, "שם המשתמש או הסיסמה שגויים."));

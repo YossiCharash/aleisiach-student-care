@@ -1,6 +1,11 @@
 import type { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { ManagerRoute, ProtectedRoute } from "@/components/ProtectedRoute";
+import {
+  InstitutionRoute,
+  ManagerRoute,
+  ProtectedRoute,
+  SuperAdminRoute,
+} from "@/components/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { LoginPage } from "@/pages/LoginPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
@@ -12,6 +17,7 @@ import { ArchivedStudentsPage } from "@/pages/ArchivedStudentsPage";
 import { StudentPage } from "@/pages/StudentPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { PersonalSettingsPage } from "@/pages/PersonalSettingsPage";
+import { InstitutionsPage } from "@/pages/InstitutionsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 export function AppRoutes(): ReactNode {
@@ -24,13 +30,18 @@ export function AppRoutes(): ReactNode {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/students" element={<StudentsPage />} />
-          <Route path="/students/:studentId" element={<StudentPage />} />
           <Route path="/settings/personal" element={<PersonalSettingsPage />} />
-          <Route element={<ManagerRoute />}>
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/students/archived" element={<ArchivedStudentsPage />} />
+          <Route element={<SuperAdminRoute />}>
+            <Route path="/institutions" element={<InstitutionsPage />} />
+          </Route>
+          <Route element={<InstitutionRoute />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/students" element={<StudentsPage />} />
+            <Route path="/students/:studentId" element={<StudentPage />} />
+            <Route element={<ManagerRoute />}>
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/students/archived" element={<ArchivedStudentsPage />} />
+            </Route>
           </Route>
         </Route>
       </Route>

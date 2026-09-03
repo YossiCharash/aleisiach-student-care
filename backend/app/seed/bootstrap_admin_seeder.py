@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAdminSettings
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -26,11 +27,15 @@ class BootstrapAdminSeeder:
     def run(self) -> bool:
         if not self._settings.is_configured:
             return False
-        if self._manager_exists():
+        with TenantBinding.platform(self._session):
+            return self._seed()
+
+    def _seed(self) -> bool:
+        if self._super_admin_exists():
             return False
         self._reject_weak_password()
         self._reject_taken_identity()
-        self._session.add(self._build_manager())
+        self._session.add(self._build_super_admin())
         try:
             self._session.flush()
         except IntegrityError:
@@ -38,29 +43,29 @@ class BootstrapAdminSeeder:
             return False
         return True
 
-    def _manager_exists(self) -> bool:
-        statement = select(User.id).where(User.role == UserRole.MANAGER).limit(1)
+    def _super_admin_exists(self) -> bool:
+        statement = select(User.id).where(User.role == UserRole.SUPER_ADMIN).limit(1)
         return self._session.scalar(statement) is not None
 
     def _reject_weak_password(self) -> None:
         error = self._policy.validate(self._settings.password)
         if error is not None:
-            raise ValueError(f"סיסמת מנהל האתחול אינה תקינה: {error}")
+            raise ValueError(f"סיסמת מנהל המערכת הראשי אינה תקינה: {error}")
 
     def _reject_taken_identity(self) -> None:
         if self._session.scalar(select(User).where(User.email == self._settings.email)) is not None:
-            raise ValueError("כתובת המייל של מנהל האתחול כבר קיימת במערכת.")
+            raise ValueError("כתובת המייל של מנהל המערכת הראשי כבר קיימת במערכת.")
         taken_username = select(User).where(User.username == self._settings.username)
         if self._session.scalar(taken_username) is not None:
-            raise ValueError("שם המשתמש של מנהל האתחול כבר קיים במערכת.")
+            raise ValueError("שם המשתמש של מנהל המערכת הראשי כבר קיים במערכת.")
 
-    def _build_manager(self) -> User:
+    def _build_super_admin(self) -> User:
         return User(
             full_name=self._settings.full_name,
             email=self._settings.email,
             username=self._settings.username,
             password_hash=self._hasher.hash(self._settings.password),
-            role=UserRole.MANAGER,
+            role=UserRole.SUPER_ADMIN,
             class_id=None,
             status=UserStatus.ACTIVE,
         )

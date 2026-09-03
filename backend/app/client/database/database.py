@@ -4,11 +4,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from backend.app.client.database.tenant_filter import TenantFilter
 from backend.app.configuration.database.database_settings import DatabaseSettings
 
 
 class Database:
     def __init__(self, settings: DatabaseSettings) -> None:
+        TenantFilter.register()
         self._engine: Engine = create_engine(settings.url, echo=settings.echo, future=True)
         self._session_factory: sessionmaker[Session] = sessionmaker(
             bind=self._engine, autoflush=False, expire_on_commit=False

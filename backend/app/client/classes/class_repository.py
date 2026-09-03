@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
@@ -14,7 +15,7 @@ class ClassRepository:
         self._session = session
 
     def active_exists(self, class_id: uuid.UUID) -> bool:
-        entity = self._session.get(ClassEntity, class_id)
+        entity = self._session.get(ClassEntity, class_id, populate_existing=True)
         return entity is not None and not entity.is_archived
 
     def add(self, entity: ClassEntity) -> ClassEntity:
@@ -23,7 +24,7 @@ class ClassRepository:
         return entity
 
     def get(self, class_id: uuid.UUID) -> ClassEntity | None:
-        return self._session.get(ClassEntity, class_id)
+        return self._session.get(ClassEntity, class_id, populate_existing=True)
 
     def list_active(self) -> list[ClassEntity]:
         statement = (
@@ -41,7 +42,11 @@ class ClassRepository:
         statement = (
             select(func.count())
             .select_from(Student)
-            .where(Student.class_id == class_id, Student.is_archived.is_(False))
+            .where(
+                Student.institution_id == TenantBinding.require(self._session),
+                Student.class_id == class_id,
+                Student.is_archived.is_(False),
+            )
         )
         return self._session.scalar(statement) or 0
 
@@ -49,6 +54,10 @@ class ClassRepository:
         statement = (
             select(func.count())
             .select_from(User)
-            .where(User.class_id == class_id, User.status != UserStatus.DISABLED)
+            .where(
+                User.institution_id == TenantBinding.require(self._session),
+                User.class_id == class_id,
+                User.status != UserStatus.DISABLED,
+            )
         )
         return self._session.scalar(statement) or 0

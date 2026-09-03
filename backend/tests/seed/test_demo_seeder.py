@@ -1,7 +1,11 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.client.database.tenant_filter import TenantFilter
 from backend.app.models.client.class_entity import ClassEntity
+from backend.app.models.client.institution import Institution
+from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_entry import MeetingEntry
 from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
 from backend.app.models.client.meeting_rating import MeetingRating
@@ -16,7 +20,12 @@ from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.contact_info import ContactInfo
-from backend.app.seed.demo_credentials import ALL_ACCOUNTS, DEMO_PASSWORD, INSTRUCTOR
+from backend.app.seed.demo_credentials import (
+    ALL_ACCOUNTS,
+    DEMO_INSTITUTION_CODE,
+    DEMO_PASSWORD,
+    INSTRUCTOR,
+)
 from backend.app.seed.demo_seeder import DemoSeeder
 from backend.app.utils.service.password_hasher import PasswordHasher
 
@@ -112,3 +121,53 @@ def test_run_is_idempotent(db_session: Session) -> None:
     assert _count(db_session, User) == len(ALL_ACCOUNTS)
     assert _count(db_session, Student) == 3
     assert _count(db_session, TeamMeeting) == 1
+
+
+def test_every_seeded_row_belongs_to_the_demo_institution(db_session: Session) -> None:
+    _seed(db_session)
+
+    with TenantBinding.platform(db_session):
+        institution = db_session.scalars(
+            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+        ).one()
+        owners = {
+            model.__name__: {row.institution_id for row in db_session.scalars(select(model)).all()}
+            for model in (ClassEntity, Student, Label, SubLabel, Skill, Solution)
+        }
+
+    assert owners == {model: {institution.id} for model in owners}
+
+
+def test_seeded_users_belong_to_the_demo_institution(db_session: Session) -> None:
+    _seed(db_session)
+
+    with TenantBinding.platform(db_session):
+        institution = db_session.scalars(
+            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+        ).one()
+        owners = {user.institution_id for user in db_session.scalars(select(User)).all()}
+
+    assert owners == {institution.id}
+
+
+def test_seeding_states_the_institution_without_relying_on_the_orm_filter(
+    db_session: Session,
+) -> None:
+    TenantFilter.unregister()
+    try:
+        _seed(db_session)
+    finally:
+        TenantFilter.register()
+
+    with TenantBinding.platform(db_session):
+        institution = db_session.scalars(
+            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+        ).one()
+        classes = db_session.scalars(select(ClassEntity)).all()
+        students = db_session.scalars(select(Student)).all()
+        labels = db_session.scalars(select(Label)).all()
+        users = db_session.scalars(select(User)).all()
+
+    seeded = list(classes) + list(students) + list(labels) + list(users)
+    assert seeded
+    assert {row.institution_id for row in seeded} == {institution.id}

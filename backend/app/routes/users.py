@@ -10,7 +10,7 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.provider import get_bootstrap
-from backend.app.routes.security import Manager
+from backend.app.routes.security import Manager, require_tenant
 from backend.app.schema.routes.user_response import UserResponse
 from backend.app.schema.routes.user_update_request import UserUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -34,7 +34,7 @@ def get_user_management_service(
 
 ServiceDep = Annotated[UserManagementService, Depends(get_user_management_service)]
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_tenant)])
 
 
 @router.get("", response_model=list[UserResponse])

@@ -51,7 +51,7 @@ def test_production_accepts_hardened_configuration() -> None:
     )
 
 
-def _shipped_admin() -> BootstrapAdminSettings:
+def _placeholder_admin() -> BootstrapAdminSettings:
     return BootstrapAdminSettings(
         _env_file=None,
         email="admin@example.org",
@@ -61,18 +61,18 @@ def _shipped_admin() -> BootstrapAdminSettings:
     )
 
 
-def test_production_rejects_the_env_example_admin_password() -> None:
+def test_production_rejects_the_placeholder_admin_password() -> None:
     with pytest.raises(ValidationError):
         Settings(
             app=_production_app(),
             database=DatabaseSettings(url=_SAFE_DB_URL),
             email=EmailSettings(provider="smtp"),
-            bootstrap_admin=_shipped_admin(),
+            bootstrap_admin=_placeholder_admin(),
         )
 
 
 def test_production_accepts_a_bootstrap_admin_with_its_own_password() -> None:
-    admin = _shipped_admin()
+    admin = _placeholder_admin()
     admin.password = "a-real-secret-2026"
 
     Settings(

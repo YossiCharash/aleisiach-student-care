@@ -37,7 +37,7 @@ def _meeting(skill_name: str = "רחיצת ידיים") -> MeetingResponse:
 
 
 def test_html_is_rtl_and_contains_content() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting())
+    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
 
     assert 'dir="rtl"' in html
     assert "רחיצת ידיים" in html
@@ -47,7 +47,13 @@ def test_html_is_rtl_and_contains_content() -> None:
 
 
 def test_html_escapes_snapshot_text() -> None:
-    html = MeetingSummaryDocument().to_html(_meeting(skill_name="<script>x</script>"))
+    html = MeetingSummaryDocument().to_html(_meeting(skill_name="<script>x</script>"), "מוסד בדיקה")
 
     assert "<script>x</script>" not in html
     assert "&lt;script&gt;" in html
+
+
+def test_summary_html_carries_the_institution_name() -> None:
+    html = MeetingSummaryDocument().to_html(_meeting(), "בית ספר השרון")
+
+    assert "בית ספר השרון" in html

@@ -231,6 +231,52 @@ Migrations stay outside the pipeline — the container entrypoint runs `alembic 
 every start. Two repository secrets (the hook URLs) are the pipeline's only credentials; setup is
 documented in the README.
 
+## ADR-018 — Multi-tenancy: many institutions, one platform super admin
+**Status:** Accepted · 2026-09-02
+**Context:** The system was built for a single institution. It must now serve several institutions
+from one deployment, where a manager sees only their own institution and a platform operator
+manages the list of institutions. The data is sensitive (minors' medical and guardianship
+details), so a leak across institutions is a security failure, not a display bug.
+**Decision:**
+- A new `INSTITUTION` table. Every institution-owned row carries `institution_id`: classes,
+  students, the four taxonomy levels, extra-section types, detail options, the diagnosis catalog,
+  users and audit logs. Rows that hang off a student (details, extra sections, meetings, social
+  notes) inherit the institution through their parent and are reached only through
+  `StudentAccessGuard`.
+- A fourth role, **`super_admin`** — the only account with no institution. It manages the list of
+  institutions and **has no access to any institution's data**, in any institution.
+- Isolation is enforced in three layers: `TenantBinding` puts the signed-in user's institution on
+  the SQLAlchemy session; `TenantFilter` adds a global `WHERE institution_id = …` to every ORM
+  select and stamps new rows on flush; composite foreign keys make a cross-institution parent/child
+  link impossible in the database. Cross-institution access answers **404**, never 403, so a
+  foreign row's existence is not disclosed.
+- Taxonomy, Tab 4 headings, the diagnosis catalog and the detail-option catalog are **per
+  institution**. A new institution is provisioned with the structural detail-option catalog and an
+  invitation to its first manager.
+- **Usernames stay unique platform-wide** so the institution is derived from the account and the
+  login screen is unchanged; **e-mail is unique within an institution**, so one person can hold
+  separate accounts in two institutions.
+- Deactivating an institution is archive-only (rule 7): its data is kept and its users cannot log
+  in, effective immediately for existing sessions.
+**Alternatives:** A database per institution — rejected as operationally heavy for this scale.
+A shared taxonomy owned by the super admin — rejected, it removes the flexibility of rule 6.
+Per-institution usernames with an institution selector at login — rejected, it changes the login
+screen for every user to serve a rare case.
+**Consequences:** Migration `0016_institutions` backfills all existing rows into a default
+institution. Postgres row-level security remains available as a later hardening layer on top of the
+application filter.
+**Follow-up decisions (2026-09-02):**
+- A new institution starts with the structural detail-option catalog only; taxonomy, Tab 4 headings
+  and the diagnosis catalog are built by its manager in Settings. No default content is invented.
+- An institution carries a **contact name and phone** beyond its name and code; no address, no logo.
+- The super admin can **re-send a pending manager invitation** and nothing more — it never resets a
+  password and cannot re-invite a manager who already accepted, which would be an account takeover.
+  A manager who lost access uses forgot-password.
+- **Forgot-password sends one link per matching account**, each naming the institution and username;
+  the on-screen message stays neutral either way.
+- Unexpected-error alerts carry the **institution code** as metadata (never the name or any PII), and
+  PDF exports carry the institution name in their header.
+
 ---
 
 ## Open / deferred items (not yet ADRs)
@@ -238,4 +284,7 @@ documented in the README.
   (ADR-011 mechanism implemented); no fixed names needed.
 - **Login/student-screen design variation** — pick among the design's variations (frontend).
 
-_Resolved: Hebrew font = **Heebo** default (ADR-016); email provider = **Gmail SMTP** (ADR-014)._
+
+_Resolved: Hebrew font = **Heebo** default (ADR-016); email provider = **Gmail SMTP** (ADR-014);
+new-institution template, institution fields, manager access recovery and multi-institution
+password reset (ADR-018 follow-ups)._

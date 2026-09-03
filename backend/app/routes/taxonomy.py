@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.routes.security import CurrentUser, Manager
+from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.label_create_request import LabelCreateRequest
 from backend.app.schema.routes.label_response import LabelResponse
 from backend.app.schema.routes.label_tree_node import LabelTreeNode
@@ -33,7 +33,7 @@ def get_taxonomy_service(
 
 ServiceDep = Annotated[TaxonomyService, Depends(get_taxonomy_service)]
 
-router = APIRouter(prefix="/taxonomy", tags=["taxonomy"])
+router = APIRouter(prefix="/taxonomy", tags=["taxonomy"], dependencies=[Depends(require_tenant)])
 
 
 @router.get("/tree", response_model=list[LabelTreeNode])

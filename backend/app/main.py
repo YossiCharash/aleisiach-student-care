@@ -13,6 +13,7 @@ from backend.app.routes.detail_options import router as detail_options_router
 from backend.app.routes.diagnoses import router as diagnoses_router
 from backend.app.routes.extra_section_types import router as extra_section_types_router
 from backend.app.routes.health import router as health_router
+from backend.app.routes.institutions import router as institutions_router
 from backend.app.routes.meetings import router as meetings_router
 from backend.app.routes.program import router as program_router
 from backend.app.routes.social_note import router as social_note_router
@@ -82,6 +83,7 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     register_error_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(institutions_router)
     app.include_router(students_router)
     app.include_router(classes_router)
     app.include_router(diagnoses_router)

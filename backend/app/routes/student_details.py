@@ -13,7 +13,7 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.routes.pdf import RendererDep
-from backend.app.routes.security import ContentWriter, CurrentUser
+from backend.app.routes.security import ContentWriter, CurrentUser, Tenant, require_tenant
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -43,7 +43,11 @@ def get_student_details_service(
 
 ServiceDep = Annotated[StudentDetailsService, Depends(get_student_details_service)]
 
-router = APIRouter(prefix="/students/{student_id}/details", tags=["student-details"])
+router = APIRouter(
+    prefix="/students/{student_id}/details",
+    tags=["student-details"],
+    dependencies=[Depends(require_tenant)],
+)
 
 
 @router.get("", response_model=StudentDetailsResponse)
@@ -73,13 +77,14 @@ def get_details_pdf(
     service: ServiceDep,
     user: CurrentUser,
     renderer: RendererDep,
+    tenant: Tenant,
 ) -> Response:
     details = service.get(
         student_id,
         StudentAccessPolicy.scope_for(user),
         StudentAccessPolicy.can_see_sensitive(user),
     )
-    pdf = renderer.render(StudentDetailsDocument().to_html(details))
+    pdf = renderer.render(StudentDetailsDocument().to_html(details, tenant.institution_name))
     return Response(
         content=pdf,
         media_type="application/pdf",

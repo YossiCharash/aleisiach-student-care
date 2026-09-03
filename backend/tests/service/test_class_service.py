@@ -18,6 +18,7 @@ from backend.app.schema.routes.class_create_request import ClassCreateRequest
 from backend.app.schema.routes.class_update_request import ClassUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.classes.class_service import ClassService
+from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 _ACTOR = uuid.uuid4()
 
@@ -110,6 +111,7 @@ def test_archive_is_blocked_while_a_user_is_assigned(db_session: Session) -> Non
             role=UserRole.INSTRUCTOR,
             class_id=entity.id,
             status=UserStatus.ACTIVE,
+            institution_id=DEFAULT_INSTITUTION_ID,
         )
     )
     db_session.flush()
