@@ -2,16 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from backend.app.configuration.provider import get_settings
-from backend.app.configuration.settings import Settings
 from backend.app.schema.routes.health_response import HealthResponse
 from backend.app.service.health.health_service import HealthService
 
 
-def get_health_service(
-    settings: Annotated[Settings, Depends(get_settings)],
-) -> HealthService:
-    return HealthService(app_settings=settings.app)
+def get_health_service() -> HealthService:
+    return HealthService()
 
 
 router = APIRouter(tags=["health"])

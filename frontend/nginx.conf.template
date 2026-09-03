@@ -1,3 +1,12 @@
+# HSTS only where the browser actually reached us over TLS. Render terminates TLS and
+# forwards X-Forwarded-Proto; the local compose stack is plain http on localhost, where
+# an empty value makes nginx omit the header — sending it there would pin localhost to
+# https in the developer's browser.
+map $http_x_forwarded_proto $hsts_max_age {
+    default "";
+    https   "max-age=31536000; includeSubDomains";
+}
+
 server {
     listen ${PORT};
     server_name _;
@@ -9,6 +18,7 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "no-referrer" always;
     add_header Cross-Origin-Opener-Policy "same-origin" always;
+    add_header Strict-Transport-Security $hsts_max_age always;
     add_header Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'" always;
 
     # Proxy API calls to the backend service, stripping the /api prefix

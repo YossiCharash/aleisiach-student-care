@@ -79,13 +79,20 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     db_session.add(skill)
     db_session.flush()
     solution = Solution(text="פתרון זר", skill_id=skill.id, institution_id=owner)
-    meeting = TeamMeeting(student_id=student.id, year=2026, month=5, author_id=manager.id)
+    meeting = TeamMeeting(
+        student_id=student.id,
+        year=2026,
+        month=5,
+        author_id=manager.id,
+        institution_id=owner,
+    )
     meeting.entries = [
         MeetingEntry(
             skill_id=skill.id,
             skill_name_snapshot=skill.name,
             rating=MeetingRating.GREEN,
             position=0,
+            institution_id=owner,
         )
     ]
     db_session.add_all([solution, meeting])

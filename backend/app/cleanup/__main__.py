@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
 from backend.app.client.auth.session_repository import SessionRepository
 from backend.app.client.database.database import Database
+from backend.app.client.ratelimit.rate_limit_repository import RateLimitRepository
 from backend.app.configuration.settings import Settings
 from backend.app.schema.service.cleanup_result import CleanupResult
 from backend.app.service.maintenance.expired_credential_cleanup_service import (
@@ -19,14 +20,19 @@ def main() -> None:
     generator = database.session()
     session = next(generator)
     result = _run(session, generator, settings)
-    print(f"נמחקו {result.sessions_deleted} sessions ו-{result.tokens_deleted} טוקנים שפג תוקפם.")
+    print(
+        f"נמחקו {result.sessions_deleted} sessions, {result.tokens_deleted} טוקנים שפג תוקפם"
+        f" ו-{result.rate_limit_hits_deleted} רשומות הגבלת קצב."
+    )
 
 
 def _run(session: Session, generator: Iterator[Session], settings: Settings) -> CleanupResult:
     service = ExpiredCredentialCleanupService(
         SessionRepository(session),
         AuthTokenRepository(session),
+        RateLimitRepository(session),
         settings.retention,
+        settings.rate_limit,
         Clock(),
     )
     try:
