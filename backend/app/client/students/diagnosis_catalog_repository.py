@@ -1,41 +1,23 @@
 import uuid
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import select
 
-from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.client.database.ordered_node_repository import OrderedNodeRepository
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 
 
-class DiagnosisCatalogRepository:
-    def __init__(self, session: Session) -> None:
-        self._session = session
-
+class DiagnosisCatalogRepository(OrderedNodeRepository):
     def add(self, entry: DiagnosisCatalog) -> DiagnosisCatalog:
-        self._session.add(entry)
-        self._session.flush()
-        return entry
+        return self._add(entry)
 
     def get(self, diagnosis_id: uuid.UUID) -> DiagnosisCatalog | None:
-        return self._session.get(DiagnosisCatalog, diagnosis_id, populate_existing=True)
+        return self._get(DiagnosisCatalog, diagnosis_id)
 
     def get_by_name(self, name: str) -> DiagnosisCatalog | None:
-        statement = select(DiagnosisCatalog).where(DiagnosisCatalog.name == name)
-        return self._session.scalar(statement)
+        return self._session.scalar(select(DiagnosisCatalog).where(DiagnosisCatalog.name == name))
 
     def list(self, include_inactive: bool) -> list[DiagnosisCatalog]:
-        statement = select(DiagnosisCatalog)
-        if not include_inactive:
-            statement = statement.where(DiagnosisCatalog.is_active.is_(True))
-        statement = statement.order_by(DiagnosisCatalog.order, DiagnosisCatalog.name)
-        return list(self._session.scalars(statement).all())
+        return self._ordered(DiagnosisCatalog, include_inactive)
 
     def next_order(self) -> int:
-        statement = select(func.coalesce(func.max(DiagnosisCatalog.order), -1)).where(
-            DiagnosisCatalog.institution_id == TenantBinding.require(self._session)
-        )
-        current_max = self._session.scalar(statement)
-        return int(current_max if current_max is not None else -1) + 1
-
-    def flush(self) -> None:
-        self._session.flush()
+        return self._next_order(DiagnosisCatalog)
