@@ -22,9 +22,9 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.program.program_service import ProgramService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
-_AUTHOR = uuid.uuid4()
 
 
 class _Bundle:
@@ -33,6 +33,7 @@ class _Bundle:
         meetings: MeetingService,
         program: ProgramService,
         student_id: uuid.UUID,
+        author_id: uuid.UUID,
         skill_a: uuid.UUID,
         skill_b: uuid.UUID,
         solution_b: uuid.UUID,
@@ -40,6 +41,7 @@ class _Bundle:
         self.meetings = meetings
         self.program = program
         self.student_id = student_id
+        self.author_id = author_id
         self.skill_a = skill_a
         self.skill_b = skill_b
         self.solution_b = solution_b
@@ -72,12 +74,14 @@ def _setup(session: Session) -> _Bundle:
         AuditLogger(AuditLogRepository(session)),
     )
     program = ProgramService(MeetingRepository(session), guard)
-    return _Bundle(meetings, program, student.id, skill_a.id, skill_b.id, solution_b.id)
+    return _Bundle(
+        meetings, program, student.id, seed_actor(session), skill_a.id, skill_b.id, solution_b.id
+    )
 
 
 def _meeting(bundle: _Bundle, year: int, month: int, entries: list[MeetingEntryRequest]) -> None:
     request = MeetingCreateRequest(year=year, month=month, entries=entries)
-    bundle.meetings.create(bundle.student_id, request, _ALL, _AUTHOR)
+    bundle.meetings.create(bundle.student_id, request, _ALL, bundle.author_id)
 
 
 def test_latest_meeting_overrides_earlier_rating(db_session: Session) -> None:

@@ -1,4 +1,3 @@
-import uuid
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from backend.app.service.maintenance.expired_credential_cleanup_service import (
     ExpiredCredentialCleanupService,
 )
 from backend.tests.support.fake_clock import FakeClock
+from backend.tests.support.seeding import seed_actor
 
 _NOW = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
 
@@ -27,13 +27,14 @@ def test_run_deletes_only_records_past_the_retention_window(db_session: Session)
     rate_limit = RateLimitSettings(retention_minutes=60)
     stale = _NOW - timedelta(days=31)
     fresh = _NOW - timedelta(days=1)
+    user_id = seed_actor(db_session)
     hits.add("login:1.2.3.4", _NOW - timedelta(minutes=61))
     hits.add("login:1.2.3.4", _NOW - timedelta(minutes=1))
-    sessions.add(UserSession(user_id=uuid.uuid4(), token_hash="s1" * 32, expires_at=stale))
-    sessions.add(UserSession(user_id=uuid.uuid4(), token_hash="s2" * 32, expires_at=fresh))
+    sessions.add(UserSession(user_id=user_id, token_hash="s1" * 32, expires_at=stale))
+    sessions.add(UserSession(user_id=user_id, token_hash="s2" * 32, expires_at=fresh))
     tokens.add(
         AuthToken(
-            user_id=uuid.uuid4(),
+            user_id=user_id,
             kind=TokenKind.PASSWORD_RESET,
             token_hash="t1" * 32,
             expires_at=stale,
