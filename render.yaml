@@ -36,6 +36,9 @@ services:
       # The frontend origin, e.g. https://aleisiach-frontend.onrender.com
       - key: APP_CORS_ORIGINS
         sync: false
+      # One shared counter across instances; `memory` would give each its own quota.
+      - key: RATELIMIT_PROVIDER
+        value: database
       - key: EMAIL_PROVIDER
         value: smtp
       - key: EMAIL_FROM_ADDRESS

@@ -5,9 +5,14 @@ from backend.app.configuration.admin.bootstrap_admin_settings import BootstrapAd
 from backend.app.configuration.app.app_settings import AppSettings
 from backend.app.configuration.database.database_settings import DatabaseSettings
 from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.configuration.ratelimit.rate_limit_settings import RateLimitSettings
 from backend.app.configuration.settings import Settings
 
 _SAFE_DB_URL = "postgresql+psycopg://app:strong-secret@db.internal:5432/aleisiach"
+
+
+def _shared_rate_limit() -> RateLimitSettings:
+    return RateLimitSettings(provider="database")
 
 
 def _production_app() -> AppSettings:
@@ -40,6 +45,17 @@ def test_production_rejects_zero_trusted_proxies() -> None:
             ),
             database=DatabaseSettings(url=_SAFE_DB_URL),
             email=EmailSettings(provider="smtp"),
+            rate_limit=_shared_rate_limit(),
+        )
+
+
+def test_production_rejects_an_in_memory_rate_limiter() -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            app=_production_app(),
+            database=DatabaseSettings(url=_SAFE_DB_URL),
+            email=EmailSettings(provider="smtp"),
+            rate_limit=RateLimitSettings(provider="memory"),
         )
 
 
@@ -48,6 +64,7 @@ def test_production_accepts_hardened_configuration() -> None:
         app=_production_app(),
         database=DatabaseSettings(url=_SAFE_DB_URL),
         email=EmailSettings(provider="smtp"),
+        rate_limit=_shared_rate_limit(),
     )
 
 
@@ -67,6 +84,7 @@ def test_production_rejects_the_placeholder_admin_password() -> None:
             app=_production_app(),
             database=DatabaseSettings(url=_SAFE_DB_URL),
             email=EmailSettings(provider="smtp"),
+            rate_limit=_shared_rate_limit(),
             bootstrap_admin=_placeholder_admin(),
         )
 
@@ -79,5 +97,6 @@ def test_production_accepts_a_bootstrap_admin_with_its_own_password() -> None:
         app=_production_app(),
         database=DatabaseSettings(url=_SAFE_DB_URL),
         email=EmailSettings(provider="smtp"),
+        rate_limit=_shared_rate_limit(),
         bootstrap_admin=admin,
     )
