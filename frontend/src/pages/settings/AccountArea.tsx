@@ -13,7 +13,7 @@ import { errorMessage } from "@/components/ui/ErrorState";
 
 const MIN_PASSWORD_LENGTH = 8;
 
-export function PersonalSettingsPage(): ReactNode {
+export function AccountArea(): ReactNode {
   const { user } = useAuth();
 
   if (!user) {
@@ -22,8 +22,6 @@ export function PersonalSettingsPage(): ReactNode {
 
   return (
     <div className="max-w-xl">
-      <h1 className="mb-6 text-2xl font-bold text-ink">הגדרות אישיות</h1>
-
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>הפרטים שלי</CardTitle>

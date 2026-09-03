@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { PersonalSettingsPage } from "@/pages/PersonalSettingsPage";
+import { AccountArea } from "@/pages/settings/AccountArea";
 import { getToken } from "@/lib/auth/tokenStorage";
 import { renderWithClient } from "@/test/renderWithClient";
 import { authApi } from "@/lib/api/endpoints";
@@ -36,13 +36,13 @@ async function fill(current: string, next: string, confirm: string): Promise<voi
   await userEvent.click(screen.getByRole("button", { name: "שינוי סיסמה" }));
 }
 
-describe("PersonalSettingsPage — change password", () => {
+describe("AccountArea — change password", () => {
   beforeEach(() => {
     changePasswordMock.mockReset();
   });
 
   it("blocks submission when the confirmation does not match", async () => {
-    renderWithClient(<PersonalSettingsPage />);
+    renderWithClient(<AccountArea />);
     await fill("old12345", "new12345", "different");
 
     expect(screen.getByText("הסיסמאות אינן תואמות.")).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe("PersonalSettingsPage — change password", () => {
   });
 
   it("blocks submission when the new password is too short", async () => {
-    renderWithClient(<PersonalSettingsPage />);
+    renderWithClient(<AccountArea />);
     await fill("old12345", "short", "short");
 
     expect(screen.getByText(/לפחות 8 תווים/)).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("PersonalSettingsPage — change password", () => {
 
   it("submits the current and new password and confirms success", async () => {
     changePasswordMock.mockResolvedValue({ token: "rotated-token" });
-    renderWithClient(<PersonalSettingsPage />);
+    renderWithClient(<AccountArea />);
     await fill("old12345", "new12345", "new12345");
 
     expect(changePasswordMock).toHaveBeenCalledWith({
@@ -71,7 +71,7 @@ describe("PersonalSettingsPage — change password", () => {
 
   it("stores the rotated session token so the user stays signed in", async () => {
     changePasswordMock.mockResolvedValue({ token: "rotated-token" });
-    renderWithClient(<PersonalSettingsPage />);
+    renderWithClient(<AccountArea />);
     await fill("old12345", "new12345", "new12345");
 
     await screen.findByText("הסיסמה שונתה בהצלחה.");
@@ -82,7 +82,7 @@ describe("PersonalSettingsPage — change password", () => {
     changePasswordMock.mockRejectedValue(
       new ApiError(400, "invalid_current_password", "הסיסמה הנוכחית שגויה.")
     );
-    renderWithClient(<PersonalSettingsPage />);
+    renderWithClient(<AccountArea />);
     await fill("wrongpass", "new12345", "new12345");
 
     expect(await screen.findByText("הסיסמה הנוכחית שגויה.")).toBeInTheDocument();
