@@ -12,7 +12,7 @@ _RATING_LABELS = {
 
 _CSS = (
     "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
-    "h1{color:#CC3366;font-size:20pt}"
+    "h1{color:#3F8420;font-size:20pt}"
     ".institution{color:#5C5C5C;font-size:11pt;margin:0}"
     ".period{color:#5C5C5C;margin-bottom:1cm}"
     "table{width:100%;border-collapse:collapse}"

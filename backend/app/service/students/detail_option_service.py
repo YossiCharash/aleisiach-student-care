@@ -4,7 +4,6 @@ from backend.app.client.students.detail_option_repository import DetailOptionRep
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.detail_option import DetailOption
-from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.schema.routes.detail_option_create_request import (
     DetailOptionCreateRequest,
 )
@@ -84,32 +83,3 @@ class DetailOptionService:
                 changes=changes,
             )
         )
-
-
-DEFAULT_DETAIL_OPTIONS: dict[DetailOptionField, tuple[str, ...]] = {
-    DetailOptionField.IDD_SEVERITY: ("קלה", "בינונית", "מורכבת"),
-    DetailOptionField.MEDICATION_INDEPENDENCE: (
-        "אינו נוטל לבד",
-        "זקוק לתזכורת והשגחה",
-        "עצמאי",
-    ),
-    DetailOptionField.EXPRESSION_MODE: (
-        "דיבור מילולי שוטף",
-        "מילים בודדות ומשפטים קצרים",
-        "ג'סטות ותנועות גוף",
-        "שימוש בטאבלט או אייפד",
-        "לא ורבלי",
-    ),
-    DetailOptionField.LANGUAGE_COMPREHENSION: (
-        "מבין הוראות מורכבות",
-        "מבין רק הוראות פשוטות",
-    ),
-    DetailOptionField.ASSISTIVE_DEVICE: (
-        "משקפיים",
-        "מכשיר שמיעה",
-        "מדרסים",
-        "קביים",
-        "הליכון",
-        "אחר",
-    ),
-}

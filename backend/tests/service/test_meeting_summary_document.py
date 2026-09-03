@@ -57,3 +57,9 @@ def test_summary_html_carries_the_institution_name() -> None:
     html = MeetingSummaryDocument().to_html(_meeting(), "בית ספר השרון")
 
     assert "בית ספר השרון" in html
+
+
+def test_headings_use_the_primary_brand_green() -> None:
+    html = MeetingSummaryDocument().to_html(_meeting(), "מוסד בדיקה")
+
+    assert "h1{color:#3F8420" in html
