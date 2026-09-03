@@ -89,6 +89,31 @@ def test_invite_duplicate_email_raises(db_session: Session) -> None:
         service.invite(command, _ACTOR)
 
 
+@pytest.mark.parametrize("status", [UserStatus.DISABLED, UserStatus.ACTIVE])
+def test_accept_is_refused_for_a_user_who_is_no_longer_invited(
+    db_session: Session, status: UserStatus
+) -> None:
+    sender = CapturingEmailSender()
+    service = _service(db_session, sender)
+    invited = service.invite(
+        InvitationCommand(full_name="Manager", email="m@example.com", role=UserRole.MANAGER),
+        _ACTOR,
+    )
+    assert sender.invitation_link is not None
+    token = CapturingEmailSender.token_from(sender.invitation_link)
+    user = UserRepository(db_session).get(invited.id)
+    assert user is not None
+    user.status = status
+    db_session.flush()
+
+    with pytest.raises(InvalidTokenError):
+        service.accept(token, "manager1", "manager-pass-2026")
+
+    assert user.username is None
+    assert user.password_hash is None
+    assert user.status is status
+
+
 def test_accept_with_unknown_token_raises(db_session: Session) -> None:
     service = _service(db_session, CapturingEmailSender())
 

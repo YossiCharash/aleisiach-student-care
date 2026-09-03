@@ -92,6 +92,7 @@ class UserManagementService:
             raise CannotDisableSelfError
         user = self._require(user_id)
         user.status = UserStatus.DISABLED
+        self._dispatcher.revoke(user.id)
         self._permissions_audit.record(actor_id, AuditAction.ARCHIVE, user.id, ["status"])
         return UserResponse.model_validate(user)
 
