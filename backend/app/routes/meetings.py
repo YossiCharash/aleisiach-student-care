@@ -9,7 +9,7 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.routes.pdf import RendererDep
+from backend.app.routes.pdf import BrandDep, RendererDep
 from backend.app.routes.security import ContentWriter, CurrentUser, Tenant, require_tenant
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
@@ -75,10 +75,11 @@ def get_meeting_pdf(
     service: ServiceDep,
     user: CurrentUser,
     renderer: RendererDep,
+    brand: BrandDep,
     tenant: Tenant,
 ) -> Response:
     meeting = service.get(student_id, meeting_id, StudentAccessPolicy.scope_for(user))
-    html = MeetingSummaryDocument().to_html(meeting, tenant.institution_name)
+    html = MeetingSummaryDocument(brand).to_html(meeting, tenant.institution_name)
     pdf = renderer.render(html)
     return Response(
         content=pdf,

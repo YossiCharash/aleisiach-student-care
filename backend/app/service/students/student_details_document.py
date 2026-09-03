@@ -1,8 +1,10 @@
 from html import escape
 
+from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
+from backend.app.utils.service.document_shell import DocumentShell
 
 _LEGAL_STATUS_LABELS = {
     LegalStatus.GUARDIAN_APPOINTED: "מונה אפוטרופוס",
@@ -10,16 +12,20 @@ _LEGAL_STATUS_LABELS = {
 }
 _IDD_NAME = "מגבלה שכלית התפתחותית"
 
-_CSS = (
-    "body{font-family:'Heebo',sans-serif;direction:rtl;color:#333333;margin:2cm}"
-    "h1{color:#3F8420;font-size:20pt}"
-    "h2{color:#85C441;font-size:14pt;border-bottom:2px solid #85C441;padding-bottom:2pt}"
-    ".institution{color:#5C5C5C;font-size:11pt;margin:0}"
-    ".field{margin:3pt 0}.label{color:#5C5C5C}ul{margin:0;padding-inline-start:18pt}"
-)
-
 
 class StudentDetailsDocument:
+    def __init__(self, brand: BrandSettings) -> None:
+        self._brand = brand
+        self._shell = DocumentShell(brand)
+
+    def _css(self) -> str:
+        return (
+            f"h2{{color:{self._brand.accent_color};font-size:14pt;"
+            f"border-bottom:2px solid {self._brand.accent_color};padding-bottom:2pt}}"
+            f".field{{margin:3pt 0}}.label{{color:{self._brand.muted_color}}}"
+            "ul{margin:0;padding-inline-start:18pt}"
+        )
+
     def to_html(self, details: StudentDetailsResponse, institution_name: str) -> str:
         sections = [
             self._identity(details),
@@ -33,12 +39,7 @@ class StudentDetailsDocument:
         sections.append(self._background(details))
         sections.append(self._emotional_id(details))
         body = "".join(sections)
-        return (
-            '<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8">'
-            f"<style>{_CSS}</style></head><body>"
-            f'<p class="institution">{escape(institution_name)}</p>'
-            f"<h1>פרטי תלמיד</h1>{body}</body></html>"
-        )
+        return self._shell.render(self._css(), institution_name, "פרטי תלמיד", body)
 
     def _identity(self, details: StudentDetailsResponse) -> str:
         age = str(details.age) if details.age is not None else "—"

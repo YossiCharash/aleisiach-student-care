@@ -1,6 +1,7 @@
 import uuid
 from datetime import date
 
+from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
@@ -39,7 +40,7 @@ def _details(
 
 
 def test_full_details_include_guardianship() -> None:
-    html = StudentDetailsDocument().to_html(_details(), "מוסד בדיקה")
+    html = StudentDetailsDocument(BrandSettings()).to_html(_details(), "מוסד בדיקה")
 
     assert 'dir="rtl"' in html
     assert "123456789" in html
@@ -58,7 +59,9 @@ def test_full_details_include_guardianship() -> None:
 
 
 def test_redacted_details_omit_guardianship() -> None:
-    html = StudentDetailsDocument().to_html(_details(sensitive_visible=False), "מוסד בדיקה")
+    html = StudentDetailsDocument(BrandSettings()).to_html(
+        _details(sensitive_visible=False), "מוסד בדיקה"
+    )
 
     assert "אפוטרופסות ומעמד משפטי" not in html
     assert "מונה אפוטרופוס" not in html
@@ -67,19 +70,21 @@ def test_redacted_details_omit_guardianship() -> None:
 
 
 def test_details_html_escapes_content() -> None:
-    html = StudentDetailsDocument().to_html(_details(national_id="<b>x</b>"), "מוסד בדיקה")
+    html = StudentDetailsDocument(BrandSettings()).to_html(
+        _details(national_id="<b>x</b>"), "מוסד בדיקה"
+    )
 
     assert "<b>x</b>" not in html
     assert "&lt;b&gt;" in html
 
 
 def test_details_html_carries_the_institution_name() -> None:
-    html = StudentDetailsDocument().to_html(_details(), "בית ספר השרון")
+    html = StudentDetailsDocument(BrandSettings()).to_html(_details(), "בית ספר השרון")
 
     assert "בית ספר השרון" in html
 
 
 def test_headings_use_the_primary_brand_green() -> None:
-    html = StudentDetailsDocument().to_html(_details(), "מוסד בדיקה")
+    html = StudentDetailsDocument(BrandSettings()).to_html(_details(), "מוסד בדיקה")
 
     assert "h1{color:#3F8420" in html
