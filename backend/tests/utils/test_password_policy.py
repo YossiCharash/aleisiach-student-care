@@ -19,8 +19,12 @@ def test_rejects_password_without_digit() -> None:
     assert _policy().validate("only-letters") is not None
 
 
-def test_rejects_password_without_letter() -> None:
-    assert _policy().validate("12345678") is not None
+def test_accepts_password_made_only_of_digits() -> None:
+    assert _policy().validate("12345678") is None
+
+
+def test_accepts_password_without_an_uppercase_letter() -> None:
+    assert _policy().validate("all-lowercase-1") is None
 
 
 def test_rejects_password_longer_than_maximum() -> None:

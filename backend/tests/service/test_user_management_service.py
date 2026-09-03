@@ -163,6 +163,20 @@ def test_changing_email_of_active_user_does_not_resend_invitation(db_session: Se
     assert sender.invitation_link is None
 
 
+def test_disable_invalidates_a_pending_invitation_token(db_session: Session) -> None:
+    invited = _seed(db_session, "pending", status=UserStatus.INVITED, password_hash=None)
+    tokens = AuthTokenRepository(db_session)
+    raw = TokenIssuer(tokens, TokenFactory()).issue(
+        invited.id, TokenKind.INVITE, timedelta(hours=1)
+    )
+
+    _service(db_session).disable(invited.id, _ACTOR)
+
+    token = tokens.find_by_hash(TokenFactory().hash_token(raw))
+    assert token is not None
+    assert token.used_at is not None
+
+
 def test_resent_invitation_invalidates_the_previous_token(db_session: Session) -> None:
     sender = CapturingEmailSender()
     invited = _seed(db_session, "pending", status=UserStatus.INVITED, password_hash=None)

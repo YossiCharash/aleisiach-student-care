@@ -25,8 +25,11 @@ class InvitationDispatcher:
         self._email_settings = email_settings
 
     def dispatch(self, user_id: uuid.UUID, email: str) -> None:
-        self._tokens.invalidate_pending(user_id, TokenKind.INVITE, datetime.now(UTC))
+        self.revoke(user_id)
         ttl = timedelta(hours=self._auth_settings.invite_token_ttl_hours)
         raw_token = self._token_issuer.issue(user_id, TokenKind.INVITE, ttl)
         link = f"{self._email_settings.invite_base_url}?token={raw_token}"
         self._email_sender.send_invitation(email, link)
+
+    def revoke(self, user_id: uuid.UUID) -> None:
+        self._tokens.invalidate_pending(user_id, TokenKind.INVITE, datetime.now(UTC))
