@@ -16,10 +16,6 @@ class Database:
             bind=self._engine, autoflush=False, expire_on_commit=False
         )
 
-    @property
-    def engine(self) -> Engine:
-        return self._engine
-
     def session(self) -> Iterator[Session]:
         session = self._session_factory()
         try:

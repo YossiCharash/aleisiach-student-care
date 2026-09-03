@@ -77,3 +77,9 @@ def test_details_html_carries_the_institution_name() -> None:
     html = StudentDetailsDocument().to_html(_details(), "בית ספר השרון")
 
     assert "בית ספר השרון" in html
+
+
+def test_headings_use_the_primary_brand_green() -> None:
+    html = StudentDetailsDocument().to_html(_details(), "מוסד בדיקה")
+
+    assert "h1{color:#3F8420" in html
