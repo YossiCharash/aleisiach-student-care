@@ -7,9 +7,7 @@ describe("PasswordInput", () => {
   it("hides the password by default", () => {
     render(<PasswordInput aria-label="סיסמה" />);
     expect(screen.getByLabelText("סיסמה")).toHaveAttribute("type", "password");
-    expect(
-      screen.getByRole("button", { name: "הצגת הסיסמה" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "הצגת הסיסמה" })).toBeInTheDocument();
   });
 
   it("reveals the password when the toggle is clicked", async () => {
@@ -19,9 +17,7 @@ describe("PasswordInput", () => {
     await user.click(screen.getByRole("button", { name: "הצגת הסיסמה" }));
 
     expect(screen.getByLabelText("סיסמה")).toHaveAttribute("type", "text");
-    expect(
-      screen.getByRole("button", { name: "הסתרת הסיסמה" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "הסתרת הסיסמה" })).toBeInTheDocument();
   });
 
   it("hides the password again when toggled back", async () => {

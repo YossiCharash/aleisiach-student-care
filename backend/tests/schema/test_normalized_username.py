@@ -17,15 +17,11 @@ def test_login_request_rejects_whitespace_only_username() -> None:
 
 
 def test_invitation_accept_request_strips_surrounding_whitespace() -> None:
-    request = InvitationAcceptRequest(
-        token="t", username="  newuser  ", password="Str0ng!Passw0rd"
-    )
+    request = InvitationAcceptRequest(token="t", username="  newuser  ", password="Str0ng!Passw0rd")
 
     assert request.username == "newuser"
 
 
 def test_invitation_accept_request_counts_length_after_stripping() -> None:
     with pytest.raises(ValidationError):
-        InvitationAcceptRequest(
-            token="t", username="  ab  ", password="Str0ng!Passw0rd"
-        )
+        InvitationAcceptRequest(token="t", username="  ab  ", password="Str0ng!Passw0rd")
