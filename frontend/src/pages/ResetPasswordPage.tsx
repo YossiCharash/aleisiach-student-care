@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authApi } from "@/lib/api/endpoints";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
@@ -55,9 +55,8 @@ export function ResetPasswordPage(): ReactNode {
         {error && <Alert tone="error">{error}</Alert>}
         <div>
           <Label htmlFor="password">סיסמה חדשה</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             minLength={8}
@@ -70,9 +69,8 @@ export function ResetPasswordPage(): ReactNode {
         </div>
         <div>
           <Label htmlFor="confirm">אישור סיסמה</Label>
-          <Input
+          <PasswordInput
             id="confirm"
-            type="password"
             value={confirm}
             onChange={(event) => setConfirm(event.target.value)}
             autoComplete="new-password"
