@@ -11,7 +11,7 @@ test.describe("public auth navigation", () => {
     await page.goto("/login");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByLabel("שם משתמש")).toBeVisible();
-    await expect(page.getByLabel("סיסמה")).toBeVisible();
+    await expect(page.getByLabel("סיסמה", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "כניסה" })).toBeVisible();
   });
 

@@ -5,7 +5,7 @@ export const DEMO_PASSWORD = "demo1234";
 export async function login(page: Page, username: string): Promise<void> {
   await page.goto("/login");
   await page.getByLabel("שם משתמש").fill(username);
-  await page.getByLabel("סיסמה").fill(DEMO_PASSWORD);
+  await page.getByLabel("סיסמה", { exact: true }).fill(DEMO_PASSWORD);
   await page.getByRole("button", { name: "כניסה" }).click();
   await expect(page.getByRole("button", { name: "יציאה" })).toBeVisible();
 }
