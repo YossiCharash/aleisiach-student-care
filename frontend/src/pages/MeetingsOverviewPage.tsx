@@ -8,7 +8,7 @@ import type {
   StudentResponse,
 } from "@/lib/api/types";
 import { groupByClass, type ClassGroup } from "@/lib/students/groupByClass";
-import { formatMonthYear, studentCountLabel } from "@/lib/utils/hebrew";
+import { formatMonthYear, pendingMeetingCountLabel } from "@/lib/utils/hebrew";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { StudentLinkCard } from "@/components/StudentLinkCard";
@@ -103,7 +103,7 @@ function ClassSection({ group }: { group: ClassGroup }): ReactNode {
       <h2 className="mb-3 flex items-baseline gap-2 border-b border-slate-200 pb-2">
         <span className="text-lg font-semibold text-ink">{group.className}</span>
         <span className="text-sm text-ink-muted">
-          {studentCountLabel(group.students.length)}
+          {pendingMeetingCountLabel(group.students.length)}
         </span>
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
