@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { meetingsApi } from "@/lib/api/endpoints";
@@ -15,10 +15,27 @@ import { RatingPill } from "@/components/RatingPill";
 import { PdfButton } from "@/components/PdfButton";
 import { AddMeetingDialog } from "@/pages/student/meetings/AddMeetingDialog";
 
-export function MeetingsTab({ studentId }: { studentId: string }): ReactNode {
+interface MeetingsTabProps {
+  studentId: string;
+  autoOpenNew?: boolean;
+  onAutoOpenConsumed?: () => void;
+}
+
+export function MeetingsTab({
+  studentId,
+  autoOpenNew = false,
+  onAutoOpenConsumed,
+}: MeetingsTabProps): ReactNode {
   const { user } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   const canWrite = user ? permissions.canWriteMeetings(user) : false;
+
+  useEffect(() => {
+    if (autoOpenNew && canWrite) {
+      setAddOpen(true);
+      onAutoOpenConsumed?.();
+    }
+  }, [autoOpenNew, canWrite, onAutoOpenConsumed]);
 
   const query = useQuery({
     queryKey: queryKeys.meetings(studentId),

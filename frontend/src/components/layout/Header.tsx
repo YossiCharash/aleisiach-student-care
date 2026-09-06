@@ -21,35 +21,47 @@ export function Header(): ReactNode {
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link to={homePath(user)} className="flex items-center gap-2">
-          <span className="text-xl font-bold text-brand">עלי שיח</span>
-          <span className="hidden text-sm text-ink-muted sm:inline">
-            {user.role === "super_admin"
-              ? "ניהול מוסדות"
-              : (institutionName ?? "מערכת ניהול תלמידים")}
-          </span>
-        </Link>
+    <>
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <Link to={homePath(user)} className="flex items-center gap-2">
+            <span className="text-xl font-bold text-brand">עלי שיח</span>
+            <span className="hidden text-sm text-ink-muted sm:inline">
+              {user.role === "super_admin"
+                ? "ניהול מוסדות"
+                : (institutionName ?? "מערכת ניהול תלמידים")}
+            </span>
+          </Link>
 
-        <div className="flex items-center gap-3">
-          <div className="text-end">
-            <div className="text-sm font-medium text-ink">{displayName(user)}</div>
-            <div className="text-xs text-ink-muted">{roleLabels[user.role]}</div>
+          <div className="flex items-center gap-3">
+            <div className="text-end">
+              <div className="text-sm font-medium text-ink">{displayName(user)}</div>
+              <div className="text-xs text-ink-muted">{roleLabels[user.role]}</div>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+              יציאה
+            </Button>
           </div>
+        </div>
+      </header>
 
-          <Button asChild variant="ghost" size="icon" title="הגדרות">
+      <div className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl justify-end px-6 py-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            title="הגדרות"
+            className="h-11 w-11"
+          >
             <Link to="/settings">
-              <Settings className="h-5 w-5" />
+              <Settings className="h-6 w-6" />
             </Link>
-          </Button>
-
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-            יציאה
           </Button>
         </div>
       </div>
-    </header>
+    </>
   );
 }

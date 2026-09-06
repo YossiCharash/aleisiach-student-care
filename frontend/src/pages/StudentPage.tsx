@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useState, type ReactNode } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { studentsApi } from "@/lib/api/endpoints";
@@ -17,6 +17,10 @@ import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 
 export function StudentPage(): ReactNode {
   const { studentId = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const [autoOpenNew, setAutoOpenNew] = useState(() => searchParams.get("new") === "1");
+  const consumeAutoOpen = useCallback(() => setAutoOpenNew(false), []);
   const { user } = useAuth();
   const query = useQuery({
     queryKey: queryKeys.student(studentId),
@@ -36,6 +40,11 @@ export function StudentPage(): ReactNode {
 
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
+  const allowedTabs = showSocialNote
+    ? ["program", "meetings", "social-note", "details"]
+    : ["program", "meetings", "details"];
+  const initialTab =
+    requestedTab && allowedTabs.includes(requestedTab) ? requestedTab : "program";
 
   return (
     <div>
@@ -55,7 +64,7 @@ export function StudentPage(): ReactNode {
         )}
       </div>
 
-      <Tabs defaultValue="program">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="program">תוכנית</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
@@ -67,7 +76,11 @@ export function StudentPage(): ReactNode {
           <ProgramTab studentId={student.id} />
         </TabsContent>
         <TabsContent value="meetings">
-          <MeetingsTab studentId={student.id} />
+          <MeetingsTab
+            studentId={student.id}
+            autoOpenNew={autoOpenNew}
+            onAutoOpenConsumed={consumeAutoOpen}
+          />
         </TabsContent>
         {showSocialNote && (
           <TabsContent value="social-note">

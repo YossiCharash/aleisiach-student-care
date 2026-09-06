@@ -2,12 +2,13 @@ import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { programApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { ProgramArea, ProgramStrength } from "@/lib/api/types";
+import type { MeetingRating, ProgramArea, ProgramStrength } from "@/lib/api/types";
 import { formatMonthYear } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
+import { cn } from "@/lib/utils/cn";
 
 export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
   const query = useQuery({
@@ -72,10 +73,22 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
   );
 }
 
+const areaToneClass: Record<MeetingRating, string> = {
+  green: "border-s-4 border-rating-green bg-accent-50/70",
+  yellow: "border-s-4 border-rating-yellow bg-amber-50/80",
+  red: "border-s-4 border-rating-red bg-red-50/80",
+};
+
+const areaTitleClass: Record<MeetingRating, string> = {
+  green: "text-brand-700",
+  yellow: "text-amber-800",
+  red: "text-red-800",
+};
+
 function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
   return (
-    <li className="flex items-center justify-between rounded-lg bg-accent-50/60 px-3 py-2">
-      <span className="font-medium text-ink">{strength.skill_name}</span>
+    <li className="flex items-center justify-between rounded-lg border-s-4 border-rating-green bg-accent-50 px-3 py-2">
+      <span className="font-medium text-brand-700">{strength.skill_name}</span>
       <span className="text-xs text-ink-muted">
         {formatMonthYear(strength.year, strength.month)}
       </span>
@@ -85,9 +98,11 @@ function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
 
 function AreaRow({ area }: { area: ProgramArea }): ReactNode {
   return (
-    <li className="rounded-lg border border-slate-100 px-3 py-2">
+    <li className={cn("rounded-lg px-3 py-2", areaToneClass[area.rating])}>
       <div className="flex items-center justify-between">
-        <span className="font-medium text-ink">{area.skill_name}</span>
+        <span className={cn("font-semibold", areaTitleClass[area.rating])}>
+          {area.skill_name}
+        </span>
         <RatingPill rating={area.rating} />
       </div>
       {area.solutions.length > 0 && (

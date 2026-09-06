@@ -1,7 +1,9 @@
 import { useEffect, type ReactNode } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
+import { homePath } from "@/lib/auth/homePath";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { UsersArea } from "@/pages/settings/UsersArea";
 import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
@@ -14,7 +16,17 @@ type SettingsTab = (typeof allTabs)[number];
 
 export function SettingsPage(): ReactNode {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  function goBack(): void {
+    if (location.key === "default") {
+      navigate(homePath(user));
+    } else {
+      navigate(-1);
+    }
+  }
 
   const canManage = user ? permissions.canManage(user) : false;
   const availableTabs: readonly SettingsTab[] = canManage ? allTabs : ["account"];
@@ -51,6 +63,14 @@ export function SettingsPage(): ReactNode {
 
   return (
     <div>
+      <button
+        type="button"
+        onClick={goBack}
+        className="mb-2 inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink"
+      >
+        <ChevronRight className="h-4 w-4" />
+        חזרה לעמוד הקודם
+      </button>
       <h1 className="mb-6 text-2xl font-bold text-ink">הגדרות</h1>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>

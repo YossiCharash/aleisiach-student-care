@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Settings2 } from "lucide-react";
 import { classesApi, studentsApi, usersApi } from "@/lib/api/endpoints";
@@ -110,15 +111,21 @@ function ClassCards({
         );
         return (
           <Card key={classItem.id} className="flex items-start justify-between p-5">
-            <div>
-              <div className="text-lg font-semibold text-ink">{classItem.name}</div>
+            <Link
+              to={`/students?class=${classItem.id}`}
+              className="group min-w-0 flex-1"
+              title="הצגת התלמידים בכיתה"
+            >
+              <div className="text-lg font-semibold text-ink group-hover:text-brand">
+                {classItem.name}
+              </div>
               <div className="mt-1 text-sm text-ink-muted">
                 {instructor ? `מדריך: ${instructor.full_name}` : "ללא מדריך"}
               </div>
               <div className="mt-0.5 text-sm text-ink-muted">
                 {studentCountLabel(count)}
               </div>
-            </div>
+            </Link>
             <Button
               variant="ghost"
               size="icon"

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { classesApi, studentsApi } from "@/lib/api/endpoints";
@@ -16,6 +17,8 @@ import { CreateClassDialog } from "@/pages/classes/CreateClassDialog";
 
 export function StudentsPage(): ReactNode {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const classFilter = searchParams.get("class");
   const [createOpen, setCreateOpen] = useState(false);
   const [createClassOpen, setCreateClassOpen] = useState(false);
   const studentsQuery = useQuery({
@@ -40,6 +43,14 @@ export function StudentsPage(): ReactNode {
           <p className="mt-1 text-sm text-ink-muted">
             התלמידים מסודרים לפי כיתות. לחצו על תלמיד לצפייה בתיק.
           </p>
+          {classFilter && (
+            <Link
+              to="/students"
+              className="mt-1 inline-block text-sm font-medium text-brand hover:underline"
+            >
+              הצגת כל הכיתות
+            </Link>
+          )}
         </div>
         {canCreate && (
           <div className="flex gap-2">
@@ -58,7 +69,14 @@ export function StudentsPage(): ReactNode {
       {isLoading && <LoadingState />}
       {error && <ErrorState error={error} />}
       {!isLoading && !error && isReady && (
-        <StudentGroups groups={groupByClass(studentsQuery.data, classesQuery.data)} />
+        <StudentGroups
+          groups={groupByClass(
+            classFilter
+              ? studentsQuery.data.filter((student) => student.class_id === classFilter)
+              : studentsQuery.data,
+            classesQuery.data
+          )}
+        />
       )}
 
       {canCreate && (
