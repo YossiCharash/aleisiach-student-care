@@ -84,6 +84,8 @@ export const usersApi = {
   list: (): Promise<UserResponse[]> => apiClient.get<UserResponse[]>("/users"),
   update: (userId: string, body: UserUpdateRequest): Promise<UserResponse> =>
     apiClient.patch<UserResponse>(`/users/${userId}`, body),
+  resendInvitation: (userId: string): Promise<UserResponse> =>
+    apiClient.post<UserResponse>(`/users/${userId}/resend-invitation`),
   disable: (userId: string): Promise<UserResponse> =>
     apiClient.post<UserResponse>(`/users/${userId}/disable`),
   enable: (userId: string): Promise<UserResponse> =>

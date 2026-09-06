@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, UserPlus } from "lucide-react";
+import { MailPlus, Pencil, UserPlus } from "lucide-react";
 import { usersApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { UserResponse } from "@/lib/api/types";
@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingState } from "@/components/ui/Spinner";
-import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+import { EmptyState, ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { InviteUserDialog } from "@/pages/settings/InviteUserDialog";
 import { EditUserDialog } from "@/pages/settings/EditUserDialog";
 
@@ -76,12 +76,26 @@ function UserRow({ user }: { user: UserResponse }): ReactNode {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const isSelf = currentUser?.id === user.id;
 
   const mutation = useMutation({
     mutationFn: () =>
       user.status === "disabled" ? usersApi.enable(user.id) : usersApi.disable(user.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.users }),
+  });
+
+  const resend = useMutation({
+    mutationFn: () => usersApi.resendInvitation(user.id),
+    onSuccess: () => {
+      setFeedbackError(null);
+      setFeedback("קישור התחברות חדש נשלח בדוא״ל.");
+    },
+    onError: (caught: unknown) => {
+      setFeedback(null);
+      setFeedbackError(errorMessage(caught));
+    },
   });
 
   return (
@@ -98,6 +112,17 @@ function UserRow({ user }: { user: UserResponse }): ReactNode {
             <Pencil className="h-4 w-4" />
             עריכה
           </Button>
+          {user.status === "invited" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => resend.mutate()}
+              disabled={resend.isPending}
+            >
+              <MailPlus className="h-4 w-4" />
+              שליחת קישור התחברות
+            </Button>
+          )}
           {!isSelf && (
             <Button
               variant="outline"
@@ -109,6 +134,12 @@ function UserRow({ user }: { user: UserResponse }): ReactNode {
             </Button>
           )}
         </div>
+        {feedback !== null && (
+          <div className="mt-1 text-xs text-rating-green">{feedback}</div>
+        )}
+        {feedbackError !== null && (
+          <div className="mt-1 text-xs text-rating-red">{feedbackError}</div>
+        )}
         <EditUserDialog
           user={user}
           isSelf={isSelf}

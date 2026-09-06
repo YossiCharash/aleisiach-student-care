@@ -10,6 +10,7 @@ from backend.app.errors.service.instructor_requires_class_error import (
     InstructorRequiresClassError,
 )
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.errors.service.user_not_invited_error import UserNotInvitedError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -86,6 +87,14 @@ class UserManagementService:
             user.class_id = class_id
             changes.append("class_id")
         return changes
+
+    def resend_invitation(self, user_id: uuid.UUID, actor_id: uuid.UUID) -> UserResponse:
+        user = self._require(user_id)
+        if user.status is not UserStatus.INVITED:
+            raise UserNotInvitedError
+        self._dispatcher.dispatch(user.id, user.email)
+        self._permissions_audit.record(actor_id, AuditAction.CREATE, user.id, ["invitation"])
+        return UserResponse.model_validate(user)
 
     def disable(self, user_id: uuid.UUID, actor_id: uuid.UUID) -> UserResponse:
         if user_id == actor_id:
