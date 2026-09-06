@@ -91,3 +91,10 @@ export function studentCountLabel(count: number): string {
   }
   return `${count} תלמידים`;
 }
+
+export function pendingMeetingCountLabel(count: number): string {
+  if (count === 1) {
+    return "תלמיד אחד ממתין לישיבה";
+  }
+  return `${count} תלמידים ממתינים לישיבה`;
+}

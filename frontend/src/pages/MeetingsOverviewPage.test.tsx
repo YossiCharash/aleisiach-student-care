@@ -3,16 +3,22 @@ import { screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { renderWithClient } from "@/test/renderWithClient";
 import { MeetingsOverviewPage } from "@/pages/MeetingsOverviewPage";
-import { meetingsApi, studentsApi } from "@/lib/api/endpoints";
-import type { MeetingOverviewItem, StudentResponse } from "@/lib/api/types";
+import { classesApi, meetingsApi, studentsApi } from "@/lib/api/endpoints";
+import type {
+  ClassResponse,
+  MeetingOverviewItem,
+  StudentResponse,
+} from "@/lib/api/types";
 
 vi.mock("@/lib/api/endpoints", () => ({
   meetingsApi: { overview: vi.fn() },
   studentsApi: { list: vi.fn() },
+  classesApi: { list: vi.fn() },
 }));
 
 const overviewMock = vi.mocked(meetingsApi.overview);
 const listMock = vi.mocked(studentsApi.list);
+const classesMock = vi.mocked(classesApi.list);
 
 const overview: MeetingOverviewItem[] = [
   {
@@ -34,7 +40,12 @@ const overview: MeetingOverviewItem[] = [
 const students: StudentResponse[] = [
   { id: "s-noa", full_name: "נועה כהן", class_id: "c1", is_archived: false },
   { id: "s-itai", full_name: "איתי לוי", class_id: "c1", is_archived: false },
-  { id: "s-maya", full_name: "מאיה ברק", class_id: "c1", is_archived: false },
+  { id: "s-maya", full_name: "מאיה ברק", class_id: "c2", is_archived: false },
+];
+
+const classes: ClassResponse[] = [
+  { id: "c1", name: "כיתה א" },
+  { id: "c2", name: "כיתה ב" },
 ];
 
 describe("MeetingsOverviewPage", () => {
@@ -43,6 +54,7 @@ describe("MeetingsOverviewPage", () => {
     vi.setSystemTime(new Date(2026, 8, 15));
     overviewMock.mockResolvedValue(overview);
     listMock.mockResolvedValue(students);
+    classesMock.mockResolvedValue(classes);
   });
 
   afterEach(() => vi.useRealTimers());
@@ -55,21 +67,39 @@ describe("MeetingsOverviewPage", () => {
     );
   }
 
-  it("groups meetings by month and lists who has not met this month", async () => {
+  it("lists only students without a meeting this month, grouped by class, linking to a new meeting", async () => {
     render();
 
-    expect(await screen.findByText("ספטמבר 2026")).toBeInTheDocument();
-    expect(screen.getByText("אוגוסט 2026")).toBeInTheDocument();
+    expect(await screen.findByText("כיתה א")).toBeInTheDocument();
+    expect(screen.getByText("כיתה ב")).toBeInTheDocument();
 
-    expect(screen.getByRole("link", { name: /נועה כהן/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /איתי לוי/ })).toHaveAttribute(
       "href",
-      "/students/s-noa"
+      "/students/s-itai?tab=meetings&new=1"
     );
     expect(screen.getByRole("link", { name: /מאיה ברק/ })).toHaveAttribute(
       "href",
-      "/students/s-maya"
+      "/students/s-maya?tab=meetings&new=1"
     );
-    expect(screen.getAllByRole("link", { name: /איתי לוי/ })).toHaveLength(2);
-    expect(screen.getByText("טרם נערכה ישיבה")).toBeInTheDocument();
+
+    expect(screen.queryByText("נועה כהן")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty state when everyone already met this month", async () => {
+    overviewMock.mockResolvedValue(
+      students.map((student) => ({
+        student_id: student.id,
+        student_name: student.full_name,
+        meeting_id: `m-${student.id}`,
+        year: 2026,
+        month: 9,
+      }))
+    );
+
+    render();
+
+    expect(
+      await screen.findByText("כל התלמידים כבר נערכה להם ישיבה החודש.")
+    ).toBeInTheDocument();
   });
 });
