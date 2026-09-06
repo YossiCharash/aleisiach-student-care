@@ -24,8 +24,8 @@ export function Header(): ReactNode {
     <>
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link to={homePath(user)} className="flex items-center gap-2">
-            <span className="text-xl font-bold text-brand">עלי שיח</span>
+          <Link to={homePath(user)} className="flex items-center gap-3">
+            <img src="/logo.png" alt="עלי שיח" className="h-10 w-auto" />
             <span className="hidden text-sm text-ink-muted sm:inline">
               {user.role === "super_admin"
                 ? "ניהול מוסדות"
