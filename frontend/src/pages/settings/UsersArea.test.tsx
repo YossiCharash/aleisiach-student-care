@@ -10,7 +10,12 @@ const useAuth = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 
 vi.mock("@/lib/api/endpoints", () => ({
-  usersApi: { list: vi.fn(), resendInvitation: vi.fn(), disable: vi.fn(), enable: vi.fn() },
+  usersApi: {
+    list: vi.fn(),
+    resendInvitation: vi.fn(),
+    disable: vi.fn(),
+    enable: vi.fn(),
+  },
 }));
 
 vi.mock("@/pages/settings/InviteUserDialog", () => ({
