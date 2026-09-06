@@ -52,6 +52,11 @@ def update_user(
     return service.update(user_id, request, manager.id)
 
 
+@router.post("/{user_id}/resend-invitation", response_model=UserResponse)
+def resend_invitation(user_id: uuid.UUID, service: ServiceDep, manager: Manager) -> UserResponse:
+    return service.resend_invitation(user_id, manager.id)
+
+
 @router.post("/{user_id}/disable", response_model=UserResponse)
 def disable_user(user_id: uuid.UUID, service: ServiceDep, manager: Manager) -> UserResponse:
     return service.disable(user_id, manager.id)

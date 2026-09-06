@@ -13,6 +13,7 @@ from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.configuration.email.email_settings import EmailSettings
 from backend.app.errors.service.cannot_disable_self_error import CannotDisableSelfError
 from backend.app.errors.service.not_found_error import NotFoundError
+from backend.app.errors.service.user_not_invited_error import UserNotInvitedError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.token_kind import TokenKind
@@ -194,6 +195,54 @@ def test_resent_invitation_invalidates_the_previous_token(db_session: Session) -
         ),
         _ACTOR,
     )
+
+    stale_token = tokens.find_by_hash(stale_hash)
+    assert stale_token is not None
+    assert stale_token.used_at is not None
+
+
+def test_resend_invitation_sends_link_and_audits(db_session: Session) -> None:
+    sender = CapturingEmailSender()
+    actor = _seed(db_session, "boss", UserRole.MANAGER)
+    invited = _seed(db_session, "pending", status=UserStatus.INVITED, password_hash=None)
+    service = _service(db_session, sender)
+
+    result = service.resend_invitation(invited.id, actor.id)
+
+    assert result.status == UserStatus.INVITED
+    assert sender.invitation_link is not None
+    log = db_session.scalars(select(AuditLog)).one()
+    assert log.action == AuditAction.CREATE
+    assert log.entity_type == "permission"
+    assert log.entity_id == invited.id
+    assert log.changes == ["invitation"]
+
+
+def test_resend_invitation_rejects_active_user(db_session: Session) -> None:
+    actor = _seed(db_session, "boss", UserRole.MANAGER)
+    active = _seed(db_session, "working")
+    service = _service(db_session)
+
+    with pytest.raises(UserNotInvitedError):
+        service.resend_invitation(active.id, actor.id)
+
+
+def test_resend_invitation_unknown_user_raises(db_session: Session) -> None:
+    service = _service(db_session)
+
+    with pytest.raises(NotFoundError):
+        service.resend_invitation(uuid.uuid4(), _ACTOR)
+
+
+def test_resend_invitation_invalidates_the_previous_token(db_session: Session) -> None:
+    sender = CapturingEmailSender()
+    invited = _seed(db_session, "pending", status=UserStatus.INVITED, password_hash=None)
+    tokens = AuthTokenRepository(db_session)
+    issuer = TokenIssuer(tokens, TokenFactory())
+    stale_raw = issuer.issue(invited.id, TokenKind.INVITE, timedelta(hours=1))
+    stale_hash = TokenFactory().hash_token(stale_raw)
+
+    _service(db_session, sender).resend_invitation(invited.id, _ACTOR)
 
     stale_token = tokens.find_by_hash(stale_hash)
     assert stale_token is not None

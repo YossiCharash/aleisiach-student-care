@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.user_status import UserStatus
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -62,6 +63,43 @@ def test_non_manager_is_forbidden(
     assert api.get("/users", headers=headers).status_code == 403
 
 
+def test_manager_resends_invitation_to_invited_user(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    invited = seed_user("pending", UserRole.INSTRUCTOR, status=UserStatus.INVITED)
+    headers = auth_headers(api, "boss")
+
+    response = api.post(f"/users/{invited.id}/resend-invitation", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "invited"
+
+
+def test_resend_invitation_rejected_for_active_user(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    active = seed_user("teacher", UserRole.INSTRUCTOR)
+    headers = auth_headers(api, "boss")
+
+    response = api.post(f"/users/{active.id}/resend-invitation", headers=headers)
+
+    assert response.status_code == 409
+    assert response.json()["code"] == "user_not_invited"
+
+
+def test_resend_invitation_forbidden_for_non_manager(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("teacher", UserRole.INSTRUCTOR)
+    invited = seed_user("pending", UserRole.INSTRUCTOR, status=UserStatus.INVITED)
+    headers = auth_headers(api, "teacher")
+
+    assert api.post(f"/users/{invited.id}/resend-invitation", headers=headers).status_code == 403
+
+
 def test_users_require_authentication(api: TestClient) -> None:
     assert api.get("/users").status_code == 401
     assert api.post(f"/users/{uuid.uuid4()}/disable").status_code == 401
+    assert api.post(f"/users/{uuid.uuid4()}/resend-invitation").status_code == 401
