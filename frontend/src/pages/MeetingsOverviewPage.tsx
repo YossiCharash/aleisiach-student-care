@@ -42,8 +42,9 @@ export function MeetingsOverviewPage(): ReactNode {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-ink">ישיבות צוות</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          תלמידים שטרם נערכה להם ישיבה ב{formatMonthYear(now.getFullYear(), now.getMonth() + 1)}, מסודרים
-          לפי כיתות. לחצו על תלמיד כדי לפתוח ישיבה חודשית חדשה.
+          תלמידים שטרם נערכה להם ישיבה ב
+          {formatMonthYear(now.getFullYear(), now.getMonth() + 1)}, מסודרים לפי כיתות.
+          לחצו על תלמיד כדי לפתוח ישיבה חודשית חדשה.
         </p>
       </div>
 
