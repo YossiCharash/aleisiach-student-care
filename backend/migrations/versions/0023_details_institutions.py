@@ -1,6 +1,6 @@
 """consolidate Tab 4 background fields to previous/current institution
 
-Revision ID: 0023_details_background_institutions
+Revision ID: 0023_details_institutions
 Revises: 0022_functional_report
 Create Date: 2026-09-08
 """
@@ -10,7 +10,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0023_details_background_institutions"
+revision: str = "0023_details_institutions"
 down_revision: str | None = "0022_functional_report"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
