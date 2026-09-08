@@ -4,6 +4,11 @@ import { formatDate, IDD_DIAGNOSIS_NAME, legalStatusLabels } from "@/lib/utils/h
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
 import { Badge } from "@/components/ui/Badge";
+import {
+  CommunicationChannelCard,
+  EmotionalProfileCard,
+  TextBlock,
+} from "@/pages/student/details/DetailProfileCards";
 
 export function DetailsView({ details }: { details: StudentDetailsResponse }): ReactNode {
   return (
@@ -79,23 +84,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
 
       <MedicalProfileCard details={details} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>ערוץ תקשורת מועדף</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <div>
-            <span className="text-ink-muted">אופן הבעה עיקרי: </span>
-            <span className="font-medium text-ink">{details.expression_mode || "—"}</span>
-          </div>
-          <div>
-            <span className="text-ink-muted">מידת הבנת השפה: </span>
-            <span className="font-medium text-ink">
-              {details.language_comprehension || "—"}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <CommunicationChannelCard details={details} />
 
       <Card>
         <CardHeader>
@@ -115,17 +104,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>תעודת זהות רגשית</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <TextBlock label="תחומי עניין וחוזקות" value={details.interests_strengths} />
-          <TextBlock label="גורמים מציפים / טריגרים" value={details.triggers} />
-          <TextBlock label="סימנים מקדימים למצוקה" value={details.distress_early_signs} />
-          <TextBlock label="דרכי הרגעה מומלצות" value={details.calming_methods} />
-        </CardContent>
-      </Card>
+      <EmotionalProfileCard details={details} />
 
       {details.sensitive_visible ? (
         <Card>
@@ -226,15 +205,6 @@ function ListBlock({
           ))}
         </ul>
       )}
-    </div>
-  );
-}
-
-function TextBlock({ label, value }: { label: string; value: string | null }): ReactNode {
-  return (
-    <div>
-      <div className="mb-1 text-ink-muted">{label}</div>
-      <div className="whitespace-pre-wrap font-medium text-ink">{value || "—"}</div>
     </div>
   );
 }

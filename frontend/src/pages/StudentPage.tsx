@@ -13,6 +13,7 @@ import { ProgramTab } from "@/pages/student/ProgramTab";
 import { MeetingsTab } from "@/pages/student/MeetingsTab";
 import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
+import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 
 export function StudentPage(): ReactNode {
@@ -41,10 +42,10 @@ export function StudentPage(): ReactNode {
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
   const allowedTabs = showSocialNote
-    ? ["program", "meetings", "social-note", "details"]
-    : ["program", "meetings", "details"];
+    ? ["details", "program", "meetings", "social-note", "functional-report"]
+    : ["details", "program", "meetings", "functional-report"];
   const initialTab =
-    requestedTab && allowedTabs.includes(requestedTab) ? requestedTab : "program";
+    requestedTab && allowedTabs.includes(requestedTab) ? requestedTab : "details";
 
   return (
     <div>
@@ -66,12 +67,16 @@ export function StudentPage(): ReactNode {
 
       <Tabs defaultValue={initialTab}>
         <TabsList>
-          <TabsTrigger value="program">תוכנית</TabsTrigger>
+          <TabsTrigger value="details">פרטים אישיים</TabsTrigger>
+          <TabsTrigger value="program">תוכנית קידום</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
           {showSocialNote && <TabsTrigger value="social-note">הערת עו״ס</TabsTrigger>}
-          <TabsTrigger value="details">פרטי תלמיד</TabsTrigger>
+          <TabsTrigger value="functional-report">סיכום דוח תפקודי</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="details">
+          <DetailsTab studentId={student.id} />
+        </TabsContent>
         <TabsContent value="program">
           <ProgramTab studentId={student.id} />
         </TabsContent>
@@ -87,8 +92,8 @@ export function StudentPage(): ReactNode {
             <SocialNoteTab studentId={student.id} />
           </TabsContent>
         )}
-        <TabsContent value="details">
-          <DetailsTab studentId={student.id} />
+        <TabsContent value="functional-report">
+          <FunctionalReportTab studentId={student.id} />
         </TabsContent>
       </Tabs>
     </div>

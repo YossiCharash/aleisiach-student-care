@@ -1,8 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { meetingsApi, taxonomyApi } from "@/lib/api/endpoints";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { meetingsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { LabelTreeNode } from "@/lib/api/types";
 import { draftsToEntries, type EntryDraft } from "@/lib/meetings/buildEntries";
 import { monthName } from "@/lib/utils/hebrew";
 import {
@@ -16,9 +15,8 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { LoadingState } from "@/components/ui/Spinner";
-import { EmptyState, errorMessage } from "@/components/ui/ErrorState";
-import { SkillEntryRow } from "@/pages/student/meetings/SkillEntryRow";
+import { errorMessage } from "@/components/ui/ErrorState";
+import { SkillRatingTree } from "@/components/SkillRatingTree";
 
 interface Props {
   studentId: string;
@@ -57,18 +55,12 @@ function AddMeetingForm({
   const [drafts, setDrafts] = useState<Record<string, EntryDraft>>({});
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const treeQuery = useQuery({
-    queryKey: queryKeys.taxonomyTree,
-    queryFn: taxonomyApi.tree,
-  });
-
   const entries = useMemo(() => draftsToEntries(drafts), [drafts]);
 
   const mutation = useMutation({
     mutationFn: () => meetingsApi.create(studentId, { year, month, entries }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.program(studentId) });
       onDone();
     },
   });
@@ -93,15 +85,6 @@ function AddMeetingForm({
     }
     mutation.mutate();
   }
-
-  if (treeQuery.isLoading) {
-    return <LoadingState />;
-  }
-  if (treeQuery.isError) {
-    return <Alert tone="error">{errorMessage(treeQuery.error)}</Alert>;
-  }
-
-  const tree = treeQuery.data ?? [];
 
   return (
     <div className="space-y-4">
@@ -137,20 +120,7 @@ function AddMeetingForm({
       {validationError && <Alert tone="error">{validationError}</Alert>}
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
-      <div className="max-h-[45vh] space-y-2 overflow-y-auto pe-1">
-        {tree.length === 0 ? (
-          <EmptyState>לא הוגדרה טקסונומיה. יש להגדיר בהגדרות תחילה.</EmptyState>
-        ) : (
-          tree.map((label) => (
-            <LabelAccordion
-              key={label.id}
-              label={label}
-              drafts={drafts}
-              setDraft={setDraft}
-            />
-          ))
-        )}
-      </div>
+      <SkillRatingTree drafts={drafts} setDraft={setDraft} />
 
       <div className="flex items-center justify-between border-t border-slate-100 pt-4">
         <span className="text-sm text-ink-muted">{entries.length} כישורים דורגו</span>
@@ -164,40 +134,5 @@ function AddMeetingForm({
         </div>
       </div>
     </div>
-  );
-}
-
-function LabelAccordion({
-  label,
-  drafts,
-  setDraft,
-}: {
-  label: LabelTreeNode;
-  drafts: Record<string, EntryDraft>;
-  setDraft: (skillId: string, next: EntryDraft | null) => void;
-}): ReactNode {
-  return (
-    <details className="rounded-lg border border-slate-200 bg-white">
-      <summary className="cursor-pointer px-4 py-2.5 font-medium text-ink">
-        {label.name}
-      </summary>
-      <div className="space-y-2 border-t border-slate-100 p-3">
-        {label.sub_labels.map((subLabel) => (
-          <div key={subLabel.id} className="rounded-lg bg-slate-50 p-3">
-            <div className="mb-2 text-sm font-medium text-ink-muted">{subLabel.name}</div>
-            <div className="space-y-2">
-              {subLabel.skills.map((skill) => (
-                <SkillEntryRow
-                  key={skill.id}
-                  skill={skill}
-                  draft={drafts[skill.id] ?? null}
-                  onChange={(next) => setDraft(skill.id, next)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </details>
   );
 }
