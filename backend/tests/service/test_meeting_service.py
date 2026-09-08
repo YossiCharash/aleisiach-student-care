@@ -8,7 +8,7 @@ from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.errors.service.invalid_meeting_error import InvalidMeetingError
+from backend.app.errors.service.invalid_skill_rating_error import InvalidSkillRatingError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
@@ -25,6 +25,7 @@ from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
@@ -73,7 +74,7 @@ def _setup(session: Session) -> _Fixture:
     service = MeetingService(
         MeetingRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        TaxonomyRepository(session),
+        SkillRatingResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
     return _Fixture(
@@ -131,7 +132,7 @@ def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
         entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.RED)],
     )
 
-    with pytest.raises(InvalidMeetingError):
+    with pytest.raises(InvalidSkillRatingError):
         fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
@@ -149,7 +150,7 @@ def test_green_with_solution_is_rejected(db_session: Session) -> None:
         ],
     )
 
-    with pytest.raises(InvalidMeetingError):
+    with pytest.raises(InvalidSkillRatingError):
         fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
@@ -167,7 +168,7 @@ def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
         ],
     )
 
-    with pytest.raises(InvalidMeetingError):
+    with pytest.raises(InvalidSkillRatingError):
         fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
@@ -211,7 +212,7 @@ def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
         ],
     )
 
-    with pytest.raises(InvalidMeetingError):
+    with pytest.raises(InvalidSkillRatingError):
         fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 
@@ -229,7 +230,7 @@ def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
         ],
     )
 
-    with pytest.raises(InvalidMeetingError):
+    with pytest.raises(InvalidSkillRatingError):
         fx.service.create(fx.student_id, request, _ALL, fx.author_id)
 
 

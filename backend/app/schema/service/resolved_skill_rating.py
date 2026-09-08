@@ -3,10 +3,11 @@ import uuid
 from pydantic import BaseModel, Field
 
 from backend.app.models.client.meeting_rating import MeetingRating
+from backend.app.schema.service.resolved_solution import ResolvedSolution
 
 
-class ProgramArea(BaseModel):
+class ResolvedSkillRating(BaseModel):
     skill_id: uuid.UUID
     skill_name: str
     rating: MeetingRating
-    solutions: list[str] = Field(default_factory=list)
+    solutions: list[ResolvedSolution] = Field(default_factory=list)

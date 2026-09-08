@@ -135,7 +135,7 @@ def test_yellow_without_solution_returns_422(
     }
     response = api.post(f"/students/{domain.student_id}/meetings", headers=headers, json=body)
     assert response.status_code == 422
-    assert response.json()["code"] == "invalid_meeting"
+    assert response.json()["code"] == "invalid_skill_rating"
 
 
 def test_get_meeting_validates_it_belongs_to_the_url_student(

@@ -5,8 +5,7 @@ from pydantic import BaseModel, Field
 from backend.app.models.client.meeting_rating import MeetingRating
 
 
-class ProgramArea(BaseModel):
+class ProgramEntryRequest(BaseModel):
     skill_id: uuid.UUID
-    skill_name: str
     rating: MeetingRating
-    solutions: list[str] = Field(default_factory=list)
+    solution_ids: list[uuid.UUID] = Field(default_factory=list)
