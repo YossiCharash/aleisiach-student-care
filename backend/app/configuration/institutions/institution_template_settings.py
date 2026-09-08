@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 
 _DETAIL_OPTION_DEFAULTS: dict[str, tuple[str, ...]] = {
     "idd_severity": ("קלה", "בינונית", "מורכבת"),
+    "disability_severity": ("קל", "קל-בינוני", "בינוני", "ללא"),
+    "functioning_level": ("נמוך", "בינוני", "גבוה"),
     "medication_independence": ("אינו נוטל לבד", "זקוק לתזכורת והשגחה", "עצמאי"),
     "expression_mode": (
         "דיבור מילולי שוטף",

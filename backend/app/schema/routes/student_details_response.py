@@ -15,6 +15,8 @@ class StudentDetailsResponse(BaseModel):
     address: str | None = None
     home_language: str | None = None
     idd_severity: str | None = None
+    disability_severity: str | None = None
+    functioning_level: str | None = None
     additional_diagnoses: list[str] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)
     legal_status: LegalStatus | None = None
@@ -30,6 +32,8 @@ class StudentDetailsResponse(BaseModel):
     expression_mode: str | None = None
     language_comprehension: str | None = None
     current_or_last_framework: str | None = None
+    last_study_framework: str | None = None
+    current_framework: str | None = None
     prior_task_experience: str | None = None
     interests_strengths: str | None = None
     triggers: str | None = None

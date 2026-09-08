@@ -16,6 +16,8 @@ class StudentDetailsUpsertRequest(BaseModel):
     address: str | None = Field(default=None, max_length=300)
     home_language: str | None = Field(default=None, max_length=100)
     idd_severity: str | None = Field(default=None, max_length=200)
+    disability_severity: str | None = Field(default=None, max_length=200)
+    functioning_level: str | None = Field(default=None, max_length=200)
     additional_diagnoses: list[OptionValue] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)
     legal_status: LegalStatus | None = None
@@ -31,6 +33,8 @@ class StudentDetailsUpsertRequest(BaseModel):
     expression_mode: str | None = Field(default=None, max_length=200)
     language_comprehension: str | None = Field(default=None, max_length=200)
     current_or_last_framework: str | None = Field(default=None, max_length=300)
+    last_study_framework: str | None = Field(default=None, max_length=300)
+    current_framework: str | None = Field(default=None, max_length=300)
     prior_task_experience: str | None = Field(default=None, max_length=2000)
     interests_strengths: str | None = Field(default=None, max_length=2000)
     triggers: str | None = Field(default=None, max_length=2000)

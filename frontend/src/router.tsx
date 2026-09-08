@@ -11,10 +11,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { AcceptInvitationPage } from "@/pages/AcceptInvitationPage";
-import { HomePage } from "@/pages/HomePage";
 import { StudentsPage } from "@/pages/StudentsPage";
-import { ClassesPage } from "@/pages/ClassesPage";
-import { MeetingsOverviewPage } from "@/pages/MeetingsOverviewPage";
 import { ArchivedStudentsPage } from "@/pages/ArchivedStudentsPage";
 import { StudentPage } from "@/pages/StudentPage";
 import { SettingsPage } from "@/pages/SettingsPage";
@@ -40,12 +37,10 @@ export function AppRoutes(): ReactNode {
             <Route path="/institutions" element={<InstitutionsPage />} />
           </Route>
           <Route element={<InstitutionRoute />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<Navigate to="/students" replace />} />
             <Route path="/students" element={<StudentsPage />} />
             <Route path="/students/:studentId" element={<StudentPage />} />
-            <Route path="/meetings" element={<MeetingsOverviewPage />} />
             <Route element={<ManagerRoute />}>
-              <Route path="/classes" element={<ClassesPage />} />
               <Route path="/students/archived" element={<ArchivedStudentsPage />} />
             </Route>
           </Route>

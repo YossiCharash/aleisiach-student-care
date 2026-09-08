@@ -37,7 +37,7 @@ function renderSettings(path = "/settings"): void {
   );
 }
 
-const managerTabs = ["משתמשים", "כישורים", "אבחונים", "עריכת פרטי תלמיד"];
+const managerTabs = ["משתמשים", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי תלמיד"];
 
 describe("SettingsPage", () => {
   beforeEach(() => useAuth.mockReset());

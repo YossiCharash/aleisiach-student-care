@@ -77,7 +77,7 @@ export function SettingsPage(): ReactNode {
           {canManage && (
             <>
               <TabsTrigger value="users">משתמשים</TabsTrigger>
-              <TabsTrigger value="taxonomy">כישורים</TabsTrigger>
+              <TabsTrigger value="taxonomy">כישורים-מיומנויות</TabsTrigger>
               <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
               <TabsTrigger value="detail-options">עריכת פרטי תלמיד</TabsTrigger>
             </>

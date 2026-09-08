@@ -39,6 +39,20 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
               דרגה: {details.idd_severity || "—"}
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span className="text-ink-muted">תיאור המגבלה: </span>
+              <span className="font-medium text-ink">
+                {details.disability_severity || "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-ink-muted">רמת תפקוד: </span>
+              <span className="font-medium text-ink">
+                {details.functioning_level || "—"}
+              </span>
+            </div>
+          </div>
           {details.additional_diagnoses.length > 0 && (
             <ul className="space-y-1">
               {details.additional_diagnoses.map((name) => (
@@ -92,6 +106,8 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
             label="מסגרת נוכחית או אחרונה"
             value={details.current_or_last_framework}
           />
+          <TextBlock label="מסגרת לימודים אחרונה" value={details.last_study_framework} />
+          <TextBlock label="מסגרת נוכחית" value={details.current_framework} />
           <TextBlock
             label="ניסיון קודם במטלות / עבודות"
             value={details.prior_task_experience}
