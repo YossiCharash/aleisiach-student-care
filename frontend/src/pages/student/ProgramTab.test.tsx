@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { renderWithClient } from "@/test/renderWithClient";
 import { ProgramTab } from "@/pages/student/ProgramTab";
 import { programApi } from "@/lib/api/endpoints";
@@ -72,6 +73,23 @@ describe("ProgramTab", () => {
     expect(screen.getAllByText("צחצוח שיניים").length).toBeGreaterThan(0);
     expect(screen.getByText("תוכנית אישית")).toBeInTheDocument();
     expect(screen.getAllByText("תרגול יומי").length).toBeGreaterThan(0);
+  });
+
+  it("splits the content into a focus sub-tab and a personal-plan sub-tab", async () => {
+    signedInAs("manager");
+    getMock.mockResolvedValue(filledProgram);
+
+    renderWithClient(<ProgramTab studentId="s1" />);
+
+    expect(
+      await screen.findByRole("tab", { name: "מוקדי כוח ומוקדים לחיזוק" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("מוקדי כוח")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: "תוכנית אישית" }));
+
+    expect(screen.getByText("צחצוח שיניים")).toBeInTheDocument();
+    expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
   });
 
   it("hides the edit button from a read-only professional teacher", async () => {
