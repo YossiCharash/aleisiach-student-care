@@ -236,15 +236,22 @@ on purpose: it has no access to any of these.
 - **Forgot-password screen** — enter email; neutral confirmation message either way.
 - **Main screen** — top-right: worker name + list of students assigned to their class; clicking
   a student → student screen.
-- **Student screen (tabs):**
-  - Tab 1 — **Program**: strength areas + areas to strengthen (including the path to a solution).
-    **Derived automatically** as the latest rating per skill across the student's team meetings
-    (not stored, not manually edited): green → strengths; yellow/red → areas to strengthen, with
-    the chosen solutions as the path.
+- **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
+  §3 permission matrix). The UI display order (decided 2026-09-08) is: **details · program · team
+  meetings · social-worker note · functional-report summary**, and **details is the default tab**.
+  - Tab 1 — **Program** (תוכנית קידום): strength areas (מוקדי כוח) + areas to strengthen (מוקדים
+    לחיזוק) + a separate **personal-plan** card (the solution paths for the areas to strengthen).
+    **Authored manually** — one stored program per student, created/edited (**manager only**) via a
+    create/edit form: the same accordion as the meeting form (label → sub-label → skill → choose
+    red/yellow/green; on red/yellow a "solutions" field opens, sourced from Settings) but **without a
+    date**. green → strengths; yellow/red → areas to strengthen, with the chosen solutions as the
+    path. Instructors and professional teachers read only. (Changed 2026-09-08: was auto-derived as
+    the latest rating per skill across team meetings; it is now a stored, manually edited document —
+    team meetings no longer feed it. See ADR-019.)
   - Tab 2 — **Team meetings**: organized by months, an "Add monthly meeting" button → a long
     accordion form (label → sub-label → skill → choose red/yellow/green = dependent/supervised/
     independent; on red/yellow a "solutions" field opens, sourced from Settings). Save = summary
-    + automatic update of Tab 1 + print / PDF export.
+    + print / PDF export. (No longer updates Tab 1.)
   - Tab 3 — **Social worker note**: written by managers (manager = social worker), read-only for
     instructors, blocked for professional teachers.
   - Tab 4 — **Student details**: basic identity · emergency contacts & guardianship · official
@@ -252,6 +259,9 @@ on purpose: it has no access to any of these.
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
     Exact heading names to be supplied by the user (draft reading was 5. preferred communication
     channel · 6. prior educational/occupational background · 7. preferences & sensitivities).
+  - Tab 5 — **Functional-report summary** (סיכום דוח תפקודי): **read-only** for every role; surfaces
+    the "emotional identity" (תעודת זהות רגשית) and "preferred communication channel" (ערוץ תקשורת
+    מועדף) cards straight from the Tab 4 details (editing stays in Tab 4).
 - **Settings page**: for **managers** — **Users area** (add/remove users; per user: full name ·
   email · role · class; bulk-invite by email) + manage the taxonomy (labels / sub-labels / skills /
   solutions) + manage Tab 4 section headings. For **every role** — a **"my account"** tab to change
@@ -275,8 +285,12 @@ on purpose: it has no access to any of these.
       blocked** (decided).
 - [x] Social-worker status — **no separate role; all managers write Tab 3** (manager = social
       worker) (decided). Roles are exactly three.
-- [x] Tab 1 update rule — **derived automatically as the latest rating per skill across meetings**
-      (not stored/edited) (decided; per-skill-latest confirmed).
+- [x] Tab 1 update rule — **authored manually; one stored program per student, created/edited by the
+      manager only** via the dateless meeting-style form (green → strengths; yellow/red → areas to
+      strengthen with their solution paths) (decided 2026-09-08, ADR-019). Superseded the earlier
+      auto-derived-from-meetings rule; team meetings no longer feed the program. A new
+      functional-report-summary tab (read-only) surfaces the emotional-identity and
+      preferred-communication cards from Tab 4.
 - [x] Deletion & audit — **archive-only (manager); audit log records changes only** (decided).
       Retention period is a config value, number TBD.
 - [x] Multi-tenancy — **many institutions with a platform `super_admin`; taxonomy per

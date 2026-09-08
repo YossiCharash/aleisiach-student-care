@@ -18,6 +18,7 @@ from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.meetings.meeting_summary_document import MeetingSummaryDocument
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 
 
 def get_meeting_service(
@@ -26,7 +27,7 @@ def get_meeting_service(
     return MeetingService(
         MeetingRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        TaxonomyRepository(session),
+        SkillRatingResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
 

@@ -21,6 +21,7 @@ import type {
   PasswordChangeRequest,
   PasswordChangeResponse,
   ProgramResponse,
+  ProgramUpsertRequest,
   SkillResponse,
   SocialNoteResponse,
   SocialNoteUpsertRequest,
@@ -116,6 +117,8 @@ export const studentsApi = {
 export const programApi = {
   get: (studentId: string): Promise<ProgramResponse> =>
     apiClient.get<ProgramResponse>(`/students/${studentId}/program`),
+  upsert: (studentId: string, body: ProgramUpsertRequest): Promise<ProgramResponse> =>
+    apiClient.put<ProgramResponse>(`/students/${studentId}/program`, body),
 };
 
 export const meetingsApi = {

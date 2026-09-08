@@ -48,26 +48,57 @@ def _seed_domain(session: Session, class_id: uuid.UUID) -> _Domain:
     return _Domain(student.id, skill.id)
 
 
-def test_program_reflects_latest_meeting(
+def _green_body(skill_id: uuid.UUID) -> dict[str, object]:
+    return {"entries": [{"skill_id": str(skill_id), "rating": "green", "solution_ids": []}]}
+
+
+def test_manager_creates_program_and_get_reflects_it(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
     class_id = _seed_class(db_session, "Aleph")
     domain = _seed_domain(db_session, class_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
-    body = {
-        "year": 2026,
-        "month": 8,
-        "entries": [{"skill_id": str(domain.skill_id), "rating": "green", "solution_ids": []}],
-    }
-    api.post(f"/students/{domain.student_id}/meetings", headers=headers, json=body)
+
+    created = api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json=_green_body(domain.skill_id)
+    )
+    assert created.status_code == 200
+    assert created.json()["exists"] is True
 
     program = api.get(f"/students/{domain.student_id}/program", headers=headers)
-
     assert program.status_code == 200
     strengths = program.json()["strengths"]
     assert [s["skill_id"] for s in strengths] == [str(domain.skill_id)]
     assert program.json()["areas_to_strengthen"] == []
+
+
+def test_empty_program_is_rejected(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    response = api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json={"entries": []}
+    )
+    assert response.status_code == 422
+
+
+def test_instructor_cannot_write_program(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
+    headers = auth_headers(api, "teacher")
+
+    response = api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json=_green_body(domain.skill_id)
+    )
+    assert response.status_code == 403
 
 
 def test_instructor_cannot_read_other_class_program(
@@ -94,6 +125,7 @@ def test_professional_teacher_can_read_program(
     response = api.get(f"/students/{domain.student_id}/program", headers=headers)
 
     assert response.status_code == 200
+    assert response.json()["exists"] is False
     assert response.json()["strengths"] == []
 
 

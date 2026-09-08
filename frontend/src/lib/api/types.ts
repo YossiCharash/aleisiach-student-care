@@ -210,7 +210,7 @@ export interface MeetingResponse {
   entries: MeetingEntryResponse[];
 }
 
-export interface MeetingEntryRequest {
+export interface SkillRatingRequest {
   skill_id: string;
   rating: MeetingRating;
   solution_ids: string[];
@@ -219,14 +219,24 @@ export interface MeetingEntryRequest {
 export interface MeetingCreateRequest {
   year: number;
   month: number;
-  entries: MeetingEntryRequest[];
+  entries: SkillRatingRequest[];
+}
+
+export interface ProgramEntrySolutionResponse {
+  solution_id: string;
+  solution_text_snapshot: string;
+}
+
+export interface ProgramEntryResponse {
+  skill_id: string;
+  skill_name_snapshot: string;
+  rating: MeetingRating;
+  solutions: ProgramEntrySolutionResponse[];
 }
 
 export interface ProgramStrength {
   skill_id: string;
   skill_name: string;
-  year: number;
-  month: number;
 }
 
 export interface ProgramArea {
@@ -234,14 +244,18 @@ export interface ProgramArea {
   skill_name: string;
   rating: MeetingRating;
   solutions: string[];
-  year: number;
-  month: number;
 }
 
 export interface ProgramResponse {
   student_id: string;
+  exists: boolean;
+  entries: ProgramEntryResponse[];
   strengths: ProgramStrength[];
   areas_to_strengthen: ProgramArea[];
+}
+
+export interface ProgramUpsertRequest {
+  entries: SkillRatingRequest[];
 }
 
 export type DetailOptionField =

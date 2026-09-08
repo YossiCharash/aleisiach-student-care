@@ -1,16 +1,29 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Pencil, Plus } from "lucide-react";
 import { programApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { MeetingRating, ProgramArea, ProgramStrength } from "@/lib/api/types";
-import { formatMonthYear } from "@/lib/utils/hebrew";
+import type {
+  MeetingRating,
+  ProgramArea,
+  ProgramResponse,
+  ProgramStrength,
+} from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { permissions } from "@/lib/auth/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
+import { ProgramForm } from "@/pages/student/program/ProgramForm";
 import { cn } from "@/lib/utils/cn";
 
 export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
+  const { user } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const canWrite = user ? permissions.canWriteProgram(user) : false;
+
   const query = useQuery({
     queryKey: queryKeys.program(studentId),
     queryFn: () => programApi.get(studentId),
@@ -26,22 +39,60 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
     return null;
   }
 
-  const { strengths, areas_to_strengthen: areas } = query.data;
+  const program = query.data;
+
+  if (editing) {
+    return (
+      <ProgramForm
+        studentId={studentId}
+        program={program}
+        onDone={() => setEditing(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-ink-muted">
-        התוכנית נגזרת אוטומטית מהדירוג האחרון של כל כישור בישיבות הצוות. אין לערוך כאן
-        ידנית.
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-ink-muted">
+          {program.exists
+            ? "מוקדי הכוח והמוקדים לחיזוק, והתוכנית האישית הנגזרת מהם."
+            : "עדיין לא נבנתה תוכנית קידום לתלמיד."}
+        </p>
+        {canWrite && (
+          <Button onClick={() => setEditing(true)}>
+            {program.exists ? (
+              <>
+                <Pencil className="h-4 w-4" />
+                עריכת תוכנית
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                יצירת תוכנית
+              </>
+            )}
+          </Button>
+        )}
+      </div>
+
+      {program.exists && <ProgramContent program={program} />}
+    </div>
+  );
+}
+
+function ProgramContent({ program }: { program: ProgramResponse }): ReactNode {
+  const { strengths, areas_to_strengthen: areas } = program;
+  return (
+    <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>תחומי חוזק</CardTitle>
+            <CardTitle>מוקדי כוח</CardTitle>
           </CardHeader>
           <CardContent>
             {strengths.length === 0 ? (
-              <EmptyState>אין עדיין תחומי חוזק מתועדים.</EmptyState>
+              <EmptyState>אין עדיין מוקדי כוח.</EmptyState>
             ) : (
               <ul className="space-y-2">
                 {strengths.map((strength) => (
@@ -54,11 +105,11 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
 
         <Card>
           <CardHeader>
-            <CardTitle>תחומים לחיזוק</CardTitle>
+            <CardTitle>מוקדים לחיזוק</CardTitle>
           </CardHeader>
           <CardContent>
             {areas.length === 0 ? (
-              <EmptyState>אין עדיין תחומים לחיזוק.</EmptyState>
+              <EmptyState>אין עדיין מוקדים לחיזוק.</EmptyState>
             ) : (
               <ul className="space-y-3">
                 {areas.map((area) => (
@@ -69,6 +120,15 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>תוכנית אישית</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PersonalPlan areas={areas} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -87,11 +147,8 @@ const areaTitleClass: Record<MeetingRating, string> = {
 
 function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
   return (
-    <li className="flex items-center justify-between rounded-lg border-s-4 border-rating-green bg-accent-50 px-3 py-2">
-      <span className="font-medium text-brand-700">{strength.skill_name}</span>
-      <span className="text-xs text-ink-muted">
-        {formatMonthYear(strength.year, strength.month)}
-      </span>
+    <li className="rounded-lg border-s-4 border-rating-green bg-accent-50 px-3 py-2 font-medium text-brand-700">
+      {strength.skill_name}
     </li>
   );
 }
@@ -115,9 +172,29 @@ function AreaRow({ area }: { area: ProgramArea }): ReactNode {
           </ul>
         </div>
       )}
-      <div className="mt-1 text-xs text-ink-muted">
-        עודכן: {formatMonthYear(area.year, area.month)}
-      </div>
     </li>
+  );
+}
+
+function PersonalPlan({ areas }: { areas: ProgramArea[] }): ReactNode {
+  const withSolutions = areas.filter((area) => area.solutions.length > 0);
+  if (withSolutions.length === 0) {
+    return (
+      <EmptyState>אין עדיין תוכנית אישית — הוסיפו דרכי פתרון למוקדים לחיזוק.</EmptyState>
+    );
+  }
+  return (
+    <ul className="space-y-3">
+      {withSolutions.map((area) => (
+        <li key={area.skill_id}>
+          <div className="mb-1 font-medium text-ink">{area.skill_name}</div>
+          <ul className="list-disc space-y-0.5 pe-5 text-sm text-ink-muted">
+            {area.solutions.map((solution, index) => (
+              <li key={index}>{solution}</li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
   );
 }
