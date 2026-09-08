@@ -13,15 +13,16 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByText("מאיה ברק")).toBeVisible();
   });
 
-  test("opens a student and sees the four tabs", async ({ page }) => {
+  test("opens a student and sees the five tabs", async ({ page }) => {
     await login(page, "mor");
     await page.goto("/students");
     await page.getByRole("link", { name: "נועה כהן" }).click();
     await expect(page).toHaveURL(/\/students\/.+/);
-    await expect(page.getByRole("tab", { name: "תוכנית" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "פרטים אישיים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "תוכנית קידום" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "ישיבות צוות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "הערת עו״ס" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "פרטי תלמיד" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "סיכום דוח תפקודי" })).toBeVisible();
   });
 
   test("reaches settings with users and taxonomy areas", async ({ page }) => {
@@ -84,7 +85,7 @@ test.describe("role-based access in the UI", () => {
     await expect(page.getByRole("button", { name: "תלמיד חדש" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "נועה כהן" }).click();
-    await expect(page.getByRole("tab", { name: "פרטי תלמיד" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "פרטים אישיים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "הערת עו״ס" })).toHaveCount(0);
   });
 });

@@ -59,14 +59,10 @@ def upgrade() -> None:
             name="fk_program_entries_skill_institution",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "id", "institution_id", name="uq_program_entries_id_institution"
-        ),
+        sa.UniqueConstraint("id", "institution_id", name="uq_program_entries_id_institution"),
     )
     op.create_index("ix_program_entries_program_id", "program_entries", ["program_id"])
-    op.create_index(
-        "ix_program_entries_institution_id", "program_entries", ["institution_id"]
-    )
+    op.create_index("ix_program_entries_institution_id", "program_entries", ["institution_id"])
     op.create_table(
         "program_entry_solutions",
         sa.Column("id", sa.Uuid(), nullable=False),
