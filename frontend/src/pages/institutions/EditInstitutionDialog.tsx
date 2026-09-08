@@ -58,9 +58,7 @@ export function EditInstitutionDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>עריכת מוסד</DialogTitle>
-          <DialogDescription>
-            עדכון שם המוסד ופרטי איש הקשר.
-          </DialogDescription>
+          <DialogDescription>עדכון שם המוסד ופרטי איש הקשר.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error !== null && <Alert tone="error">{error}</Alert>}
