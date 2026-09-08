@@ -73,6 +73,20 @@ def test_manager_creates_program_and_get_reflects_it(
     assert program.json()["areas_to_strengthen"] == []
 
 
+def test_empty_program_is_rejected(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_id = _seed_class(db_session, "Aleph")
+    domain = _seed_domain(db_session, class_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+
+    response = api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json={"entries": []}
+    )
+    assert response.status_code == 422
+
+
 def test_instructor_cannot_write_program(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:

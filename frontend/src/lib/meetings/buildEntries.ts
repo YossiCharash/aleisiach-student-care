@@ -1,4 +1,4 @@
-import type { MeetingEntryRequest, MeetingRating } from "@/lib/api/types";
+import type { SkillRatingRequest, MeetingRating } from "@/lib/api/types";
 
 export interface EntryDraft {
   rating: MeetingRating | null;
@@ -7,7 +7,7 @@ export interface EntryDraft {
 
 export function draftsToEntries(
   drafts: Record<string, EntryDraft>
-): MeetingEntryRequest[] {
+): SkillRatingRequest[] {
   return Object.entries(drafts)
     .filter(([, draft]) => draft.rating !== null)
     .map(([skillId, draft]) => ({

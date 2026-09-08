@@ -55,7 +55,6 @@ class ProgramService:
             program.entries = self._build_entries(resolved)
             self._programs.add(program)
         else:
-            program.author_id = author_id
             program.entries = self._build_entries(resolved)
             self._programs.flush()
         self._audit.record(

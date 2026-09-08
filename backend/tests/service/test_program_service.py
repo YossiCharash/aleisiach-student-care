@@ -15,12 +15,13 @@ from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
+from backend.app.models.client.program import Program
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
-from backend.app.schema.routes.program_entry_request import ProgramEntryRequest
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
+from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.program.program_service import ProgramService
@@ -77,7 +78,7 @@ def _setup(session: Session) -> _Bundle:
     return _Bundle(program, student.id, seed_actor(session), skill_a.id, skill_b.id, solution_b.id)
 
 
-def _upsert(bundle: _Bundle, entries: list[ProgramEntryRequest]) -> None:
+def _upsert(bundle: _Bundle, entries: list[SkillRatingRequest]) -> None:
     request = ProgramUpsertRequest(entries=entries)
     bundle.program.upsert(bundle.student_id, request, _ALL, bundle.author_id)
 
@@ -98,8 +99,8 @@ def test_upsert_splits_entries_into_strengths_and_areas(db_session: Session) -> 
     _upsert(
         bundle,
         [
-            ProgramEntryRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
-            ProgramEntryRequest(
+            SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
+            SkillRatingRequest(
                 skill_id=bundle.skill_b,
                 rating=MeetingRating.YELLOW,
                 solution_ids=[bundle.solution_b],
@@ -121,14 +122,14 @@ def test_upsert_replaces_previous_entries(db_session: Session) -> None:
     _upsert(
         bundle,
         [
-            ProgramEntryRequest(
+            SkillRatingRequest(
                 skill_id=bundle.skill_b,
                 rating=MeetingRating.RED,
                 solution_ids=[bundle.solution_b],
             )
         ],
     )
-    _upsert(bundle, [ProgramEntryRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
 
     program = bundle.program.get_for_student(bundle.student_id, _ALL)
 
@@ -139,8 +140,8 @@ def test_upsert_replaces_previous_entries(db_session: Session) -> None:
 
 def test_create_then_update_are_audited(db_session: Session) -> None:
     bundle = _setup(db_session)
-    _upsert(bundle, [ProgramEntryRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
-    _upsert(bundle, [ProgramEntryRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)])
 
     logs = db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)).all()
     actions = [log.action for log in logs]
@@ -152,7 +153,22 @@ def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
     bundle = _setup(db_session)
 
     with pytest.raises(InvalidSkillRatingError):
-        _upsert(bundle, [ProgramEntryRequest(skill_id=bundle.skill_b, rating=MeetingRating.RED)])
+        _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.RED)])
+
+
+def test_update_keeps_original_creator(db_session: Session) -> None:
+    bundle = _setup(db_session)
+    editor = seed_actor(db_session, "editor")
+    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    request = ProgramUpsertRequest(
+        entries=[SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)]
+    )
+    bundle.program.upsert(bundle.student_id, request, _ALL, editor)
+
+    stored = db_session.scalars(
+        select(Program).where(Program.student_id == bundle.student_id)
+    ).one()
+    assert stored.author_id == bundle.author_id
 
 
 def test_student_outside_scope_is_hidden(db_session: Session) -> None:

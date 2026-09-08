@@ -20,7 +20,7 @@ from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
-from backend.app.schema.routes.meeting_entry_request import MeetingEntryRequest
+from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
@@ -94,7 +94,7 @@ def test_create_captures_snapshots(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(
+            SkillRatingRequest(
                 skill_id=fx.skill_id,
                 rating=MeetingRating.YELLOW,
                 solution_ids=[fx.solution_id],
@@ -113,7 +113,7 @@ def test_create_is_audited(db_session: Session) -> None:
     request = MeetingCreateRequest(
         year=2026,
         month=8,
-        entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
+        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
     )
 
     fx.service.create(fx.student_id, request, _ALL, fx.author_id)
@@ -129,7 +129,7 @@ def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
     request = MeetingCreateRequest(
         year=2026,
         month=8,
-        entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.RED)],
+        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.RED)],
     )
 
     with pytest.raises(InvalidSkillRatingError):
@@ -142,7 +142,7 @@ def test_green_with_solution_is_rejected(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(
+            SkillRatingRequest(
                 skill_id=fx.skill_id,
                 rating=MeetingRating.GREEN,
                 solution_ids=[fx.solution_id],
@@ -160,7 +160,7 @@ def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(
+            SkillRatingRequest(
                 skill_id=fx.skill_id,
                 rating=MeetingRating.YELLOW,
                 solution_ids=[fx.other_solution_id],
@@ -177,7 +177,7 @@ def test_unknown_skill_is_not_found(db_session: Session) -> None:
     request = MeetingCreateRequest(
         year=2026,
         month=8,
-        entries=[MeetingEntryRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)],
+        entries=[SkillRatingRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)],
     )
 
     with pytest.raises(NotFoundError):
@@ -190,7 +190,7 @@ def test_student_outside_scope_is_hidden(db_session: Session) -> None:
     request = MeetingCreateRequest(
         year=2026,
         month=8,
-        entries=[MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
+        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
     )
 
     with pytest.raises(NotFoundError):
@@ -203,8 +203,8 @@ def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
-            MeetingEntryRequest(
+            SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
+            SkillRatingRequest(
                 skill_id=fx.skill_id,
                 rating=MeetingRating.RED,
                 solution_ids=[fx.solution_id],
@@ -222,7 +222,7 @@ def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(
+            SkillRatingRequest(
                 skill_id=fx.skill_id,
                 rating=MeetingRating.YELLOW,
                 solution_ids=[fx.solution_id, fx.solution_id],
@@ -240,8 +240,8 @@ def test_entries_are_persisted_in_request_order(db_session: Session) -> None:
         year=2026,
         month=8,
         entries=[
-            MeetingEntryRequest(skill_id=fx.other_skill_id, rating=MeetingRating.GREEN),
-            MeetingEntryRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
+            SkillRatingRequest(skill_id=fx.other_skill_id, rating=MeetingRating.GREEN),
+            SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
         ],
     )
     fx.service.create(fx.student_id, request, _ALL, fx.author_id)

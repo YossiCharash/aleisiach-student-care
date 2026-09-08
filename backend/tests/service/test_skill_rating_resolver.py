@@ -11,7 +11,7 @@ from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.sub_label import SubLabel
-from backend.app.schema.routes.program_entry_request import ProgramEntryRequest
+from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 
 
@@ -60,7 +60,7 @@ def test_resolves_snapshots(db_session: Session) -> None:
 
     resolved = fx.resolver.resolve(
         [
-            ProgramEntryRequest(
+            SkillRatingRequest(
                 skill_id=fx.skill, rating=MeetingRating.YELLOW, solution_ids=[fx.solution]
             )
         ]
@@ -76,8 +76,8 @@ def test_duplicate_skill_is_rejected(db_session: Session) -> None:
     with pytest.raises(InvalidSkillRatingError):
         fx.resolver.resolve(
             [
-                ProgramEntryRequest(skill_id=fx.skill, rating=MeetingRating.GREEN),
-                ProgramEntryRequest(skill_id=fx.skill, rating=MeetingRating.GREEN),
+                SkillRatingRequest(skill_id=fx.skill, rating=MeetingRating.GREEN),
+                SkillRatingRequest(skill_id=fx.skill, rating=MeetingRating.GREEN),
             ]
         )
 
@@ -88,7 +88,7 @@ def test_green_with_solution_is_rejected(db_session: Session) -> None:
     with pytest.raises(InvalidSkillRatingError):
         fx.resolver.resolve(
             [
-                ProgramEntryRequest(
+                SkillRatingRequest(
                     skill_id=fx.skill, rating=MeetingRating.GREEN, solution_ids=[fx.solution]
                 )
             ]
@@ -101,7 +101,7 @@ def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
     with pytest.raises(InvalidSkillRatingError):
         fx.resolver.resolve(
             [
-                ProgramEntryRequest(
+                SkillRatingRequest(
                     skill_id=fx.skill,
                     rating=MeetingRating.YELLOW,
                     solution_ids=[fx.other_solution],
@@ -114,6 +114,4 @@ def test_unknown_skill_is_not_found(db_session: Session) -> None:
     fx = _setup(db_session)
 
     with pytest.raises(NotFoundError):
-        fx.resolver.resolve(
-            [ProgramEntryRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)]
-        )
+        fx.resolver.resolve([SkillRatingRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)])

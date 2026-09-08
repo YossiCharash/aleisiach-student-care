@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
-from backend.app.schema.routes.program_entry_request import ProgramEntryRequest
+from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 
 
 class ProgramUpsertRequest(BaseModel):
-    entries: list[ProgramEntryRequest] = Field(default_factory=list)
+    entries: list[SkillRatingRequest] = Field(min_length=1)
