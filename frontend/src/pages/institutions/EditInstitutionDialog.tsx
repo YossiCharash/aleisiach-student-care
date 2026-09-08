@@ -59,7 +59,7 @@ export function EditInstitutionDialog({
         <DialogHeader>
           <DialogTitle>עריכת מוסד</DialogTitle>
           <DialogDescription>
-            קוד המוסד ({institution.code}) קבוע ואינו ניתן לשינוי.
+            עדכון שם המוסד ופרטי איש הקשר.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
