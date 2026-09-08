@@ -19,6 +19,8 @@ def _details(
         address="רחוב הבנים 1",
         home_language="עברית",
         idd_severity="קלה",
+        disability_severity="קל-בינוני",
+        functioning_level="בינוני",
         additional_diagnoses=["ADHD"],
         emergency_contacts=[ContactInfo(full_name="אמא", phone="050")],
         legal_status=LegalStatus.GUARDIAN_APPOINTED,
@@ -30,6 +32,8 @@ def _details(
         expression_mode="דיבור מילולי שוטף",
         language_comprehension="מבין הוראות מורכבות",
         current_or_last_framework="גן תקשורת",
+        last_study_framework="גן שפתי",
+        current_framework="כיתת תקשורת",
         prior_task_experience="עבודה במטבח",
         interests_strengths="ציור",
         triggers="רעש",
@@ -50,6 +54,10 @@ def test_full_details_include_guardianship() -> None:
     assert "מונה אפוטרופוס" in html
     assert "דוד" in html
     assert "מגבלה שכלית התפתחותית" in html
+    assert "תיאור המגבלה" in html
+    assert "רמת תפקוד" in html
+    assert "מסגרת לימודים אחרונה" in html
+    assert "מסגרת נוכחית" in html
     assert "פרופיל רפואי ובטיחותי קריטי" in html
     assert "מכשיר מיוחד" in html
     assert "ערוץ תקשורת מועדף" in html

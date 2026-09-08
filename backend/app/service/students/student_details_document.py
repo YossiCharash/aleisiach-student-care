@@ -57,7 +57,11 @@ class StudentDetailsDocument:
         severity = details.idd_severity if details.idd_severity else "—"
         items = [f"<li>{escape(_IDD_NAME)} — דרגה: {escape(severity)}</li>"]
         items.extend(f"<li>{escape(name)}</li>" for name in details.additional_diagnoses)
-        return f"<h2>אבחונים</h2><ul>{''.join(items)}</ul>"
+        return (
+            f"<h2>אבחונים</h2><ul>{''.join(items)}</ul>"
+            + self._field("תיאור המגבלה", details.disability_severity)
+            + self._field("רמת תפקוד", details.functioning_level)
+        )
 
     def _medical_profile(self, details: StudentDetailsResponse) -> str:
         allergies = self._list_or_dash(
@@ -95,6 +99,8 @@ class StudentDetailsDocument:
         return (
             "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
             + self._field("מסגרת נוכחית או אחרונה", details.current_or_last_framework)
+            + self._field("מסגרת לימודים אחרונה", details.last_study_framework)
+            + self._field("מסגרת נוכחית", details.current_framework)
             + self._field("ניסיון קודם במטלות / עבודות", details.prior_task_experience)
         )
 

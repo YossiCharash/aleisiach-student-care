@@ -210,14 +210,6 @@ export interface MeetingResponse {
   entries: MeetingEntryResponse[];
 }
 
-export interface MeetingOverviewItem {
-  student_id: string;
-  student_name: string;
-  meeting_id: string;
-  year: number;
-  month: number;
-}
-
 export interface MeetingEntryRequest {
   skill_id: string;
   rating: MeetingRating;
@@ -254,10 +246,13 @@ export interface ProgramResponse {
 
 export type DetailOptionField =
   | "idd_severity"
+  | "disability_severity"
+  | "functioning_level"
   | "medication_independence"
   | "expression_mode"
   | "language_comprehension"
-  | "assistive_device";
+  | "assistive_device"
+  | "contact_relationship";
 
 export interface DetailOptionResponse {
   id: string;
@@ -300,6 +295,8 @@ export interface StudentDetailsResponse {
   address: string | null;
   home_language: string | null;
   idd_severity: string | null;
+  disability_severity: string | null;
+  functioning_level: string | null;
   additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
@@ -315,6 +312,8 @@ export interface StudentDetailsResponse {
   expression_mode: string | null;
   language_comprehension: string | null;
   current_or_last_framework: string | null;
+  last_study_framework: string | null;
+  current_framework: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;
@@ -329,6 +328,8 @@ export interface StudentDetailsUpsertRequest {
   address: string | null;
   home_language: string | null;
   idd_severity: string | null;
+  disability_severity: string | null;
+  functioning_level: string | null;
   additional_diagnoses: string[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
@@ -344,6 +345,8 @@ export interface StudentDetailsUpsertRequest {
   expression_mode: string | null;
   language_comprehension: string | null;
   current_or_last_framework: string | null;
+  last_study_framework: string | null;
+  current_framework: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;

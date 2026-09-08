@@ -16,7 +16,6 @@ import type {
   LoginRequest,
   LoginResponse,
   MeetingCreateRequest,
-  MeetingOverviewItem,
   MeetingResponse,
   NamedTaxonomyUpdate,
   PasswordChangeRequest,
@@ -96,14 +95,6 @@ export const classesApi = {
   list: (): Promise<ClassResponse[]> => apiClient.get<ClassResponse[]>("/classes"),
   create: (name: string): Promise<ClassResponse> =>
     apiClient.post<ClassResponse>("/classes", { name }),
-  rename: (classId: string, name: string): Promise<ClassResponse> =>
-    apiClient.patch<ClassResponse>(`/classes/${classId}`, { name }),
-  listArchived: (): Promise<ClassResponse[]> =>
-    apiClient.get<ClassResponse[]>("/classes/archived"),
-  archive: (classId: string): Promise<ClassResponse> =>
-    apiClient.post<ClassResponse>(`/classes/${classId}/archive`),
-  restore: (classId: string): Promise<ClassResponse> =>
-    apiClient.post<ClassResponse>(`/classes/${classId}/restore`),
 };
 
 export const studentsApi = {
@@ -130,8 +121,6 @@ export const programApi = {
 export const meetingsApi = {
   list: (studentId: string): Promise<MeetingResponse[]> =>
     apiClient.get<MeetingResponse[]>(`/students/${studentId}/meetings`),
-  overview: (): Promise<MeetingOverviewItem[]> =>
-    apiClient.get<MeetingOverviewItem[]>("/meetings/overview"),
   get: (studentId: string, meetingId: string): Promise<MeetingResponse> =>
     apiClient.get<MeetingResponse>(`/students/${studentId}/meetings/${meetingId}`),
   create: (studentId: string, body: MeetingCreateRequest): Promise<MeetingResponse> =>

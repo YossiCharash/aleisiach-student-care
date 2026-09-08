@@ -39,10 +39,13 @@ export const legalStatusLabels: Record<LegalStatus, string> = {
 
 export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
   idd_severity: "דרגת מגבלה שכלית התפתחותית",
+  disability_severity: "תיאור המגבלה",
+  functioning_level: "רמת תפקוד",
   medication_independence: "מידת עצמאות בלקיחת תרופות",
   expression_mode: "אופן הבעה עיקרי",
   language_comprehension: "מידת הבנת השפה",
   assistive_device: "אביזרי עזר פיזיים",
+  contact_relationship: "קרבה (אנשי קשר)",
 };
 
 export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
@@ -90,11 +93,4 @@ export function studentCountLabel(count: number): string {
     return "תלמיד אחד";
   }
   return `${count} תלמידים`;
-}
-
-export function pendingMeetingCountLabel(count: number): string {
-  if (count === 1) {
-    return "תלמיד אחד ממתין לישיבה";
-  }
-  return `${count} תלמידים ממתינים לישיבה`;
 }

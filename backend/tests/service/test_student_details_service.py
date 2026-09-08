@@ -201,6 +201,39 @@ def test_new_diagnosis_is_added_to_catalog(db_session: Session) -> None:
     assert [entry.name for entry in catalog] == ["אבחנה חדשה"]
 
 
+def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session) -> None:
+    _seed_option(db_session, DetailOptionField.DISABILITY_SEVERITY, "קל-בינוני")
+    _seed_option(db_session, DetailOptionField.FUNCTIONING_LEVEL, "בינוני")
+    service, student_id = _setup(db_session)
+
+    saved = service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(
+            disability_severity="קל-בינוני",
+            functioning_level="בינוני",
+            last_study_framework="גן תקשורת",
+            current_framework="כיתת תקשורת",
+        ),
+        _ALL,
+        _ACTOR,
+    )
+
+    assert saved.disability_severity == "קל-בינוני"
+    assert saved.functioning_level == "בינוני"
+    assert saved.last_study_framework == "גן תקשורת"
+    assert saved.current_framework == "כיתת תקשורת"
+
+
+def test_functioning_level_outside_catalog_is_rejected(db_session: Session) -> None:
+    _seed_option(db_session, DetailOptionField.FUNCTIONING_LEVEL, "בינוני")
+    service, student_id = _setup(db_session)
+
+    with pytest.raises(InvalidDetailValueError):
+        service.upsert(
+            student_id, StudentDetailsUpsertRequest(functioning_level="לא קיים"), _ALL, _ACTOR
+        )
+
+
 def test_medical_profile_is_normalized_when_toggles_off(db_session: Session) -> None:
     service, student_id = _setup(db_session)
 

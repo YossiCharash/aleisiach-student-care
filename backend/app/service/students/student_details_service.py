@@ -26,6 +26,8 @@ _TRACKED_FIELDS = (
     "address",
     "home_language",
     "idd_severity",
+    "disability_severity",
+    "functioning_level",
     "additional_diagnoses",
     "emergency_contacts",
     "legal_status",
@@ -41,6 +43,8 @@ _TRACKED_FIELDS = (
     "expression_mode",
     "language_comprehension",
     "current_or_last_framework",
+    "last_study_framework",
+    "current_framework",
     "prior_task_experience",
     "interests_strengths",
     "triggers",
@@ -111,6 +115,8 @@ class StudentDetailsService:
         details.address = request.address
         details.home_language = request.home_language
         details.idd_severity = request.idd_severity
+        details.disability_severity = request.disability_severity
+        details.functioning_level = request.functioning_level
         details.additional_diagnoses = self._diagnoses.ensure_names(
             request.additional_diagnoses, actor_id
         )
@@ -126,6 +132,8 @@ class StudentDetailsService:
         details.expression_mode = request.expression_mode
         details.language_comprehension = request.language_comprehension
         details.current_or_last_framework = request.current_or_last_framework
+        details.last_study_framework = request.last_study_framework
+        details.current_framework = request.current_framework
         details.prior_task_experience = request.prior_task_experience
         details.interests_strengths = request.interests_strengths
         details.triggers = request.triggers
@@ -153,6 +161,10 @@ class StudentDetailsService:
     def _validate_options(self, request: StudentDetailsUpsertRequest) -> None:
         valid = self._valid_option_names()
         self._check_option(valid, DetailOptionField.IDD_SEVERITY, request.idd_severity)
+        self._check_option(
+            valid, DetailOptionField.DISABILITY_SEVERITY, request.disability_severity
+        )
+        self._check_option(valid, DetailOptionField.FUNCTIONING_LEVEL, request.functioning_level)
         self._check_option(valid, DetailOptionField.EXPRESSION_MODE, request.expression_mode)
         self._check_option(
             valid, DetailOptionField.LANGUAGE_COMPREHENSION, request.language_comprehension
@@ -223,6 +235,8 @@ class StudentDetailsService:
             address=details.address,
             home_language=details.home_language,
             idd_severity=details.idd_severity,
+            disability_severity=details.disability_severity,
+            functioning_level=details.functioning_level,
             additional_diagnoses=list(details.additional_diagnoses),
             emergency_contacts=[ContactInfo(**item) for item in details.emergency_contacts],
             legal_status=details.legal_status if include_sensitive else None,
@@ -240,6 +254,8 @@ class StudentDetailsService:
             expression_mode=details.expression_mode,
             language_comprehension=details.language_comprehension,
             current_or_last_framework=details.current_or_last_framework,
+            last_study_framework=details.last_study_framework,
+            current_framework=details.current_framework,
             prior_task_experience=details.prior_task_experience,
             interests_strengths=details.interests_strengths,
             triggers=details.triggers,

@@ -41,6 +41,8 @@ interface FormValues {
   address: string;
   home_language: string;
   idd_severity: string;
+  disability_severity: string;
+  functioning_level: string;
   additional_diagnoses: TextItem[];
   emergency_contacts: ContactItem[];
   legal_status: LegalStatus | "";
@@ -56,6 +58,8 @@ interface FormValues {
   expression_mode: string;
   language_comprehension: string;
   current_or_last_framework: string;
+  last_study_framework: string;
+  current_framework: string;
   prior_task_experience: string;
   interests_strengths: string;
   triggers: string;
@@ -93,6 +97,8 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     address: details.address ?? "",
     home_language: details.home_language ?? "",
     idd_severity: details.idd_severity ?? "",
+    disability_severity: details.disability_severity ?? "",
+    functioning_level: details.functioning_level ?? "",
     additional_diagnoses: details.additional_diagnoses.map((value) => ({ value })),
     emergency_contacts: toContactItems(details.emergency_contacts),
     legal_status: details.legal_status ?? "",
@@ -108,6 +114,8 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     expression_mode: details.expression_mode ?? "",
     language_comprehension: details.language_comprehension ?? "",
     current_or_last_framework: details.current_or_last_framework ?? "",
+    last_study_framework: details.last_study_framework ?? "",
+    current_framework: details.current_framework ?? "",
     prior_task_experience: details.prior_task_experience ?? "",
     interests_strengths: details.interests_strengths ?? "",
     triggers: details.triggers ?? "",
@@ -142,6 +150,8 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     address: emptyToNull(values.address),
     home_language: emptyToNull(values.home_language),
     idd_severity: emptyToNull(values.idd_severity),
+    disability_severity: emptyToNull(values.disability_severity),
+    functioning_level: emptyToNull(values.functioning_level),
     additional_diagnoses: items(values.additional_diagnoses),
     emergency_contacts: toContacts(values.emergency_contacts),
     legal_status: values.legal_status === "" ? null : values.legal_status,
@@ -157,6 +167,8 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     expression_mode: emptyToNull(values.expression_mode),
     language_comprehension: emptyToNull(values.language_comprehension),
     current_or_last_framework: emptyToNull(values.current_or_last_framework),
+    last_study_framework: emptyToNull(values.last_study_framework),
+    current_framework: emptyToNull(values.current_framework),
     prior_task_experience: emptyToNull(values.prior_task_experience),
     interests_strengths: emptyToNull(values.interests_strengths),
     triggers: emptyToNull(values.triggers),
@@ -203,6 +215,12 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
     >
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
+      <datalist id="contact-relationship-options">
+        {optionsFor("contact_relationship").map((option) => (
+          <option key={option} value={option} />
+        ))}
+      </datalist>
+
       <Card>
         <CardHeader>
           <CardTitle>זהות</CardTitle>
@@ -232,6 +250,12 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
         register={register}
         severityOptions={mergeMissing(optionsFor("idd_severity"), [
           details.idd_severity ?? "",
+        ])}
+        disabilityOptions={mergeMissing(optionsFor("disability_severity"), [
+          details.disability_severity ?? "",
+        ])}
+        functioningOptions={mergeMissing(optionsFor("functioning_level"), [
+          details.functioning_level ?? "",
         ])}
         error={!!formState.errors.idd_severity}
       />
@@ -311,6 +335,8 @@ function OptionSelect({
   register: UseFormRegister<FormValues>;
   name:
     | "idd_severity"
+    | "disability_severity"
+    | "functioning_level"
     | "medication_independence"
     | "expression_mode"
     | "language_comprehension";
@@ -333,11 +359,15 @@ function DiagnosesCard({
   control,
   register,
   severityOptions,
+  disabilityOptions,
+  functioningOptions,
   error,
 }: {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
   severityOptions: string[];
+  disabilityOptions: string[];
+  functioningOptions: string[];
   error: boolean;
 }): ReactNode {
   const catalog = useQuery({
@@ -363,6 +393,27 @@ function DiagnosesCard({
           {error && (
             <p className="mt-1 text-sm text-rating-red">יש לבחור דרגה לפני שמירה.</p>
           )}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="disability_severity">תיאור המגבלה</Label>
+            <OptionSelect
+              id="disability_severity"
+              register={register}
+              name="disability_severity"
+              options={disabilityOptions}
+            />
+          </div>
+          <div>
+            <Label htmlFor="functioning_level">רמת תפקוד</Label>
+            <OptionSelect
+              id="functioning_level"
+              register={register}
+              name="functioning_level"
+              options={functioningOptions}
+            />
+          </div>
         </div>
 
         <datalist id="diagnosis-options">
@@ -548,6 +599,22 @@ function BackgroundCard({
           />
         </div>
         <div>
+          <Label htmlFor="last_study_framework">מסגרת לימודים אחרונה</Label>
+          <Input
+            id="last_study_framework"
+            maxLength={300}
+            {...register("last_study_framework")}
+          />
+        </div>
+        <div>
+          <Label htmlFor="current_framework">מסגרת נוכחית</Label>
+          <Input
+            id="current_framework"
+            maxLength={300}
+            {...register("current_framework")}
+          />
+        </div>
+        <div>
           <Label htmlFor="prior_task_experience">ניסיון קודם במטלות / עבודות</Label>
           <Textarea
             id="prior_task_experience"
@@ -679,7 +746,11 @@ function ContactArray({
         <div key={field.id} className="flex items-start gap-2">
           <div className="grid flex-1 gap-2 sm:grid-cols-3">
             <Input placeholder="שם מלא" {...register(`${name}.${index}.full_name`)} />
-            <Input placeholder="קרבה" {...register(`${name}.${index}.relationship`)} />
+            <Input
+              placeholder="קרבה"
+              list="contact-relationship-options"
+              {...register(`${name}.${index}.relationship`)}
+            />
             <Input placeholder="טלפון" {...register(`${name}.${index}.phone`)} />
           </div>
           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>

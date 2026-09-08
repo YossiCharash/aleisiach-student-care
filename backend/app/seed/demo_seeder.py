@@ -194,12 +194,14 @@ class DemoSeeder:
                 address="רחוב הדגמה 1, עיר הדגמה",
                 home_language="עברית",
                 idd_severity="קלה",
-                additional_diagnoses=["הפרעת קשב וריכוז"],
+                disability_severity="קל-בינוני",
+                functioning_level="בינוני",
+                additional_diagnoses=["הפרעת קשב וריכוז", "אוטיזם"],
                 emergency_contacts=[
-                    {"full_name": "הורה לדוגמה", "relationship": "אם", "phone": "050-0000000"}
+                    {"full_name": "הורה לדוגמה", "relationship": "אמא", "phone": "050-0000000"}
                 ],
                 legal_status=LegalStatus.PARENTS_ARE_GUARDIANS,
-                guardians=[{"full_name": "הורה לדוגמה", "relationship": "אם"}],
+                guardians=[{"full_name": "הורה לדוגמה", "relationship": "אמא"}],
                 has_allergies_or_dietary=True,
                 allergies_dietary=["אלרגיה לבוטנים"],
                 takes_regular_medication=True,
@@ -210,6 +212,8 @@ class DemoSeeder:
                 expression_mode="דיבור מילולי שוטף",
                 language_comprehension="מבין הוראות מורכבות",
                 current_or_last_framework="גן תקשורת עירוני",
+                last_study_framework="גן תקשורת עירוני",
+                current_framework="כיתת תקשורת בבית הספר",
                 prior_task_experience="סייעה בחלוקת חומרים בכיתה.",
                 interests_strengths="אוהבת ציור ומוזיקה; חזקה בזיכרון חזותי.",
                 triggers="רעש פתאומי חזק.",

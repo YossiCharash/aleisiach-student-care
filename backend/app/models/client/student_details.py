@@ -25,6 +25,8 @@ class StudentDetails(TenantScoped, Base):
     address: Mapped[str | None] = mapped_column(String(300), nullable=True)
     home_language: Mapped[str | None] = mapped_column(String(100), nullable=True)
     idd_severity: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    disability_severity: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    functioning_level: Mapped[str | None] = mapped_column(String(200), nullable=True)
     additional_diagnoses: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     emergency_contacts: Mapped[list[dict[str, object]]] = mapped_column(
         JSON, nullable=False, default=list
@@ -44,6 +46,8 @@ class StudentDetails(TenantScoped, Base):
     expression_mode: Mapped[str | None] = mapped_column(String(200), nullable=True)
     language_comprehension: Mapped[str | None] = mapped_column(String(200), nullable=True)
     current_or_last_framework: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    last_study_framework: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    current_framework: Mapped[str | None] = mapped_column(String(300), nullable=True)
     prior_task_experience: Mapped[str | None] = mapped_column(Text, nullable=True)
     interests_strengths: Mapped[str | None] = mapped_column(Text, nullable=True)
     triggers: Mapped[str | None] = mapped_column(Text, nullable=True)
