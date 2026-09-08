@@ -289,6 +289,43 @@ layers are now the backstop the ADR always claimed.
 
 ---
 
+## ADR-019 — Tab 1 (Program) is a manually authored document, not derived from meetings
+
+**Date:** 2026-09-08
+**Decision:** The promotion program (Tab 1) is a **stored, manually authored document** — **one
+program per student** — created and edited by the **manager only**, replacing the earlier
+auto-derived read-model (ADR superseded: "latest rating per skill across team meetings"). It is
+authored through the same accordion form as a team meeting (label → sub-label → skill →
+red/yellow/green, with a solutions field on yellow/red) but **without a month/year**. The read view
+splits the stored entries into strengths (green) and areas to strengthen (yellow/red), and a separate
+**personal-plan** card lists the solution paths of the areas to strengthen. Instructors and
+professional teachers read only. **Team meetings no longer feed the program**; they remain their own
+tab (unchanged). A new **functional-report-summary** tab (Tab 5, read-only for every role) surfaces
+the emotional-identity and preferred-communication cards from the Tab 4 details.
+
+**Context:** The client reframed the student screen around a manually curated promotion plan rather
+than a value computed from meeting history. The team-meeting form's rating→bucket semantics were kept
+because they already match how the staff think about strengths vs. areas to strengthen.
+
+**Data model:** new tenant-scoped tables `programs` / `program_entries` / `program_entry_solutions`
+(migration `0021_manual_program`), mirroring the meeting tables minus the date, with a unique
+`student_id`. The skill/solution validation and text-snapshotting is shared with the meeting service
+through `SkillRatingResolver`; the identical entry-request DTO is the shared `SkillRatingRequest`.
+`Program.author_id` records the **creator** and is not overwritten on edit (edits are tracked by
+`updated_at` and the audit log, `entity_type="program"`).
+
+**Alternatives:** Keep the derived read-model and add manual overrides — rejected as two sources of
+truth for the same view. Allow several program versions per student — rejected; one living document
+is what the client asked for. Give instructors write access (as they have on team meetings) —
+rejected; the client scoped program authoring to the manager.
+
+**Consequences:** Existing team-meeting rows no longer influence Tab 1 (in the prototype they are
+demo data). There is no delete endpoint for a program, and an empty upsert is rejected
+(`entries` `min_length=1`), so a program cannot be created empty. PDF export for the program is
+deferred.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

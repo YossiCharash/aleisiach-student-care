@@ -95,7 +95,7 @@ frontend/
    ├─ pages/
    │  ├─ login/                # login screen (design variations)
    │  ├─ students/[id]/        # student screen with tabs
-   │  │  ├─ program/  meetings/  social-note/  details/   # Tabs 1–4
+   │  │  ├─ program/  meetings/  social-note/  details/  functional-report/  # Tabs 1–5 (program authored manually)
    │  └─ settings/             # Settings page (manager only)
    ├─ components/              # shared UI components (RTL) + app shell/header
    ├─ features/                # auth/ students/ meetings/ taxonomy/ notes/
@@ -215,11 +215,17 @@ erDiagram
 ```
 
 ### Model notes
-- **Tab 1 (Program) is NOT stored** — it is a **derived read-model**: the **latest rating per
-  skill across all** the student's team meetings (decided). For each skill ever assessed, the most
-  recent meeting that rated it decides its bucket — green → strengths (מוקדי כח); yellow/red →
-  areas to strengthen (מוקדים לחיזוק) with that entry's chosen solutions as the "path to solution".
-  No `PROGRAM` table, no manual editing.
+- **Tab 1 (Program) is a stored, manually authored document** (decided 2026-09-08, ADR-019): one
+  `PROGRAM` per student (unique `student_id`) with ordered `PROGRAM_ENTRY` rows (skill + rating +
+  `*_snapshot`) and `PROGRAM_ENTRY_SOLUTION` children — the same shape as a team meeting minus the
+  date. Created/edited by the **manager only** via the dateless meeting-style form; instructors and
+  professional teachers read only. The read view is derived from the stored entries: green →
+  strengths (מוקדי כוח); yellow/red → areas to strengthen (מוקדים לחיזוק) with the chosen solutions
+  as the "path to solution", plus a separate personal-plan card listing those paths. The
+  skill/solution validation + snapshotting is shared with the meeting form via `SkillRatingResolver`.
+  (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it**.)
+- **Tab 5 (Functional-report summary) is a read-only projection** — no table of its own; it renders
+  the "emotional identity" and "preferred communication channel" fields straight from `STUDENT_DETAILS`.
 - **The taxonomy (Label → SubLabel → Skill → Solution)** is the dynamic core. It is managed on
   the Settings page and feeds the Tab 2 form. Do not hard-code it.
 - **`MEETING_ENTRY.rating`**: green=independent, yellow=supervised, red=dependent. On yellow/red
@@ -255,15 +261,15 @@ flowchart TD
     H -->|no| C
     H -->|yes| I["Save"]
     I --> J["Generate meeting summary"]
-    J --> K["Tab 1 (Program) reflects it automatically\n(derived — no separate write)"]
     J --> L["Print / PDF export option"]
 ```
 
 **Implementation rules:**
 - Validation: cannot save while any skill rated yellow/red has no chosen solution.
-- **Tab 1 derivation (decided):** green → strengths; yellow/red → areas to strengthen, with the
-  entry's chosen solutions as the "path to solution". Computed as the latest rating **per skill
-  across all** the student's meetings (newest-first, first rating seen per skill wins).
+- **Tab 1 (Program) is a separate, manually authored document** (ADR-019) — this meeting form no
+  longer writes or updates it. The two share the accordion UI (`SkillRatingTree`) and the backend
+  validation/snapshot logic (`SkillRatingResolver`); the promotion-program form is the same flow
+  without the month/year step.
 - Save must be atomic (transaction): meeting + all entries + solution links.
 
 ---
@@ -424,7 +430,7 @@ flowchart LR
 - Login/student-screen design variation choice.
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
-only, managers write Tab 3; Tab 1 is a derived read-model (latest rating per skill across meetings); Tab 4 extra
+only, managers write Tab 3; Tab 1 is a manually authored stored program (manager only, ADR-019); Tab 4 extra
 sections = normalized tables; taxonomy history = snapshot + soft-delete; students archive-only
 (manager); audit log records changes only; stack locked (Vite SPA + FastAPI); auth =
 username/password with email invite + reset._
