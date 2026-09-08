@@ -79,9 +79,7 @@ class FunctionalReportService:
     def _build(
         self, student_id: uuid.UUID, request: FunctionalReportUpsertRequest, actor_id: uuid.UUID
     ) -> FunctionalReport:
-        report = FunctionalReport(
-            student_id=student_id, updated_by=actor_id, updated_at=self._clock.now()
-        )
+        report = FunctionalReport(student_id=student_id)
         self._apply(report, request, actor_id)
         return report
 
