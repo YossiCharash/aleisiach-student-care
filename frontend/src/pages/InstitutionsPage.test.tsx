@@ -63,7 +63,7 @@ describe("InstitutionsPage", () => {
     renderPage(<InstitutionsPage />);
 
     expect(await screen.findByText("בית ספר אלף")).toBeInTheDocument();
-    expect(screen.getByText("alef")).toBeInTheDocument();
+    expect(screen.queryByText("alef")).not.toBeInTheDocument();
     expect(screen.getByText("4")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
   });

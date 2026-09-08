@@ -49,8 +49,8 @@ export function InstitutionRow({
   });
 
   return (
-    <tr className="border-b border-slate-50 last:border-0">
-      <td className="px-4 py-3 font-medium text-ink">
+    <tr className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70">
+      <td className="px-5 py-3 font-semibold text-ink">
         {institution.name}
         {institution.pending_manager_email !== null && (
           <div className="text-xs font-normal text-ink-muted">
@@ -61,8 +61,7 @@ export function InstitutionRow({
           <div className="text-xs font-normal text-rating-red">{actionError}</div>
         )}
       </td>
-      <td className="px-4 py-3 text-ink-muted">{institution.code}</td>
-      <td className="px-4 py-3 text-ink-muted">
+      <td className="px-5 py-3 text-ink-muted">
         {institution.contact_name ?? "—"}
         {institution.contact_phone !== null && (
           <div className="text-xs" dir="ltr">
@@ -70,14 +69,18 @@ export function InstitutionRow({
           </div>
         )}
       </td>
-      <td className="px-4 py-3 text-ink-muted">{institution.user_count}</td>
-      <td className="px-4 py-3 text-ink-muted">{institution.student_count}</td>
-      <td className="px-4 py-3">
+      <td className="px-5 py-3 text-center font-medium tabular-nums text-ink">
+        {institution.user_count}
+      </td>
+      <td className="px-5 py-3 text-center font-medium tabular-nums text-ink">
+        {institution.student_count}
+      </td>
+      <td className="px-5 py-3">
         <Badge tone={institution.is_active ? "green" : "neutral"}>
           {institution.is_active ? "פעיל" : "מושבת"}
         </Badge>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-5 py-3">
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"

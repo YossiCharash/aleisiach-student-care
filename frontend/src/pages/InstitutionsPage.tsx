@@ -52,18 +52,17 @@ function InstitutionsTable({
   }
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardContent className="p-0">
         <table className="w-full text-start text-sm">
-          <thead className="border-b border-slate-100 text-ink-muted">
+          <thead className="border-b border-slate-200 bg-slate-50 text-xs tracking-wide text-ink-muted">
             <tr>
-              <th className="px-4 py-3 text-start font-medium">שם המוסד</th>
-              <th className="px-4 py-3 text-start font-medium">קוד</th>
-              <th className="px-4 py-3 text-start font-medium">איש קשר</th>
-              <th className="px-4 py-3 text-start font-medium">משתמשים</th>
-              <th className="px-4 py-3 text-start font-medium">תלמידים</th>
-              <th className="px-4 py-3 text-start font-medium">סטטוס</th>
-              <th className="px-4 py-3 text-start font-medium">פעולות</th>
+              <th className="px-5 py-3 text-start font-semibold">שם המוסד</th>
+              <th className="px-5 py-3 text-start font-semibold">איש קשר</th>
+              <th className="px-5 py-3 text-center font-semibold">משתמשים</th>
+              <th className="px-5 py-3 text-center font-semibold">תלמידים</th>
+              <th className="px-5 py-3 text-start font-semibold">סטטוס</th>
+              <th className="px-5 py-3 text-start font-semibold">פעולות</th>
             </tr>
           </thead>
           <tbody>
