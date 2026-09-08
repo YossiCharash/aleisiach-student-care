@@ -55,7 +55,7 @@ function InstitutionsTable({
     <Card className="overflow-hidden">
       <CardContent className="p-0">
         <table className="w-full text-start text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-ink-muted">
+          <thead className="border-b border-slate-200 bg-slate-50 text-xs tracking-wide text-ink-muted">
             <tr>
               <th className="px-5 py-3 text-start font-semibold">שם המוסד</th>
               <th className="px-5 py-3 text-start font-semibold">איש קשר</th>
