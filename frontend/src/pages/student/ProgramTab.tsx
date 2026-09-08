@@ -12,6 +12,7 @@ import type {
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
@@ -84,52 +85,61 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
 function ProgramContent({ program }: { program: ProgramResponse }): ReactNode {
   const { strengths, areas_to_strengthen: areas } = program;
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
+    <Tabs defaultValue="focus">
+      <TabsList>
+        <TabsTrigger value="focus">מוקדי כוח ומוקדים לחיזוק</TabsTrigger>
+        <TabsTrigger value="personal">תוכנית אישית</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="focus">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>מוקדי כוח</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {strengths.length === 0 ? (
+                <EmptyState>אין עדיין מוקדי כוח.</EmptyState>
+              ) : (
+                <ul className="space-y-2">
+                  {strengths.map((strength) => (
+                    <StrengthRow key={strength.skill_id} strength={strength} />
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>מוקדים לחיזוק</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {areas.length === 0 ? (
+                <EmptyState>אין עדיין מוקדים לחיזוק.</EmptyState>
+              ) : (
+                <ul className="space-y-3">
+                  {areas.map((area) => (
+                    <AreaRow key={area.skill_id} area={area} />
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="personal">
         <Card>
           <CardHeader>
-            <CardTitle>מוקדי כוח</CardTitle>
+            <CardTitle>תוכנית אישית</CardTitle>
           </CardHeader>
           <CardContent>
-            {strengths.length === 0 ? (
-              <EmptyState>אין עדיין מוקדי כוח.</EmptyState>
-            ) : (
-              <ul className="space-y-2">
-                {strengths.map((strength) => (
-                  <StrengthRow key={strength.skill_id} strength={strength} />
-                ))}
-              </ul>
-            )}
+            <PersonalPlan areas={areas} />
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>מוקדים לחיזוק</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {areas.length === 0 ? (
-              <EmptyState>אין עדיין מוקדים לחיזוק.</EmptyState>
-            ) : (
-              <ul className="space-y-3">
-                {areas.map((area) => (
-                  <AreaRow key={area.skill_id} area={area} />
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>תוכנית אישית</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PersonalPlan areas={areas} />
-        </CardContent>
-      </Card>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }
 
