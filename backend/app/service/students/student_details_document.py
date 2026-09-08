@@ -98,10 +98,9 @@ class StudentDetailsDocument:
     def _background(self, details: StudentDetailsResponse) -> str:
         return (
             "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
-            + self._field("מסגרת נוכחית או אחרונה", details.current_or_last_framework)
-            + self._field("מסגרת לימודים אחרונה", details.last_study_framework)
-            + self._field("מסגרת נוכחית", details.current_framework)
-            + self._field("ניסיון קודם במטלות / עבודות", details.prior_task_experience)
+            + self._field("מוסד קודם", details.previous_institution)
+            + self._field("מוסד נוכחי", details.current_institution)
+            + self._field("ניסיון קודם במטלות", details.prior_task_experience)
         )
 
     def _emotional_id(self, details: StudentDetailsResponse) -> str:

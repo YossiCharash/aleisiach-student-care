@@ -211,8 +211,8 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
         StudentDetailsUpsertRequest(
             disability_severity="קל-בינוני",
             functioning_level="בינוני",
-            last_study_framework="גן תקשורת",
-            current_framework="כיתת תקשורת",
+            previous_institution="גן תקשורת",
+            current_institution="כיתת תקשורת",
         ),
         _ALL,
         _ACTOR,
@@ -220,8 +220,8 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
 
     assert saved.disability_severity == "קל-בינוני"
     assert saved.functioning_level == "בינוני"
-    assert saved.last_study_framework == "גן תקשורת"
-    assert saved.current_framework == "כיתת תקשורת"
+    assert saved.previous_institution == "גן תקשורת"
+    assert saved.current_institution == "כיתת תקשורת"
 
 
 def test_functioning_level_outside_catalog_is_rejected(db_session: Session) -> None:

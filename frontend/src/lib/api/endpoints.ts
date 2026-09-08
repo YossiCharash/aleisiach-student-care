@@ -10,6 +10,8 @@ import type {
   InstitutionSummary,
   InstitutionUpdateRequest,
   DiagnosisCatalogUpdate,
+  FunctionalReportResponse,
+  FunctionalReportUpsertRequest,
   InvitationCommand,
   LabelResponse,
   LabelTreeNode,
@@ -177,6 +179,21 @@ export const socialNoteApi = {
     body: SocialNoteUpsertRequest
   ): Promise<SocialNoteResponse> =>
     apiClient.put<SocialNoteResponse>(`/students/${studentId}/social-note`, body),
+};
+
+export const functionalReportApi = {
+  get: (studentId: string): Promise<FunctionalReportResponse> =>
+    apiClient.get<FunctionalReportResponse>(`/students/${studentId}/functional-report`),
+  upsert: (
+    studentId: string,
+    body: FunctionalReportUpsertRequest
+  ): Promise<FunctionalReportResponse> =>
+    apiClient.put<FunctionalReportResponse>(
+      `/students/${studentId}/functional-report`,
+      body
+    ),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/functional-report/pdf`),
 };
 
 export const taxonomyApi = {

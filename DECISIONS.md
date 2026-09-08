@@ -301,7 +301,9 @@ splits the stored entries into strengths (green) and areas to strengthen (yellow
 **personal-plan** card lists the solution paths of the areas to strengthen. Instructors and
 professional teachers read only. **Team meetings no longer feed the program**; they remain their own
 tab (unchanged). A new **functional-report-summary** tab (Tab 5, read-only for every role) surfaces
-the emotional-identity and preferred-communication cards from the Tab 4 details.
+the emotional-identity and preferred-communication cards from the Tab 4 details. _(The Tab 5 clause
+is superseded by [ADR-020](#adr-020--tab-5-functional-report-is-a-manager-authored-form-30): Tab 5
+is now an authored form, not a read-only surfacing of Tab 4 cards.)_
 
 **Context:** The client reframed the student screen around a manually curated promotion plan rather
 than a value computed from meeting history. The team-meeting form's rating→bucket semantics were kept
@@ -323,6 +325,45 @@ rejected; the client scoped program authoring to the manager.
 demo data). There is no delete endpoint for a program, and an empty upsert is rejected
 (`entries` `min_length=1`), so a program cannot be created empty. PDF export for the program is
 deferred.
+
+---
+
+## ADR-020 — Tab 5 (Functional report) is a manager-authored form ("Form 33")
+
+**Date:** 2026-09-08
+**Decision:** The functional-report tab (Tab 5) is a **stored, manually authored document** — **one
+report per student that is updated in place** — modeled on the client's official **"טופס 33 — סיכום
+דוח תפקודי"**. It is **written by the manager only**; instructors and professional teachers **read
+only** (unlike Tab 3, the professional teacher is *not* blocked here). The report holds six free-text
+sections — **רקע כללי · התחום התעסוקתי · התחום ההתנהגותי-רגשי · התחום התקשורתי-חברתי · תחום עצמאות
+וכישורי חיים · סיכום והמלצות**. The identity header (**שם · מספר ת.ז · תאריך לידה**) is **auto-filled**
+from the student record and Tab 4 details — never re-keyed and never stored on the report. The form's
+**"נכתב על ידי"** (the issuer) and the report date are **auto-captured** from the manager who saves and
+the save time — not free-text fields. A server-side **WeasyPrint PDF** (ADR-015) exports the full
+report. This **supersedes the Tab 5 clause of ADR-019** (Tab 5 was a read-only surfacing of the
+emotional-identity and preferred-communication cards); those cards remain available in Tab 4.
+
+**Context:** The client supplied the actual Form 33 and asked that Tab 5 hold everything in it and be
+issuable as a filled report. The earlier read-only summary did not let anyone author the narrative
+functional assessment the form is built around.
+
+**Data model:** new tenant-scoped table `functional_reports` (migration `0022_functional_report`),
+keyed by `student_id` (one per student), with the six section columns plus `updated_by` / `updated_at`;
+it mirrors the `social_notes` shape (Tab 3) widened to the six sections. Identity is resolved at read
+time from `Student.full_name` and `StudentDetails` (national id, date of birth); the issuer name is
+resolved from `updated_by`. Audited under `entity_type="functional_report"` (create/update, field
+names only — the national id value is never written to the audit log).
+
+**Alternatives:** Keep several dated report versions per student — rejected; the client asked for one
+living document (consistent with ADR-019's program). Make "נכתב על ידי" and the date free-text as in
+the paper form — rejected; auto-capturing the acting manager and save time is more reliable and matches
+the "filled by whoever issues it" intent. Let instructors author it (as on team meetings) — rejected;
+the client scoped authoring to the manager.
+
+**Consequences:** There is no delete endpoint; a report is created lazily on first save and identity
+shows even before a report exists. The six section headings are fixed constants (they are the official
+form's headings), not Settings-managed taxonomy. If the client later wants a manual issue date or a
+free-text issuer, both are additive.
 
 ---
 

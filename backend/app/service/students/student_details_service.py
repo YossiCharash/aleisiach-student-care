@@ -42,9 +42,8 @@ _TRACKED_FIELDS = (
     "assistive_device_other",
     "expression_mode",
     "language_comprehension",
-    "current_or_last_framework",
-    "last_study_framework",
-    "current_framework",
+    "previous_institution",
+    "current_institution",
     "prior_task_experience",
     "interests_strengths",
     "triggers",
@@ -131,9 +130,8 @@ class StudentDetailsService:
     ) -> None:
         details.expression_mode = request.expression_mode
         details.language_comprehension = request.language_comprehension
-        details.current_or_last_framework = request.current_or_last_framework
-        details.last_study_framework = request.last_study_framework
-        details.current_framework = request.current_framework
+        details.previous_institution = request.previous_institution
+        details.current_institution = request.current_institution
         details.prior_task_experience = request.prior_task_experience
         details.interests_strengths = request.interests_strengths
         details.triggers = request.triggers
@@ -253,9 +251,8 @@ class StudentDetailsService:
             assistive_device_other=details.assistive_device_other,
             expression_mode=details.expression_mode,
             language_comprehension=details.language_comprehension,
-            current_or_last_framework=details.current_or_last_framework,
-            last_study_framework=details.last_study_framework,
-            current_framework=details.current_framework,
+            previous_institution=details.previous_institution,
+            current_institution=details.current_institution,
             prior_task_experience=details.prior_task_experience,
             interests_strengths=details.interests_strengths,
             triggers=details.triggers,
