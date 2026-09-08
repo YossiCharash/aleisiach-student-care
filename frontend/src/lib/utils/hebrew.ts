@@ -45,11 +45,10 @@ export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
   expression_mode: "אופן הבעה עיקרי",
   language_comprehension: "מידת הבנת השפה",
   assistive_device: "אביזרי עזר פיזיים",
+  contact_relationship: "קרבה (אנשי קשר)",
 };
 
 export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
-
-export const contactRelationshipOptions = ["אבא", "אמא", "אפוטרופוס"] as const;
 
 const monthNames = [
   "ינואר",

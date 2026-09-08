@@ -14,6 +14,7 @@ _DETAIL_OPTION_DEFAULTS: dict[str, tuple[str, ...]] = {
     ),
     "language_comprehension": ("מבין הוראות מורכבות", "מבין רק הוראות פשוטות"),
     "assistive_device": ("משקפיים", "מכשיר שמיעה", "מדרסים", "קביים", "הליכון", "אחר"),
+    "contact_relationship": ("אבא", "אמא", "אפוטרופוס"),
 }
 
 

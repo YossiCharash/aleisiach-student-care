@@ -9,3 +9,4 @@ class DetailOptionField(StrEnum):
     EXPRESSION_MODE = "expression_mode"
     LANGUAGE_COMPREHENSION = "language_comprehension"
     ASSISTIVE_DEVICE = "assistive_device"
+    CONTACT_RELATIONSHIP = "contact_relationship"

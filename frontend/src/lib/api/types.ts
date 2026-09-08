@@ -251,7 +251,8 @@ export type DetailOptionField =
   | "medication_independence"
   | "expression_mode"
   | "language_comprehension"
-  | "assistive_device";
+  | "assistive_device"
+  | "contact_relationship";
 
 export interface DetailOptionResponse {
   id: string;

@@ -16,11 +16,7 @@ import type {
   StudentDetailsResponse,
   StudentDetailsUpsertRequest,
 } from "@/lib/api/types";
-import {
-  contactRelationshipOptions,
-  IDD_DIAGNOSIS_NAME,
-  legalStatusLabels,
-} from "@/lib/utils/hebrew";
+import { IDD_DIAGNOSIS_NAME, legalStatusLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -218,6 +214,12 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
       className="space-y-6"
     >
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+
+      <datalist id="contact-relationship-options">
+        {optionsFor("contact_relationship").map((option) => (
+          <option key={option} value={option} />
+        ))}
+      </datalist>
 
       <Card>
         <CardHeader>
@@ -723,29 +725,6 @@ function StringArray({
 
 type ContactArrayName = "emergency_contacts" | "guardians";
 
-function RelationshipSelect({
-  control,
-  register,
-  name,
-}: {
-  control: Control<FormValues>;
-  register: UseFormRegister<FormValues>;
-  name: `${ContactArrayName}.${number}.relationship`;
-}): ReactNode {
-  const current = useWatch({ control, name });
-  const options = mergeMissing([...contactRelationshipOptions], [current ?? ""]);
-  return (
-    <select className={selectClass} {...register(name)}>
-      <option value="">— בחר/י —</option>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 function ContactArray({
   title,
   name,
@@ -767,10 +746,10 @@ function ContactArray({
         <div key={field.id} className="flex items-start gap-2">
           <div className="grid flex-1 gap-2 sm:grid-cols-3">
             <Input placeholder="שם מלא" {...register(`${name}.${index}.full_name`)} />
-            <RelationshipSelect
-              control={control}
-              register={register}
-              name={`${name}.${index}.relationship`}
+            <Input
+              placeholder="קרבה"
+              list="contact-relationship-options"
+              {...register(`${name}.${index}.relationship`)}
             />
             <Input placeholder="טלפון" {...register(`${name}.${index}.phone`)} />
           </div>
