@@ -57,9 +57,8 @@ interface FormValues {
   assistive_device_other: string;
   expression_mode: string;
   language_comprehension: string;
-  current_or_last_framework: string;
-  last_study_framework: string;
-  current_framework: string;
+  previous_institution: string;
+  current_institution: string;
   prior_task_experience: string;
   interests_strengths: string;
   triggers: string;
@@ -113,9 +112,8 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     assistive_device_other: details.assistive_device_other ?? "",
     expression_mode: details.expression_mode ?? "",
     language_comprehension: details.language_comprehension ?? "",
-    current_or_last_framework: details.current_or_last_framework ?? "",
-    last_study_framework: details.last_study_framework ?? "",
-    current_framework: details.current_framework ?? "",
+    previous_institution: details.previous_institution ?? "",
+    current_institution: details.current_institution ?? "",
     prior_task_experience: details.prior_task_experience ?? "",
     interests_strengths: details.interests_strengths ?? "",
     triggers: details.triggers ?? "",
@@ -166,9 +164,8 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     assistive_device_other: emptyToNull(values.assistive_device_other),
     expression_mode: emptyToNull(values.expression_mode),
     language_comprehension: emptyToNull(values.language_comprehension),
-    current_or_last_framework: emptyToNull(values.current_or_last_framework),
-    last_study_framework: emptyToNull(values.last_study_framework),
-    current_framework: emptyToNull(values.current_framework),
+    previous_institution: emptyToNull(values.previous_institution),
+    current_institution: emptyToNull(values.current_institution),
     prior_task_experience: emptyToNull(values.prior_task_experience),
     interests_strengths: emptyToNull(values.interests_strengths),
     triggers: emptyToNull(values.triggers),
@@ -591,31 +588,23 @@ function BackgroundCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="current_or_last_framework">מסגרת נוכחית או אחרונה</Label>
+          <Label htmlFor="previous_institution">מוסד קודם</Label>
           <Input
-            id="current_or_last_framework"
+            id="previous_institution"
             maxLength={300}
-            {...register("current_or_last_framework")}
+            {...register("previous_institution")}
           />
         </div>
         <div>
-          <Label htmlFor="last_study_framework">מסגרת לימודים אחרונה</Label>
+          <Label htmlFor="current_institution">מוסד נוכחי</Label>
           <Input
-            id="last_study_framework"
+            id="current_institution"
             maxLength={300}
-            {...register("last_study_framework")}
+            {...register("current_institution")}
           />
         </div>
         <div>
-          <Label htmlFor="current_framework">מסגרת נוכחית</Label>
-          <Input
-            id="current_framework"
-            maxLength={300}
-            {...register("current_framework")}
-          />
-        </div>
-        <div>
-          <Label htmlFor="prior_task_experience">ניסיון קודם במטלות / עבודות</Label>
+          <Label htmlFor="prior_task_experience">ניסיון קודם במטלות</Label>
           <Textarea
             id="prior_task_experience"
             rows={3}

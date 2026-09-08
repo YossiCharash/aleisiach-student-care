@@ -31,9 +31,8 @@ class StudentDetailsResponse(BaseModel):
     assistive_device_other: str | None = None
     expression_mode: str | None = None
     language_comprehension: str | None = None
-    current_or_last_framework: str | None = None
-    last_study_framework: str | None = None
-    current_framework: str | None = None
+    previous_institution: str | None = None
+    current_institution: str | None = None
     prior_task_experience: str | None = None
     interests_strengths: str | None = None
     triggers: str | None = None

@@ -91,16 +91,9 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           <CardTitle>רקע חינוכי ותעסוקתי קודם</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
-          <TextBlock
-            label="מסגרת נוכחית או אחרונה"
-            value={details.current_or_last_framework}
-          />
-          <TextBlock label="מסגרת לימודים אחרונה" value={details.last_study_framework} />
-          <TextBlock label="מסגרת נוכחית" value={details.current_framework} />
-          <TextBlock
-            label="ניסיון קודם במטלות / עבודות"
-            value={details.prior_task_experience}
-          />
+          <TextBlock label="מוסד קודם" value={details.previous_institution} />
+          <TextBlock label="מוסד נוכחי" value={details.current_institution} />
+          <TextBlock label="ניסיון קודם במטלות" value={details.prior_task_experience} />
         </CardContent>
       </Card>
 

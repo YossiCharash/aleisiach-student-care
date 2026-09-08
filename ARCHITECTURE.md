@@ -122,6 +122,7 @@ erDiagram
     EXTRA_SECTION_TYPE ||--o{ STUDENT_EXTRA_SECTION : "heading"
     STUDENT ||--o{ TEAM_MEETING : "meetings (Tab 2)"
     STUDENT ||--|| SOCIAL_NOTE : "social note (Tab 3)"
+    STUDENT ||--|| FUNCTIONAL_REPORT : "functional report (Tab 5)"
     TEAM_MEETING ||--o{ MEETING_ENTRY : "entries"
     MEETING_ENTRY }o--|| SKILL : "assessed skill (ref)"
     MEETING_ENTRY ||--o{ MEETING_ENTRY_SOLUTION : "chosen solutions"
@@ -224,8 +225,13 @@ erDiagram
   as the "path to solution", plus a separate personal-plan card listing those paths. The
   skill/solution validation + snapshotting is shared with the meeting form via `SkillRatingResolver`.
   (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it**.)
-- **Tab 5 (Functional-report summary) is a read-only projection** — no table of its own; it renders
-  the "emotional identity" and "preferred communication channel" fields straight from `STUDENT_DETAILS`.
+- **Tab 5 (Functional report, "Form 33") is a manager-authored document** — own table
+  `FUNCTIONAL_REPORT` (one per student, `student_id` PK), six free-text sections plus
+  `updated_by`/`updated_at`, mirroring `SOCIAL_NOTE` widened. The identity header (name · national id ·
+  date of birth) and the issuer name are **resolved at read time** from `STUDENT` / `STUDENT_DETAILS` /
+  `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
+  Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
+  communication fields; **superseded — ADR-020**.)
 - **The taxonomy (Label → SubLabel → Skill → Solution)** is the dynamic core. It is managed on
   the Settings page and feeds the Tab 2 form. Do not hard-code it.
 - **`MEETING_ENTRY.rating`**: green=independent, yellow=supervised, red=dependent. On yellow/red
@@ -430,7 +436,8 @@ flowchart LR
 - Login/student-screen design variation choice.
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
-only, managers write Tab 3; Tab 1 is a manually authored stored program (manager only, ADR-019); Tab 4 extra
+only, managers write Tab 3; Tab 1 is a manually authored stored program (manager only, ADR-019);
+Tab 5 is a manager-authored functional report / Form 33 (ADR-020); Tab 4 extra
 sections = normalized tables; taxonomy history = snapshot + soft-delete; students archive-only
 (manager); audit log records changes only; stack locked (Vite SPA + FastAPI); auth =
 username/password with email invite + reset._

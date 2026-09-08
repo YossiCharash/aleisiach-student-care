@@ -132,6 +132,7 @@ on purpose: it has no access to any of these.
 | Tab 1 — Program | Read/Write | Read | Read |
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
+| Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
 | Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
@@ -259,9 +260,15 @@ on purpose: it has no access to any of these.
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
     Exact heading names to be supplied by the user (draft reading was 5. preferred communication
     channel · 6. prior educational/occupational background · 7. preferences & sensitivities).
-  - Tab 5 — **Functional-report summary** (סיכום דוח תפקודי): **read-only** for every role; surfaces
-    the "emotional identity" (תעודת זהות רגשית) and "preferred communication channel" (ערוץ תקשורת
-    מועדף) cards straight from the Tab 4 details (editing stays in Tab 4).
+  - Tab 5 — **Functional report** (סיכום דוח תפקודי): a **manager-authored form** modeled on the
+    client's official **"טופס 33"** — **one stored report per student, updated in place**. Six
+    free-text sections (רקע כללי · התחום התעסוקתי · התחום ההתנהגותי-רגשי · התחום התקשורתי-חברתי ·
+    תחום עצמאות וכישורי חיים · סיכום והמלצות). The identity header (שם · ת"ז · תאריך לידה) is
+    **auto-filled** from the student + Tab 4 details; the issuer ("נכתב על ידי") and date are
+    **auto-captured** from the manager who saves. Instructors and professional teachers **read only**
+    (the professional teacher is *not* blocked here). Server-side **WeasyPrint PDF** export. (Changed
+    2026-09-08, ADR-020 — superseded the earlier read-only surfacing of the Tab 4 emotional-identity
+    and communication cards; those cards stay in Tab 4.)
 - **Settings page**: for **managers** — **Users area** (add/remove users; per user: full name ·
   email · role · class; bulk-invite by email) + manage the taxonomy (labels / sub-labels / skills /
   solutions) + manage Tab 4 section headings. For **every role** — a **"my account"** tab to change
@@ -288,9 +295,11 @@ on purpose: it has no access to any of these.
 - [x] Tab 1 update rule — **authored manually; one stored program per student, created/edited by the
       manager only** via the dateless meeting-style form (green → strengths; yellow/red → areas to
       strengthen with their solution paths) (decided 2026-09-08, ADR-019). Superseded the earlier
-      auto-derived-from-meetings rule; team meetings no longer feed the program. A new
-      functional-report-summary tab (read-only) surfaces the emotional-identity and
-      preferred-communication cards from Tab 4.
+      auto-derived-from-meetings rule; team meetings no longer feed the program.
+- [x] Tab 5 — **manager-authored functional report ("Form 33")**; one stored report per student,
+      updated in place; six free-text sections; identity + issuer auto-filled; instructors and
+      professional teachers read only; server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).
+      Superseded the earlier read-only surfacing of Tab 4 cards.
 - [x] Deletion & audit — **archive-only (manager); audit log records changes only** (decided).
       Retention period is a config value, number TBD.
 - [x] Multi-tenancy — **many institutions with a platform `super_admin`; taxonomy per

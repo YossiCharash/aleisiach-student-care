@@ -39,9 +39,8 @@ function details(): StudentDetailsResponse {
     assistive_device_other: null,
     expression_mode: null,
     language_comprehension: null,
-    current_or_last_framework: null,
-    last_study_framework: null,
-    current_framework: null,
+    previous_institution: null,
+    current_institution: null,
     prior_task_experience: null,
     interests_strengths: null,
     triggers: null,
@@ -57,13 +56,13 @@ describe("DetailsForm", () => {
     diagnosesListMock.mockReset().mockResolvedValue([]);
   });
 
-  it("renders the new disability, functioning and framework fields", () => {
+  it("renders the disability, functioning and institution fields", () => {
     renderWithClient(<DetailsForm studentId="s1" details={details()} onDone={vi.fn()} />);
 
     expect(screen.getByText("תיאור המגבלה")).toBeInTheDocument();
     expect(screen.getByText("רמת תפקוד")).toBeInTheDocument();
-    expect(screen.getByText("מסגרת לימודים אחרונה")).toBeInTheDocument();
-    expect(screen.getByText("מסגרת נוכחית")).toBeInTheDocument();
+    expect(screen.getByText("מוסד קודם")).toBeInTheDocument();
+    expect(screen.getByText("מוסד נוכחי")).toBeInTheDocument();
   });
 
   it("offers the contact relationship as a settings-managed datalist, not a fixed list", () => {

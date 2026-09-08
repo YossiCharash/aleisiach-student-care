@@ -325,9 +325,8 @@ export interface StudentDetailsResponse {
   assistive_device_other: string | null;
   expression_mode: string | null;
   language_comprehension: string | null;
-  current_or_last_framework: string | null;
-  last_study_framework: string | null;
-  current_framework: string | null;
+  previous_institution: string | null;
+  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;
@@ -358,9 +357,8 @@ export interface StudentDetailsUpsertRequest {
   assistive_device_other: string | null;
   expression_mode: string | null;
   language_comprehension: string | null;
-  current_or_last_framework: string | null;
-  last_study_framework: string | null;
-  current_framework: string | null;
+  previous_institution: string | null;
+  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;
@@ -377,4 +375,29 @@ export interface SocialNoteResponse {
 
 export interface SocialNoteUpsertRequest {
   content: string;
+}
+
+export interface FunctionalReportResponse {
+  student_id: string;
+  exists: boolean;
+  student_name: string;
+  national_id: string | null;
+  date_of_birth: string | null;
+  general_background: string;
+  vocational_domain: string;
+  behavioral_emotional_domain: string;
+  communication_social_domain: string;
+  independence_life_skills_domain: string;
+  summary_recommendations: string;
+  written_by_name: string | null;
+  updated_at: string | null;
+}
+
+export interface FunctionalReportUpsertRequest {
+  general_background: string;
+  vocational_domain: string;
+  behavioral_emotional_domain: string;
+  communication_social_domain: string;
+  independence_life_skills_domain: string;
+  summary_recommendations: string;
 }

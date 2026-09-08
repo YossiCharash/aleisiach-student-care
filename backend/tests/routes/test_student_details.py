@@ -28,7 +28,7 @@ _BODY = {
     "assistive_devices": ["glasses"],
     "expression_mode": "fluent_speech",
     "language_comprehension": "complex_instructions",
-    "current_or_last_framework": "גן תקשורת",
+    "current_institution": "גן תקשורת",
     "prior_task_experience": "עבודה במטבח",
     "interests_strengths": "ציור",
     "triggers": "רעש",
@@ -113,7 +113,7 @@ def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     assert body["has_allergies_or_dietary"] is True
     assert body["emergency_protocol"] == "פרוטוקול חירום"
     assert body["expression_mode"] == "fluent_speech"
-    assert body["current_or_last_framework"] == "גן תקשורת"
+    assert body["current_institution"] == "גן תקשורת"
     assert body["interests_strengths"] == "ציור"
 
     forbidden = api.put(f"/students/{student_id}/details", headers=prof_headers, json=_BODY)

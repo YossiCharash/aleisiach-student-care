@@ -31,9 +31,8 @@ def _details(
         assistive_device_other="מכשיר מיוחד",
         expression_mode="דיבור מילולי שוטף",
         language_comprehension="מבין הוראות מורכבות",
-        current_or_last_framework="גן תקשורת",
-        last_study_framework="גן שפתי",
-        current_framework="כיתת תקשורת",
+        previous_institution="גן שפתי",
+        current_institution="כיתת תקשורת",
         prior_task_experience="עבודה במטבח",
         interests_strengths="ציור",
         triggers="רעש",
@@ -56,8 +55,8 @@ def test_full_details_include_guardianship() -> None:
     assert "מגבלה שכלית התפתחותית" in html
     assert "תיאור המגבלה" in html
     assert "רמת תפקוד" in html
-    assert "מסגרת לימודים אחרונה" in html
-    assert "מסגרת נוכחית" in html
+    assert "מוסד קודם" in html
+    assert "מוסד נוכחי" in html
     assert "פרופיל רפואי ובטיחותי קריטי" in html
     assert "מכשיר מיוחד" in html
     assert "ערוץ תקשורת מועדף" in html

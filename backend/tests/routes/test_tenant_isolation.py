@@ -129,7 +129,8 @@ def test_foreign_student_is_not_found(
 
 
 @pytest.mark.parametrize(
-    "suffix", ["details", "social-note", "program", "extra-sections", "meetings"]
+    "suffix",
+    ["details", "social-note", "functional-report", "program", "extra-sections", "meetings"],
 )
 def test_foreign_student_sub_resources_are_not_found(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str], suffix: str
@@ -266,6 +267,8 @@ def test_manager_cannot_promote_a_user_to_super_admin(
         ("get", "/details/pdf"),
         ("post", "/meetings"),
         ("put", "/social-note"),
+        ("put", "/functional-report"),
+        ("get", "/functional-report/pdf"),
     ],
 )
 def test_foreign_student_write_paths_are_not_found(
@@ -279,6 +282,7 @@ def test_foreign_student_write_paths_are_not_found(
         "": {"full_name": "נחטף", "class_id": str(foreign.class_id)},
         "/details": {},
         "/social-note": {"content": "נחטף"},
+        "/functional-report": {"general_background": "נחטף"},
         "/meetings": {
             "year": 2026,
             "month": 6,
