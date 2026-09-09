@@ -11,6 +11,11 @@ single skill row whose green_text / yellow_text / red_text are filled and whose
 name is the sub_label's name. References to the removed rows are re-pointed to the
 surviving row first, so no foreign key is orphaned. On an empty database (CI, a
 fresh install) every data step is a no-op and only the schema change applies.
+
+Every step guards on its object already existing, so the migration is re-runnable
+against a database where an earlier interrupted attempt left ``skills.label_id`` in
+place without stamping the revision — the flatten only runs while ``sub_labels`` is
+still present.
 """
 
 from collections.abc import Sequence
@@ -93,18 +98,24 @@ WHERE s.id = m.old_id AND s.institution_id = m.institution_id AND m.old_id <> m.
 
 
 def upgrade() -> None:
-    op.add_column("skills", sa.Column("label_id", sa.Uuid(), nullable=True))
+    bind = op.get_bind()
+    op.execute("ALTER TABLE skills ADD COLUMN IF NOT EXISTS label_id UUID")
 
-    op.execute(_SURVIVOR)
-    op.execute(_REMAP)
-    op.execute(_GROUP_VALUES)
-    for table in _REFERENCING_TABLES:
-        op.execute(_REPOINT.format(table=table))
-    op.execute(_FILL_SURVIVOR)
-    op.execute(_DELETE_REDUNDANT)
+    sub_labels_present = (
+        bind.execute(sa.text("SELECT to_regclass('public.sub_labels')")).scalar() is not None
+    )
+    if sub_labels_present:
+        op.execute(_SURVIVOR)
+        op.execute(_REMAP)
+        op.execute(_GROUP_VALUES)
+        for table in _REFERENCING_TABLES:
+            op.execute(_REPOINT.format(table=table))
+        op.execute(_FILL_SURVIVOR)
+        op.execute(_DELETE_REDUNDANT)
 
-    op.alter_column("skills", "label_id", nullable=False)
-    op.create_index("ix_skills_label_id", "skills", ["label_id"])
+    op.execute("ALTER TABLE skills ALTER COLUMN label_id SET NOT NULL")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_skills_label_id ON skills (label_id)")
+    op.execute("ALTER TABLE skills DROP CONSTRAINT IF EXISTS fk_skills_label_institution")
     op.create_foreign_key(
         "fk_skills_label_institution",
         "skills",
@@ -113,10 +124,10 @@ def upgrade() -> None:
         ["id", "institution_id"],
     )
 
-    op.drop_constraint("fk_skills_sub_label_institution", "skills", type_="foreignkey")
-    op.drop_index("ix_skills_sub_label_id", table_name="skills")
-    op.drop_column("skills", "sub_label_id")
-    op.drop_table("sub_labels")
+    op.execute("ALTER TABLE skills DROP CONSTRAINT IF EXISTS fk_skills_sub_label_institution")
+    op.execute("DROP INDEX IF EXISTS ix_skills_sub_label_id")
+    op.execute("ALTER TABLE skills DROP COLUMN IF EXISTS sub_label_id")
+    op.execute("DROP TABLE IF EXISTS sub_labels")
 
 
 def downgrade() -> None:
