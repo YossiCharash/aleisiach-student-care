@@ -63,7 +63,11 @@ export function MeetingsTab({
       )}
 
       {canWrite && (
-        <AddMeetingDialog studentId={studentId} open={addOpen} onOpenChange={setAddOpen} />
+        <AddMeetingDialog
+          studentId={studentId}
+          open={addOpen}
+          onOpenChange={setAddOpen}
+        />
       )}
     </div>
   );
@@ -82,13 +86,9 @@ function MeetingList({
     return <EmptyState>אין ישיבות מתועדות עדיין.</EmptyState>;
   }
 
-  const sorted = [...meetings].sort((first, second) =>
-    second.meeting_date.localeCompare(first.meeting_date)
-  );
-
   return (
     <div className="space-y-6">
-      {sorted.map((meeting) => (
+      {meetings.map((meeting) => (
         <Card key={meeting.id}>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>{formatDate(meeting.meeting_date)}</CardTitle>
@@ -121,7 +121,8 @@ function SummarySection({
   const [draft, setDraft] = useState(meeting.summary);
 
   const mutation = useMutation({
-    mutationFn: () => meetingsApi.updateSummary(studentId, meeting.id, { summary: draft }),
+    mutationFn: () =>
+      meetingsApi.updateSummary(studentId, meeting.id, { summary: draft }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
       setEditing(false);

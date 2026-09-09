@@ -75,13 +75,17 @@ export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactN
                   className="rounded-lg border border-slate-100 px-3 py-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-ink">{entry.skill_name_snapshot}</span>
+                    <span className="font-medium text-ink">
+                      {entry.skill_name_snapshot}
+                    </span>
                     <RatingPill rating={entry.rating} />
                   </div>
                   {entry.solutions.length > 0 && (
                     <ul className="mt-1.5 list-disc space-y-0.5 pe-5 text-sm text-ink-muted">
                       {entry.solutions.map((solution) => (
-                        <li key={solution.solution_id}>{solution.solution_text_snapshot}</li>
+                        <li key={solution.solution_id}>
+                          {solution.solution_text_snapshot}
+                        </li>
                       ))}
                     </ul>
                   )}

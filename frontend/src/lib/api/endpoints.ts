@@ -149,7 +149,10 @@ export const meetingsApi = {
     meetingId: string,
     body: MeetingUpdateRequest
   ): Promise<MeetingResponse> =>
-    apiClient.patch<MeetingResponse>(`/students/${studentId}/meetings/${meetingId}`, body),
+    apiClient.patch<MeetingResponse>(
+      `/students/${studentId}/meetings/${meetingId}`,
+      body
+    ),
   pdfUrl: (studentId: string, meetingId: string): string =>
     buildPdfUrl(`/students/${studentId}/meetings/${meetingId}/pdf`),
 };

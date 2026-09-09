@@ -25,7 +25,10 @@ interface Props {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
 }
 
 export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): ReactNode {
@@ -35,8 +38,8 @@ export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): Reac
         <DialogHeader>
           <DialogTitle>ישיבת צוות חדשה</DialogTitle>
           <DialogDescription>
-            מוקדי הכוח והמוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת.
-            מלאו את הסיכום.
+            מוקדי הכוח והמוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם
+            כעת. מלאו את הסיכום.
           </DialogDescription>
         </DialogHeader>
         {open && (
@@ -72,7 +75,8 @@ function AddMeetingForm({
   });
 
   const mutation = useMutation({
-    mutationFn: () => meetingsApi.create(studentId, { meeting_date: meetingDate, summary }),
+    mutationFn: () =>
+      meetingsApi.create(studentId, { meeting_date: meetingDate, summary }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
       onDone();
