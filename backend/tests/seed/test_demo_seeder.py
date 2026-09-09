@@ -9,7 +9,7 @@ from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
 from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
-from backend.app.models.client.social_note import SocialNote
+from backend.app.models.client.social_note_entry import SocialNoteEntry
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
@@ -101,7 +101,7 @@ def test_seeds_details_and_social_note(db_session: Session) -> None:
     _seed(db_session)
 
     assert _count(db_session, StudentDetails) == 1
-    assert _count(db_session, SocialNote) == 1
+    assert _count(db_session, SocialNoteEntry) == 2
 
 
 def test_seeded_details_deserialize_through_response_schemas(db_session: Session) -> None:

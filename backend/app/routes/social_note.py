@@ -1,17 +1,22 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.notes.social_note_repository import SocialNoteRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.security import Manager, ManagerOrInstructor, require_tenant
-from backend.app.schema.routes.social_note_response import SocialNoteResponse
-from backend.app.schema.routes.social_note_upsert_request import SocialNoteUpsertRequest
+from backend.app.client.users.user_repository import UserRepository
+from backend.app.routes.pdf import BrandDep, RendererDep
+from backend.app.routes.security import Manager, ManagerOrInstructor, Tenant, require_tenant
+from backend.app.schema.routes.social_note_create_request import SocialNoteCreateRequest
+from backend.app.schema.routes.social_note_entry_response import SocialNoteEntryResponse
+from backend.app.schema.routes.social_note_report_response import SocialNoteReportResponse
+from backend.app.schema.routes.social_note_update_request import SocialNoteUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.notes.social_note_document import SocialNoteDocument
 from backend.app.service.notes.social_note_service import SocialNoteService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
@@ -23,6 +28,7 @@ def get_social_note_service(
 ) -> SocialNoteService:
     return SocialNoteService(
         SocialNoteRepository(session),
+        UserRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         AuditLogger(AuditLogRepository(session)),
         Clock(),
@@ -38,18 +44,81 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=SocialNoteResponse)
-def get_social_note(
+@router.get("", response_model=SocialNoteReportResponse)
+def list_social_notes(
     student_id: uuid.UUID, service: ServiceDep, reader: ManagerOrInstructor
-) -> SocialNoteResponse:
-    return service.get(student_id, StudentAccessPolicy.scope_for(reader))
+) -> SocialNoteReportResponse:
+    return service.report(student_id, StudentAccessPolicy.scope_for(reader))
 
 
-@router.put("", response_model=SocialNoteResponse)
-def upsert_social_note(
+@router.post("", response_model=SocialNoteEntryResponse, status_code=status.HTTP_201_CREATED)
+def create_social_note(
     student_id: uuid.UUID,
-    request: SocialNoteUpsertRequest,
+    request: SocialNoteCreateRequest,
     service: ServiceDep,
     manager: Manager,
-) -> SocialNoteResponse:
-    return service.upsert(student_id, request, StudentAccessPolicy.scope_for(manager), manager.id)
+) -> SocialNoteEntryResponse:
+    scope = StudentAccessPolicy.scope_for(manager)
+    return service.create(student_id, request, scope, manager.id)
+
+
+@router.patch("/{entry_id}", response_model=SocialNoteEntryResponse)
+def update_social_note(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    request: SocialNoteUpdateRequest,
+    service: ServiceDep,
+    manager: Manager,
+) -> SocialNoteEntryResponse:
+    scope = StudentAccessPolicy.scope_for(manager)
+    return service.update(student_id, entry_id, request, scope, manager.id)
+
+
+@router.post("/{entry_id}/archive", response_model=SocialNoteEntryResponse)
+def archive_social_note(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    service: ServiceDep,
+    manager: Manager,
+) -> SocialNoteEntryResponse:
+    scope = StudentAccessPolicy.scope_for(manager)
+    return service.archive(student_id, entry_id, scope, manager.id)
+
+
+@router.get("/pdf")
+def get_social_notes_pdf(
+    student_id: uuid.UUID,
+    service: ServiceDep,
+    reader: ManagerOrInstructor,
+    renderer: RendererDep,
+    brand: BrandDep,
+    tenant: Tenant,
+) -> Response:
+    report = service.report(student_id, StudentAccessPolicy.scope_for(reader))
+    html = SocialNoteDocument(brand).combined_html(report, tenant.institution_name)
+    pdf = renderer.render(html)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="social-notes-{student_id}.pdf"'},
+    )
+
+
+@router.get("/{entry_id}/pdf")
+def get_social_note_pdf(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    service: ServiceDep,
+    reader: ManagerOrInstructor,
+    renderer: RendererDep,
+    brand: BrandDep,
+    tenant: Tenant,
+) -> Response:
+    report = service.entry_report(student_id, entry_id, StudentAccessPolicy.scope_for(reader))
+    html = SocialNoteDocument(brand).single_html(report, tenant.institution_name)
+    pdf = renderer.render(html)
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="social-note-{entry_id}.pdf"'},
+    )

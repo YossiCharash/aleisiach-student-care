@@ -121,7 +121,7 @@ erDiagram
     STUDENT ||--o{ STUDENT_EXTRA_SECTION : "extra sections (Tab 4, headings 5+)"
     EXTRA_SECTION_TYPE ||--o{ STUDENT_EXTRA_SECTION : "heading"
     STUDENT ||--o{ TEAM_MEETING : "meetings (Tab 2)"
-    STUDENT ||--|| SOCIAL_NOTE : "social note (Tab 3)"
+    STUDENT ||--o{ SOCIAL_NOTE_ENTRY : "social notes (Tab 3, dated series)"
     STUDENT ||--|| FUNCTIONAL_REPORT : "functional report (Tab 5)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"

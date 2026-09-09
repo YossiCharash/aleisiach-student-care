@@ -32,8 +32,10 @@ import type {
   SkillRatings,
   SkillResponse,
   SkillUpdate,
-  SocialNoteResponse,
-  SocialNoteUpsertRequest,
+  SocialNoteCreateRequest,
+  SocialNoteEntryResponse,
+  SocialNoteReportResponse,
+  SocialNoteUpdateRequest,
   SolutionResponse,
   SolutionUpdate,
   StudentCreateRequest,
@@ -207,13 +209,30 @@ export const detailOptionsApi = {
 };
 
 export const socialNoteApi = {
-  get: (studentId: string): Promise<SocialNoteResponse> =>
-    apiClient.get<SocialNoteResponse>(`/students/${studentId}/social-note`),
-  upsert: (
+  list: (studentId: string): Promise<SocialNoteReportResponse> =>
+    apiClient.get<SocialNoteReportResponse>(`/students/${studentId}/social-note`),
+  create: (
     studentId: string,
-    body: SocialNoteUpsertRequest
-  ): Promise<SocialNoteResponse> =>
-    apiClient.put<SocialNoteResponse>(`/students/${studentId}/social-note`, body),
+    body: SocialNoteCreateRequest
+  ): Promise<SocialNoteEntryResponse> =>
+    apiClient.post<SocialNoteEntryResponse>(`/students/${studentId}/social-note`, body),
+  update: (
+    studentId: string,
+    entryId: string,
+    body: SocialNoteUpdateRequest
+  ): Promise<SocialNoteEntryResponse> =>
+    apiClient.patch<SocialNoteEntryResponse>(
+      `/students/${studentId}/social-note/${entryId}`,
+      body
+    ),
+  archive: (studentId: string, entryId: string): Promise<SocialNoteEntryResponse> =>
+    apiClient.post<SocialNoteEntryResponse>(
+      `/students/${studentId}/social-note/${entryId}/archive`
+    ),
+  pdfUrl: (studentId: string, entryId: string): string =>
+    buildPdfUrl(`/students/${studentId}/social-note/${entryId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/social-note/pdf`),
 };
 
 export const functionalReportApi = {

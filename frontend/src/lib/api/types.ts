@@ -392,14 +392,29 @@ export interface StudentDetailsUpsertRequest {
   calming_methods: string | null;
 }
 
-export interface SocialNoteResponse {
+export interface SocialNoteEntryResponse {
+  id: string;
   student_id: string;
-  content: string | null;
-  updated_by: string | null;
-  updated_at: string | null;
+  note_date: string;
+  content: string;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface SocialNoteUpsertRequest {
+export interface SocialNoteReportResponse {
+  student_id: string;
+  student_name: string;
+  entries: SocialNoteEntryResponse[];
+}
+
+export interface SocialNoteCreateRequest {
+  note_date: string;
+  content: string;
+}
+
+export interface SocialNoteUpdateRequest {
   content: string;
 }
 

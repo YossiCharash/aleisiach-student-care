@@ -13,7 +13,7 @@ from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
 from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
-from backend.app.models.client.social_note import SocialNote
+from backend.app.models.client.social_note_entry import SocialNoteEntry
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
@@ -269,15 +269,22 @@ class DemoSeeder:
     def _seed_social_note(self, student_id: uuid.UUID, institution_id: uuid.UUID) -> None:
         manager = self._find_user(MANAGER.email)
         assert manager is not None
-        self._session.add(
-            SocialNote(
-                student_id=student_id,
-                institution_id=institution_id,
-                content="סיכום עו״ס לדוגמה — התלמידה משתלבת יפה ומראה התקדמות.",
-                updated_by=manager.id,
-                updated_at=datetime.now(UTC),
-            )
+        entries = (
+            (date(2026, 6, 12), "שיחה ראשונית עם ההורים — התלמידה משתלבת יפה ומראה התקדמות."),
+            (date(2026, 8, 30), "מעקב — נצפתה עלייה בביטחון העצמי ובשיתוף הפעולה בסדנה."),
         )
+        for note_date, content in entries:
+            self._session.add(
+                SocialNoteEntry(
+                    student_id=student_id,
+                    institution_id=institution_id,
+                    note_date=note_date,
+                    content=content,
+                    author_id=manager.id,
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
+                )
+            )
         self._session.flush()
 
     def _add_label(self, name: str, order: int, institution_id: uuid.UUID) -> Label:
