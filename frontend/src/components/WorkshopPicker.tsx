@@ -34,9 +34,9 @@ export function WorkshopPicker({
         <option value="" disabled>
           {query.isLoading ? "טוען סדנאות…" : "בחר/י סדנה"}
         </option>
-        {query.data?.map((classItem) => (
-          <option key={classItem.id} value={classItem.id}>
-            {classItem.name}
+        {query.data?.map((workshop) => (
+          <option key={workshop.id} value={workshop.id}>
+            {workshop.name}
           </option>
         ))}
       </select>

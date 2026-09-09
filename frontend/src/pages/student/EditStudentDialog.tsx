@@ -26,12 +26,12 @@ interface Props {
 export function EditStudentDialog({ student, open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState(student.full_name);
-  const [classId, setClassId] = useState(student.workshop_id);
+  const [workshopId, setWorkshopId] = useState(student.workshop_id);
 
   useEffect(() => {
     if (open) {
       setFullName(student.full_name);
-      setClassId(student.workshop_id);
+      setWorkshopId(student.workshop_id);
     }
   }, [open, student.full_name, student.workshop_id]);
 
@@ -39,7 +39,7 @@ export function EditStudentDialog({ student, open, onOpenChange }: Props): React
     mutationFn: () =>
       studentsApi.update(student.id, {
         full_name: fullName.trim(),
-        workshop_id: classId,
+        workshop_id: workshopId,
       }),
     onSuccess: (updated) => {
       queryClient.setQueryData(queryKeys.student(student.id), updated);
@@ -75,9 +75,9 @@ export function EditStudentDialog({ student, open, onOpenChange }: Props): React
             />
           </div>
           <WorkshopPicker
-            id="edit-student-class"
-            value={classId}
-            onChange={setClassId}
+            id="edit-student-workshop"
+            value={workshopId}
+            onChange={setWorkshopId}
             required
           />
           <div className="flex justify-start gap-2">

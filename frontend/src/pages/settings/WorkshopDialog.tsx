@@ -44,7 +44,7 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
     enabled: open,
   });
   const instructors = (instructorsQuery.data ?? []).filter(
-    (user) => user.role === "instructor"
+    (user) => user.role === "instructor" && user.status !== "disabled"
   );
 
   const mutation = useMutation({

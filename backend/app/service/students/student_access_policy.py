@@ -3,7 +3,7 @@ from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 
-_ALL_CLASS_ROLES = frozenset({UserRole.MANAGER, UserRole.PROFESSIONAL_TEACHER})
+_ALL_WORKSHOP_ROLES = frozenset({UserRole.MANAGER, UserRole.PROFESSIONAL_TEACHER})
 
 
 class StudentAccessPolicy:
@@ -11,7 +11,7 @@ class StudentAccessPolicy:
     def scope_for(user: User) -> StudentAccessScope:
         if user.role == UserRole.INSTRUCTOR:
             return StudentAccessScope(all_workshops=False, workshop_id=user.workshop_id)
-        if user.role in _ALL_CLASS_ROLES:
+        if user.role in _ALL_WORKSHOP_ROLES:
             return StudentAccessScope(all_workshops=True)
         raise AuthorizationError
 

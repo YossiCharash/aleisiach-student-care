@@ -80,8 +80,7 @@ class WorkshopService:
         return [self._build(entity, assigned.get(entity.id)) for entity in entities]
 
     def _to_response(self, entity: Workshop) -> WorkshopResponse:
-        assigned = self._workshops.instructors_by_workshop()
-        return self._build(entity, assigned.get(entity.id))
+        return self._build(entity, self._workshops.instructor_for(entity.id))
 
     def _build(self, entity: Workshop, instructor: User | None) -> WorkshopResponse:
         return WorkshopResponse(

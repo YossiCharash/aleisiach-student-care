@@ -152,6 +152,19 @@ def test_unknown_instructor_raises(db_session: Session) -> None:
         )
 
 
+def test_disabled_instructor_cannot_be_assigned(db_session: Session) -> None:
+    service = _service(db_session)
+    instructor = _add_instructor(db_session, "Dana")
+    instructor.status = UserStatus.DISABLED
+    db_session.flush()
+
+    with pytest.raises(NotFoundError):
+        service.create(
+            WorkshopCreateRequest(name="Aleph", color=_COLOR, instructor_id=instructor.id),
+            _ACTOR,
+        )
+
+
 def test_archive_hides_workshop_from_the_active_list(db_session: Session) -> None:
     service = _service(db_session)
     kept = _create(service, "Aleph")

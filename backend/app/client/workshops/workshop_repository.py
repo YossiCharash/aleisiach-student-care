@@ -47,7 +47,21 @@ class WorkshopRepository:
         user = self._session.get(User, user_id, populate_existing=True)
         if user is None or user.role is not UserRole.INSTRUCTOR:
             return None
+        if user.status is UserStatus.DISABLED:
+            return None
         return user
+
+    def instructor_for(self, workshop_id: uuid.UUID) -> User | None:
+        statement = (
+            select(User)
+            .where(
+                User.role == UserRole.INSTRUCTOR,
+                User.status != UserStatus.DISABLED,
+                User.workshop_id == workshop_id,
+            )
+            .order_by(User.full_name)
+        )
+        return self._session.scalars(statement).first()
 
     def instructors_by_workshop(self) -> dict[uuid.UUID, User]:
         assigned: dict[uuid.UUID, User] = {}
