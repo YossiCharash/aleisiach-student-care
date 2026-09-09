@@ -5,18 +5,17 @@ from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.program import Program
 from backend.app.models.client.program_entry import ProgramEntry
-from backend.app.models.client.program_entry_solution import ProgramEntrySolution
 from backend.app.schema.routes.program_area import ProgramArea
 from backend.app.schema.routes.program_entry_response import ProgramEntryResponse
 from backend.app.schema.routes.program_response import ProgramResponse
 from backend.app.schema.routes.program_strength import ProgramStrength
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
 from backend.app.schema.service.audit_entry import AuditEntry
-from backend.app.schema.service.resolved_skill_rating import ResolvedSkillRating
+from backend.app.schema.service.resolved_focus import ResolvedFocus
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
-from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
+from backend.app.service.taxonomy.skill_focus_resolver import SkillFocusResolver
 
 _ENTITY_TYPE = "program"
 
@@ -26,7 +25,7 @@ class ProgramService:
         self,
         program_repository: ProgramRepository,
         access_guard: StudentAccessGuard,
-        resolver: SkillRatingResolver,
+        resolver: SkillFocusResolver,
         audit_logger: AuditLogger,
     ) -> None:
         self._programs = program_repository
@@ -68,25 +67,16 @@ class ProgramService:
         )
         return self._to_response(student_id, program)
 
-    def _build_entries(self, resolved: list[ResolvedSkillRating]) -> list[ProgramEntry]:
-        return [self._build_entry(position, item) for position, item in enumerate(resolved)]
-
-    def _build_entry(self, position: int, resolved: ResolvedSkillRating) -> ProgramEntry:
-        entry = ProgramEntry(
-            skill_id=resolved.skill_id,
-            skill_name_snapshot=resolved.skill_name,
-            rating=resolved.rating,
-            position=position,
-        )
-        entry.solutions = [
-            ProgramEntrySolution(
-                solution_id=solution.solution_id,
-                solution_text_snapshot=solution.solution_text,
-                position=solution_position,
+    def _build_entries(self, resolved: list[ResolvedFocus]) -> list[ProgramEntry]:
+        return [
+            ProgramEntry(
+                skill_id=item.skill_id,
+                skill_name_snapshot=item.skill_name,
+                rating=item.rating,
+                position=position,
             )
-            for solution_position, solution in enumerate(resolved.solutions)
+            for position, item in enumerate(resolved)
         ]
-        return entry
 
     def _to_response(self, student_id: uuid.UUID, program: Program | None) -> ProgramResponse:
         if program is None:
@@ -104,7 +94,6 @@ class ProgramService:
                         skill_id=entry.skill_id,
                         skill_name=entry.skill_name_snapshot,
                         rating=entry.rating,
-                        solutions=[solution.solution_text_snapshot for solution in entry.solutions],
                     )
                 )
         return ProgramResponse(

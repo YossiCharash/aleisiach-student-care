@@ -17,16 +17,15 @@ from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.program import Program
 from backend.app.models.client.skill import Skill
-from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
+from backend.app.schema.routes.focus_rating_request import FocusRatingRequest
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
-from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.program.program_service import ProgramService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
-from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
+from backend.app.service.taxonomy.skill_focus_resolver import SkillFocusResolver
 from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
@@ -40,14 +39,12 @@ class _Bundle:
         author_id: uuid.UUID,
         skill_a: uuid.UUID,
         skill_b: uuid.UUID,
-        solution_b: uuid.UUID,
     ) -> None:
         self.program = program
         self.student_id = student_id
         self.author_id = author_id
         self.skill_a = skill_a
         self.skill_b = skill_b
-        self.solution_b = solution_b
 
 
 def _setup(session: Session) -> _Bundle:
@@ -66,19 +63,16 @@ def _setup(session: Session) -> _Bundle:
     skill_b = Skill(sub_label_id=sub_label.id, name="צחצוח שיניים")
     session.add_all([skill_a, skill_b])
     session.flush()
-    solution_b = Solution(skill_id=skill_b.id, text="תרגול יומי")
-    session.add(solution_b)
-    session.flush()
     program = ProgramService(
         ProgramRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        SkillRatingResolver(TaxonomyRepository(session)),
+        SkillFocusResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
-    return _Bundle(program, student.id, seed_actor(session), skill_a.id, skill_b.id, solution_b.id)
+    return _Bundle(program, student.id, seed_actor(session), skill_a.id, skill_b.id)
 
 
-def _upsert(bundle: _Bundle, entries: list[SkillRatingRequest]) -> None:
+def _upsert(bundle: _Bundle, entries: list[FocusRatingRequest]) -> None:
     request = ProgramUpsertRequest(entries=entries)
     bundle.program.upsert(bundle.student_id, request, _ALL, bundle.author_id)
 
@@ -99,12 +93,8 @@ def test_upsert_splits_entries_into_strengths_and_areas(db_session: Session) -> 
     _upsert(
         bundle,
         [
-            SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
-            SkillRatingRequest(
-                skill_id=bundle.skill_b,
-                rating=MeetingRating.YELLOW,
-                solution_ids=[bundle.solution_b],
-            ),
+            FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
+            FocusRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.YELLOW),
         ],
     )
 
@@ -113,23 +103,14 @@ def test_upsert_splits_entries_into_strengths_and_areas(db_session: Session) -> 
     assert program.exists is True
     assert [strength.skill_id for strength in program.strengths] == [bundle.skill_a]
     assert [area.skill_id for area in program.areas_to_strengthen] == [bundle.skill_b]
-    assert program.areas_to_strengthen[0].solutions == ["תרגול יומי"]
+    assert program.areas_to_strengthen[0].rating == MeetingRating.YELLOW
     assert len(program.entries) == 2
 
 
 def test_upsert_replaces_previous_entries(db_session: Session) -> None:
     bundle = _setup(db_session)
-    _upsert(
-        bundle,
-        [
-            SkillRatingRequest(
-                skill_id=bundle.skill_b,
-                rating=MeetingRating.RED,
-                solution_ids=[bundle.solution_b],
-            )
-        ],
-    )
-    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [FocusRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.RED)])
+    _upsert(bundle, [FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
 
     program = bundle.program.get_for_student(bundle.student_id, _ALL)
 
@@ -140,8 +121,8 @@ def test_upsert_replaces_previous_entries(db_session: Session) -> None:
 
 def test_create_then_update_are_audited(db_session: Session) -> None:
     bundle = _setup(db_session)
-    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
-    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [FocusRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)])
 
     logs = db_session.scalars(select(AuditLog).order_by(AuditLog.created_at)).all()
     actions = [log.action for log in logs]
@@ -149,19 +130,32 @@ def test_create_then_update_are_audited(db_session: Session) -> None:
     assert all(log.entity_type == "program" for log in logs)
 
 
-def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
+def test_duplicate_skill_is_rejected(db_session: Session) -> None:
     bundle = _setup(db_session)
 
     with pytest.raises(InvalidSkillRatingError):
-        _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.RED)])
+        _upsert(
+            bundle,
+            [
+                FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN),
+                FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.RED),
+            ],
+        )
+
+
+def test_unknown_skill_is_rejected(db_session: Session) -> None:
+    bundle = _setup(db_session)
+
+    with pytest.raises(NotFoundError):
+        _upsert(bundle, [FocusRatingRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)])
 
 
 def test_update_keeps_original_creator(db_session: Session) -> None:
     bundle = _setup(db_session)
     editor = seed_actor(db_session, "editor")
-    _upsert(bundle, [SkillRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
+    _upsert(bundle, [FocusRatingRequest(skill_id=bundle.skill_a, rating=MeetingRating.GREEN)])
     request = ProgramUpsertRequest(
-        entries=[SkillRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)]
+        entries=[FocusRatingRequest(skill_id=bundle.skill_b, rating=MeetingRating.GREEN)]
     )
     bundle.program.upsert(bundle.student_id, request, _ALL, editor)
 

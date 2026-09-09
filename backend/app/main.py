@@ -17,6 +17,7 @@ from backend.app.routes.health import router as health_router
 from backend.app.routes.institutions import router as institutions_router
 from backend.app.routes.meetings import router as meetings_router
 from backend.app.routes.program import router as program_router
+from backend.app.routes.program_plans import router as program_plans_router
 from backend.app.routes.social_note import router as social_note_router
 from backend.app.routes.student_details import router as student_details_router
 from backend.app.routes.student_extra_sections import (
@@ -92,6 +93,7 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     app.include_router(taxonomy_router)
     app.include_router(meetings_router)
     app.include_router(program_router)
+    app.include_router(program_plans_router)
     app.include_router(student_details_router)
     app.include_router(social_note_router)
     app.include_router(functional_report_router)

@@ -4,7 +4,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from backend.app.models.client.program import Program
-from backend.app.models.client.program_entry import ProgramEntry
 
 
 class ProgramRepository:
@@ -23,6 +22,6 @@ class ProgramRepository:
         statement = (
             select(Program)
             .where(Program.student_id == student_id)
-            .options(selectinload(Program.entries).selectinload(ProgramEntry.solutions))
+            .options(selectinload(Program.entries))
         )
         return self._session.scalars(statement).one_or_none()
