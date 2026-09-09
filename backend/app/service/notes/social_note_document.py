@@ -17,9 +17,7 @@ class SocialNoteDocument:
     def single_html(self, report: SocialNoteReportResponse, institution_name: str) -> str:
         return self._render(report, institution_name, "סיכום עו״ס")
 
-    def _render(
-        self, report: SocialNoteReportResponse, institution_name: str, title: str
-    ) -> str:
+    def _render(self, report: SocialNoteReportResponse, institution_name: str, title: str) -> str:
         body = f'<p class="student">{escape(report.student_name)}</p>'
         if not report.entries:
             body += '<p class="empty">אין סיכומי עו״ס להצגה.</p>'

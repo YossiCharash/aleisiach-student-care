@@ -130,9 +130,7 @@ def test_missing_entry_raises_not_found(db_session: Session) -> None:
     service, student_id, actor = _setup(db_session)
 
     with pytest.raises(NotFoundError):
-        service.update(
-            student_id, uuid.uuid4(), SocialNoteUpdateRequest(content="x"), _ALL, actor
-        )
+        service.update(student_id, uuid.uuid4(), SocialNoteUpdateRequest(content="x"), _ALL, actor)
 
 
 def test_out_of_scope_student_is_hidden(db_session: Session) -> None:

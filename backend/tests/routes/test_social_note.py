@@ -126,9 +126,9 @@ def test_pdf_export_for_combined_and_single_entry(
     student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
-    entry_id = api.post(
-        f"/students/{student_id}/social-note", headers=headers, json=_BODY
-    ).json()["id"]
+    entry_id = api.post(f"/students/{student_id}/social-note", headers=headers, json=_BODY).json()[
+        "id"
+    ]
 
     combined = api.get(f"/students/{student_id}/social-note/pdf", headers=headers)
     assert combined.status_code == 200

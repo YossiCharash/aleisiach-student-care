@@ -146,7 +146,9 @@ function EntryCard({
               onChange={(event) => setDraft(event.target.value)}
               placeholder="כתבו כאן את סיכום העו״ס…"
             />
-            {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+            {mutation.isError && (
+              <Alert tone="error">{errorMessage(mutation.error)}</Alert>
+            )}
             <div className="flex justify-end gap-2">
               <Button
                 onClick={() => mutation.mutate()}
@@ -247,7 +249,7 @@ function AddNoteForm({
       <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
         <Button
           onClick={() => mutation.mutate()}
-          disabled={mutation.isPending || content.trim() === ""}
+          disabled={mutation.isPending || content.trim() === "" || noteDate === ""}
         >
           {mutation.isPending ? "שומר…" : "שמירת הערה"}
         </Button>

@@ -5,6 +5,7 @@ from backend.app.client.users.user_repository import UserRepository
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.social_note_entry import SocialNoteEntry
+from backend.app.models.client.student import Student
 from backend.app.schema.routes.social_note_create_request import SocialNoteCreateRequest
 from backend.app.schema.routes.social_note_entry_response import SocialNoteEntryResponse
 from backend.app.schema.routes.social_note_report_response import SocialNoteReportResponse
@@ -33,26 +34,24 @@ class SocialNoteService:
         self._audit = audit_logger
         self._clock = clock
 
-    def report(
-        self, student_id: uuid.UUID, scope: StudentAccessScope
-    ) -> SocialNoteReportResponse:
+    def report(self, student_id: uuid.UUID, scope: StudentAccessScope) -> SocialNoteReportResponse:
         student = self._guard.require(student_id, scope)
-        entries = self._notes.list_for_student(student_id)
-        return SocialNoteReportResponse(
-            student_id=student_id,
-            student_name=student.full_name,
-            entries=[self._to_response(entry) for entry in entries],
-        )
+        return self._build_report(student, self._notes.list_for_student(student_id))
 
     def entry_report(
         self, student_id: uuid.UUID, entry_id: uuid.UUID, scope: StudentAccessScope
     ) -> SocialNoteReportResponse:
         student = self._guard.require(student_id, scope)
-        entry = self._require_entry(student_id, entry_id)
+        return self._build_report(student, [self._require_entry(student_id, entry_id)])
+
+    def _build_report(
+        self, student: Student, entries: list[SocialNoteEntry]
+    ) -> SocialNoteReportResponse:
+        author_names: dict[uuid.UUID, str | None] = {}
         return SocialNoteReportResponse(
-            student_id=student_id,
+            student_id=student.id,
             student_name=student.full_name,
-            entries=[self._to_response(entry)],
+            entries=[self._to_response(entry, author_names) for entry in entries],
         )
 
     def create(
@@ -135,15 +134,31 @@ class SocialNoteService:
             raise NotFoundError("social_note")
         return entry
 
-    def _to_response(self, entry: SocialNoteEntry) -> SocialNoteEntryResponse:
-        author = self._users.get(entry.author_id)
+    def _to_response(
+        self,
+        entry: SocialNoteEntry,
+        author_names: dict[uuid.UUID, str | None] | None = None,
+    ) -> SocialNoteEntryResponse:
         return SocialNoteEntryResponse(
             id=entry.id,
             student_id=entry.student_id,
             note_date=entry.note_date,
             content=entry.content,
             author_id=entry.author_id,
-            author_name=author.full_name if author is not None else None,
+            author_name=self._author_name(entry.author_id, author_names),
             created_at=entry.created_at,
             updated_at=entry.updated_at,
         )
+
+    def _author_name(
+        self,
+        author_id: uuid.UUID,
+        cache: dict[uuid.UUID, str | None] | None = None,
+    ) -> str | None:
+        if cache is not None and author_id in cache:
+            return cache[author_id]
+        user = self._users.get(author_id)
+        name = user.full_name if user is not None else None
+        if cache is not None:
+            cache[author_id] = name
+        return name

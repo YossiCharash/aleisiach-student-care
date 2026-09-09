@@ -29,7 +29,9 @@ const createMock = vi.mocked(socialNoteApi.create);
 const updateMock = vi.mocked(socialNoteApi.update);
 const archiveMock = vi.mocked(socialNoteApi.archive);
 
-function entry(overrides: Partial<SocialNoteEntryResponse> = {}): SocialNoteEntryResponse {
+function entry(
+  overrides: Partial<SocialNoteEntryResponse> = {}
+): SocialNoteEntryResponse {
   return {
     id: "n1",
     student_id: "s1",

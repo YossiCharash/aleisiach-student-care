@@ -40,9 +40,7 @@ def upgrade() -> None:
             name="fk_social_note_entries_student_institution",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "id", "institution_id", name="uq_social_note_entries_id_institution"
-        ),
+        sa.UniqueConstraint("id", "institution_id", name="uq_social_note_entries_id_institution"),
     )
     op.create_index("ix_social_note_entries_student_id", "social_note_entries", ["student_id"])
     op.create_index(
