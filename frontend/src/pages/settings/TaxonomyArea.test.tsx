@@ -88,9 +88,7 @@ describe("TaxonomyArea — reactivation", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: "הצג מושבתים" }));
     await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
-    await userEvent.click(
-      await screen.findByRole("button", { name: /כישורים מושבתים/ })
-    );
+    await userEvent.click(await screen.findByRole("button", { name: /כישורים מושבתים/ }));
 
     expect(await screen.findByText("כישור מושבת")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /הפעלה מחדש/ }));

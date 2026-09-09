@@ -54,9 +54,9 @@ SELECT
     s.institution_id,
     sl.label_id AS parent_label_id,
     sl.name     AS sublabel_name,
-    MAX(CASE WHEN btrim(s.name) LIKE 'עצמאי%'                                THEN s.name END) AS g_from_name,
-    MAX(CASE WHEN btrim(s.name) LIKE 'תיווך%' OR btrim(s.name) LIKE 'השגחה%' THEN s.name END) AS y_from_name,
-    MAX(CASE WHEN btrim(s.name) LIKE 'תלותי%'                                THEN s.name END) AS r_from_name,
+    MAX(CASE WHEN btrim(s.name) ~ '^עצמאי'         THEN s.name END) AS g_from_name,
+    MAX(CASE WHEN btrim(s.name) ~ '^(תיווך|השגחה)' THEN s.name END) AS y_from_name,
+    MAX(CASE WHEN btrim(s.name) ~ '^תלותי'         THEN s.name END) AS r_from_name,
     MAX(NULLIF(s.green_text, ''))  AS g_existing,
     MAX(NULLIF(s.yellow_text, '')) AS y_existing,
     MAX(NULLIF(s.red_text, ''))    AS r_existing
