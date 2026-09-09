@@ -17,7 +17,7 @@ class StudentAccessGuard:
         allow_archived: bool = False,
     ) -> Student:
         student = self._students.get(student_id)
-        if student is None or not scope.permits(student.class_id):
+        if student is None or not scope.permits(student.workshop_id):
             raise NotFoundError("student")
         if student.is_archived and not allow_archived:
             raise NotFoundError("student")

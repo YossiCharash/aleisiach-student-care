@@ -49,7 +49,7 @@ def test_creates_active_super_admin_when_configured(db_session: Session) -> None
     assert admin.role == UserRole.SUPER_ADMIN
     assert admin.status == UserStatus.ACTIVE
     assert admin.username == "yossi"
-    assert admin.class_id is None
+    assert admin.workshop_id is None
     assert admin.institution_id is None
 
 

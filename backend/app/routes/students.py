@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
-from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
+from backend.app.client.workshops.workshop_repository import WorkshopRepository
 from backend.app.routes.security import CurrentUser, Manager, require_tenant
 from backend.app.schema.routes.student_create_request import StudentCreateRequest
 from backend.app.schema.routes.student_response import StudentResponse
@@ -24,7 +24,7 @@ def get_student_service(
 ) -> StudentService:
     return StudentService(
         StudentRepository(session),
-        ClassRepository(session),
+        WorkshopRepository(session),
         StudentDetailsRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         AuditLogger(AuditLogRepository(session)),

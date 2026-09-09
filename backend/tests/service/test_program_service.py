@@ -12,13 +12,13 @@ from backend.app.errors.service.invalid_skill_rating_error import InvalidSkillRa
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.program import Program
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
+from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.focus_rating_request import FocusRatingRequest
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
@@ -28,7 +28,7 @@ from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.taxonomy.skill_focus_resolver import SkillFocusResolver
 from backend.tests.support.seeding import seed_actor
 
-_ALL = StudentAccessScope(all_classes=True)
+_ALL = StudentAccessScope(all_workshops=True)
 
 
 class _Bundle:
@@ -48,10 +48,10 @@ class _Bundle:
 
 
 def _setup(session: Session) -> _Bundle:
-    class_entity = ClassEntity(name="Aleph")
-    session.add(class_entity)
+    workshop = Workshop(name="Aleph")
+    session.add(workshop)
     session.flush()
-    student = Student(full_name="Dana", class_id=class_entity.id)
+    student = Student(full_name="Dana", workshop_id=workshop.id)
     session.add(student)
     label = Label(name="עצמאות")
     session.add(label)
@@ -167,7 +167,7 @@ def test_update_keeps_original_creator(db_session: Session) -> None:
 
 def test_student_outside_scope_is_hidden(db_session: Session) -> None:
     bundle = _setup(db_session)
-    foreign = StudentAccessScope(all_classes=False, class_id=uuid.uuid4())
+    foreign = StudentAccessScope(all_workshops=False, workshop_id=uuid.uuid4())
 
     with pytest.raises(NotFoundError):
         bundle.program.get_for_student(bundle.student_id, foreign)

@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
-from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
@@ -26,7 +25,6 @@ def get_user_management_service(
 ) -> UserManagementService:
     return UserManagementService(
         UserRepository(session),
-        ClassRepository(session),
         InvitationDispatcherFactory.create(session, bootstrap),
         AuditLogger(AuditLogRepository(session)),
     )

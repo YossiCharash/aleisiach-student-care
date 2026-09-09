@@ -8,7 +8,7 @@ from backend.app.models.client.user_role import UserRole
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
-SeedClass = Callable[..., uuid.UUID]
+SeedWorkshop = Callable[..., uuid.UUID]
 SeedStudent = Callable[..., uuid.UUID]
 
 _BODY = {"content": "שיחה עם ההורים"}
@@ -16,13 +16,13 @@ _BODY = {"content": "שיחה עם ההורים"}
 
 def test_manager_writes_and_reads_note(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -35,17 +35,17 @@ def test_manager_writes_and_reads_note(
     assert got.json()["content"] == "שיחה עם ההורים"
 
 
-def test_instructor_reads_own_class_but_cannot_write(
+def test_instructor_reads_own_workshop_but_cannot_write(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
     api.put(
         f"/students/{student_id}/social-note",
         headers=auth_headers(api, "boss"),
@@ -61,17 +61,17 @@ def test_instructor_reads_own_class_but_cannot_write(
     assert write.status_code == 403
 
 
-def test_instructor_cannot_read_other_class_note(
+def test_instructor_cannot_read_other_workshop_note(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_a = seed_class("Aleph")
-    class_b = seed_class("Bet")
+    class_a = seed_workshop("Aleph")
+    class_b = seed_workshop("Bet")
     student_id = seed_student(class_b)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_a)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
     headers = auth_headers(api, "teacher")
 
     assert api.get(f"/students/{student_id}/social-note", headers=headers).status_code == 404
@@ -79,13 +79,13 @@ def test_instructor_cannot_read_other_class_note(
 
 def test_professional_teacher_is_blocked(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     headers = auth_headers(api, "prof")
 
@@ -97,9 +97,9 @@ def test_professional_teacher_is_blocked(
 
 
 def test_note_requires_authentication(
-    api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
+    api: TestClient, seed_workshop: SeedWorkshop, seed_student: SeedStudent
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/social-note").status_code == 401

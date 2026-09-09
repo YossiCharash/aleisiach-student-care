@@ -18,7 +18,7 @@ const user: UserResponse = {
   email: "mor@example.com",
   username: "mor",
   role: "manager",
-  class_id: null,
+  workshop_id: null,
   status: "active",
   institution_id: "i1",
 };

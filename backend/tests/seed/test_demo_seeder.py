@@ -2,7 +2,6 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
@@ -19,6 +18,7 @@ from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.seed.demo_credentials import (
     ALL_ACCOUNTS,
@@ -53,11 +53,11 @@ def test_run_creates_all_three_roles(db_session: Session) -> None:
     assert all(user.status == UserStatus.ACTIVE for user in db_session.scalars(select(User)).all())
 
 
-def test_instructor_is_assigned_to_a_class(db_session: Session) -> None:
+def test_instructor_is_assigned_to_a_workshop(db_session: Session) -> None:
     _seed(db_session)
 
     instructor = db_session.scalars(select(User).where(User.email == INSTRUCTOR.email)).one()
-    assert instructor.class_id is not None
+    assert instructor.workshop_id is not None
 
 
 def test_demo_passwords_verify(db_session: Session) -> None:
@@ -70,10 +70,10 @@ def test_demo_passwords_verify(db_session: Session) -> None:
         assert hasher.verify(user.password_hash, DEMO_PASSWORD)
 
 
-def test_seeds_classes_students_and_taxonomy(db_session: Session) -> None:
+def test_seeds_workshops_students_and_taxonomy(db_session: Session) -> None:
     _seed(db_session)
 
-    assert _count(db_session, ClassEntity) == 2
+    assert _count(db_session, Workshop) == 2
     assert _count(db_session, Student) == 3
     assert _count(db_session, SubLabel) == 2
     assert _count(db_session, Skill) == 3
@@ -136,7 +136,7 @@ def test_every_seeded_row_belongs_to_the_demo_institution(db_session: Session) -
         ).one()
         owners = {
             model.__name__: {row.institution_id for row in db_session.scalars(select(model)).all()}
-            for model in (ClassEntity, Student, Label, SubLabel, Skill, Solution)
+            for model in (Workshop, Student, Label, SubLabel, Skill, Solution)
         }
 
     assert owners == {model: {institution.id} for model in owners}
@@ -164,7 +164,7 @@ def test_seeding_states_the_institution_without_relying_on_the_orm_filter(
         institution = db_session.scalars(
             select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
         ).one()
-        classes = db_session.scalars(select(ClassEntity)).all()
+        classes = db_session.scalars(select(Workshop)).all()
         students = db_session.scalars(select(Student)).all()
         labels = db_session.scalars(select(Label)).all()
         users = db_session.scalars(select(User)).all()

@@ -4,16 +4,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
+from backend.app.models.client.workshop import Workshop
 
 
 def _seed_student(session: Session) -> uuid.UUID:
-    class_entity = ClassEntity(name="Aleph")
-    session.add(class_entity)
+    workshop = Workshop(name="Aleph")
+    session.add(workshop)
     session.flush()
-    student = Student(full_name="Dana", class_id=class_entity.id)
+    student = Student(full_name="Dana", workshop_id=workshop.id)
     session.add(student)
     session.flush()
     return student.id

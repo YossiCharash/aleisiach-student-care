@@ -8,12 +8,12 @@ import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 
 vi.mock("@/lib/api/endpoints", () => ({
   studentsApi: { update: vi.fn(), archive: vi.fn() },
-  classesApi: { list: vi.fn().mockResolvedValue([]) },
+  workshopsApi: { list: vi.fn().mockResolvedValue([]) },
 }));
 
 const student: StudentResponse = {
   id: "student-1",
-  class_id: "class-1",
+  workshop_id: "class-1",
   full_name: "דנה",
   is_archived: false,
 };

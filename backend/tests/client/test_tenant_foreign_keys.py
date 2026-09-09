@@ -11,7 +11,6 @@ from sqlalchemy.pool import StaticPool
 
 from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.base import Base
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
@@ -30,6 +29,7 @@ from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.models.client.workshop import Workshop
 
 HOME = uuid.UUID("22222222-2222-2222-2222-222222222222")
 AWAY = uuid.UUID("33333333-3333-3333-3333-333333333333")
@@ -39,12 +39,12 @@ class Tenant:
     def __init__(self, session: Session, institution_id: uuid.UUID, code: str) -> None:
         self._session = session
         self.institution_id = institution_id
-        class_entity = ClassEntity(name=f"class-{code}", institution_id=institution_id)
-        session.add(class_entity)
+        workshop = Workshop(name=f"class-{code}", institution_id=institution_id)
+        session.add(workshop)
         session.flush()
         self.student = Student(
             full_name=f"student-{code}",
-            class_id=class_entity.id,
+            workshop_id=workshop.id,
             institution_id=institution_id,
         )
         label = Label(name=f"label-{code}", order=0, institution_id=institution_id)

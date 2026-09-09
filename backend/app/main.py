@@ -8,7 +8,6 @@ from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.settings import Settings
 from backend.app.errors.routes.error_handlers import register_error_handlers
 from backend.app.routes.auth import router as auth_router
-from backend.app.routes.classes import router as classes_router
 from backend.app.routes.detail_options import router as detail_options_router
 from backend.app.routes.diagnoses import router as diagnoses_router
 from backend.app.routes.extra_section_types import router as extra_section_types_router
@@ -26,6 +25,7 @@ from backend.app.routes.student_extra_sections import (
 from backend.app.routes.students import router as students_router
 from backend.app.routes.taxonomy import router as taxonomy_router
 from backend.app.routes.users import router as users_router
+from backend.app.routes.workshops import router as workshops_router
 from backend.app.seed.bootstrap_admin_seeder import BootstrapAdminSeeder
 from backend.app.utils.routes.security_headers_middleware import SecurityHeadersMiddleware
 from backend.app.utils.service.password_policy import PasswordPolicy
@@ -87,7 +87,7 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(institutions_router)
     app.include_router(students_router)
-    app.include_router(classes_router)
+    app.include_router(workshops_router)
     app.include_router(diagnoses_router)
     app.include_router(detail_options_router)
     app.include_router(taxonomy_router)

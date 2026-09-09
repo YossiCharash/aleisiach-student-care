@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassPicker } from "@/components/ClassPicker";
+import { WorkshopPicker } from "@/components/WorkshopPicker";
 
 interface Props {
   student: StudentResponse;
@@ -26,18 +26,21 @@ interface Props {
 export function EditStudentDialog({ student, open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState(student.full_name);
-  const [classId, setClassId] = useState(student.class_id);
+  const [classId, setClassId] = useState(student.workshop_id);
 
   useEffect(() => {
     if (open) {
       setFullName(student.full_name);
-      setClassId(student.class_id);
+      setClassId(student.workshop_id);
     }
-  }, [open, student.full_name, student.class_id]);
+  }, [open, student.full_name, student.workshop_id]);
 
   const mutation = useMutation({
     mutationFn: () =>
-      studentsApi.update(student.id, { full_name: fullName.trim(), class_id: classId }),
+      studentsApi.update(student.id, {
+        full_name: fullName.trim(),
+        workshop_id: classId,
+      }),
     onSuccess: (updated) => {
       queryClient.setQueryData(queryKeys.student(student.id), updated);
       void queryClient.invalidateQueries({ queryKey: queryKeys.students });
@@ -56,7 +59,7 @@ export function EditStudentDialog({ student, open, onOpenChange }: Props): React
         <DialogHeader>
           <DialogTitle>עריכת פרטי תלמיד</DialogTitle>
           <DialogDescription>
-            שם התלמיד והכיתה שאליה הוא משויך. שאר הפרטים נערכים בלשונית "פרטי תלמיד".
+            שם התלמיד והסדנה שאליה הוא משויך. שאר הפרטים נערכים בלשונית "פרטי תלמיד".
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,7 +74,7 @@ export function EditStudentDialog({ student, open, onOpenChange }: Props): React
               autoFocus
             />
           </div>
-          <ClassPicker
+          <WorkshopPicker
             id="edit-student-class"
             value={classId}
             onChange={setClassId}

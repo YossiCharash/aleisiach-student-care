@@ -16,7 +16,7 @@ export const queryKeys = {
   taxonomySkills: (subLabelId: string) => ["taxonomy", "skills", subLabelId] as const,
   taxonomySolutions: (skillId: string) => ["taxonomy", "solutions", skillId] as const,
   users: ["users"] as const,
-  classes: ["classes"] as const,
+  workshops: ["workshops"] as const,
   diagnoses: ["diagnoses"] as const,
   detailOptions: ["detail-options"] as const,
   institutions: ["institutions"] as const,

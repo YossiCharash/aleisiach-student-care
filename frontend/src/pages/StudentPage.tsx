@@ -70,7 +70,7 @@ export function StudentPage(): ReactNode {
           <TabsTrigger value="details">פרטים אישיים</TabsTrigger>
           <TabsTrigger value="program">תוכנית קידום</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
-          {showSocialNote && <TabsTrigger value="social-note">הערת עו״ס</TabsTrigger>}
+          {showSocialNote && <TabsTrigger value="social-note">סיכום עו״ס</TabsTrigger>}
           <TabsTrigger value="functional-report">סיכום דוח תפקודי</TabsTrigger>
         </TabsList>
 

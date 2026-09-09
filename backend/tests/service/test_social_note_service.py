@@ -10,8 +10,8 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.student import Student
+from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.social_note_upsert_request import SocialNoteUpsertRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -20,14 +20,14 @@ from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.utils.service.clock import Clock
 from backend.tests.support.seeding import seed_actor
 
-_ALL = StudentAccessScope(all_classes=True)
+_ALL = StudentAccessScope(all_workshops=True)
 
 
 def _setup(session: Session) -> tuple[SocialNoteService, uuid.UUID, uuid.UUID]:
-    class_entity = ClassEntity(name="Aleph")
-    session.add(class_entity)
+    workshop = Workshop(name="Aleph")
+    session.add(workshop)
     session.flush()
-    student = Student(full_name="Dana", class_id=class_entity.id)
+    student = Student(full_name="Dana", workshop_id=workshop.id)
     session.add(student)
     session.flush()
     service = SocialNoteService(
@@ -75,7 +75,7 @@ def test_update_replaces_content(db_session: Session) -> None:
 
 def test_out_of_scope_student_is_hidden(db_session: Session) -> None:
     service, student_id, actor = _setup(db_session)
-    foreign = StudentAccessScope(all_classes=False, class_id=uuid.uuid4())
+    foreign = StudentAccessScope(all_workshops=False, workshop_id=uuid.uuid4())
 
     with pytest.raises(NotFoundError):
         service.get(student_id, foreign)

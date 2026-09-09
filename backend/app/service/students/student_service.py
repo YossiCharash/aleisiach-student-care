@@ -1,9 +1,9 @@
 import uuid
 from datetime import UTC, datetime
 
-from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
+from backend.app.client.workshops.workshop_repository import WorkshopRepository
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.student import Student
@@ -24,21 +24,21 @@ class StudentService:
     def __init__(
         self,
         student_repository: StudentRepository,
-        class_repository: ClassRepository,
+        workshop_repository: WorkshopRepository,
         details_repository: StudentDetailsRepository,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
     ) -> None:
         self._students = student_repository
-        self._classes = class_repository
+        self._workshops = workshop_repository
         self._details = details_repository
         self._guard = access_guard
         self._audit = audit_logger
 
     def create(self, request: StudentCreateRequest, actor_id: uuid.UUID) -> StudentResponse:
-        if not self._classes.active_exists(request.class_id):
-            raise NotFoundError("class")
-        student = Student(full_name=request.full_name, class_id=request.class_id)
+        if not self._workshops.active_exists(request.workshop_id):
+            raise NotFoundError("workshop")
+        student = Student(full_name=request.full_name, workshop_id=request.workshop_id)
         self._students.add(student)
         self._audit.record(
             AuditEntry(
@@ -46,7 +46,7 @@ class StudentService:
                 action=AuditAction.CREATE,
                 entity_type=_ENTITY_TYPE,
                 entity_id=student.id,
-                changes=["full_name", "class_id"],
+                changes=["full_name", "workshop_id"],
             )
         )
         self._create_initial_details(student.id, request, actor_id)
@@ -86,8 +86,8 @@ class StudentService:
         self, student_id: uuid.UUID, request: StudentUpdateRequest, actor_id: uuid.UUID
     ) -> StudentResponse:
         student = self._require(student_id)
-        if not self._classes.active_exists(request.class_id):
-            raise NotFoundError("class")
+        if not self._workshops.active_exists(request.workshop_id):
+            raise NotFoundError("workshop")
         changes = self._apply_update(student, request)
         if changes:
             self._audit.record(
@@ -106,9 +106,9 @@ class StudentService:
         if student.full_name != request.full_name:
             student.full_name = request.full_name
             changes.append("full_name")
-        if student.class_id != request.class_id:
-            student.class_id = request.class_id
-            changes.append("class_id")
+        if student.workshop_id != request.workshop_id:
+            student.workshop_id = request.workshop_id
+            changes.append("workshop_id")
         return changes
 
     def list_active(self, scope: StudentAccessScope) -> list[StudentResponse]:
@@ -120,11 +120,11 @@ class StudentService:
         return StudentResponse.model_validate(student)
 
     def _students_in_scope(self, scope: StudentAccessScope) -> list[Student]:
-        if scope.all_classes:
+        if scope.all_workshops:
             return self._students.list_active()
-        if scope.class_id is None:
+        if scope.workshop_id is None:
             return []
-        return self._students.list_active_by_class(scope.class_id)
+        return self._students.list_active_by_workshop(scope.workshop_id)
 
     def archive(self, student_id: uuid.UUID, archived_by: uuid.UUID) -> StudentResponse:
         student = self._require(student_id)

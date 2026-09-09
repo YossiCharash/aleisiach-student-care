@@ -7,7 +7,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.detail_option import DetailOption
 from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
@@ -24,6 +23,7 @@ from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.models.client.workshop import Workshop
 from backend.app.utils.service.password_hasher import PasswordHasher
 
 SeedUser = Callable[..., User]
@@ -35,7 +35,7 @@ FOREIGN_EMAIL = "foreign@example.com"
 
 @dataclass(frozen=True)
 class ForeignData:
-    class_id: uuid.UUID
+    workshop_id: uuid.UUID
     student_id: uuid.UUID
     label_id: uuid.UUID
     sub_label_id: uuid.UUID
@@ -52,7 +52,7 @@ class ForeignData:
 def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignData:
     owner = seed_institution("מוסד זר", "foreign").id
     entities = [
-        ClassEntity(name="כיתה זרה", institution_id=owner),
+        Workshop(name="סדנה זרה", institution_id=owner),
         Label(name="תווית זרה", order=0, institution_id=owner),
         DiagnosisCatalog(name="אבחון זר", order=0, institution_id=owner),
         ExtraSectionType(name="סעיף זר", order=0, institution_id=owner),
@@ -68,8 +68,8 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     ]
     db_session.add_all(entities)
     db_session.flush()
-    foreign_class, label, diagnosis, section_type, manager = entities
-    student = Student(full_name="תלמיד זר", class_id=foreign_class.id, institution_id=owner)
+    foreign_workshop, label, diagnosis, section_type, manager = entities
+    student = Student(full_name="תלמיד זר", workshop_id=foreign_workshop.id, institution_id=owner)
     sub_label = SubLabel(name="תת-תווית זרה", order=0, label_id=label.id, institution_id=owner)
     option = DetailOption(
         field=DetailOptionField.ASSISTIVE_DEVICE, name="אביזר זר", order=0, institution_id=owner
@@ -99,7 +99,7 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     db_session.add_all([solution, meeting])
     db_session.flush()
     return ForeignData(
-        class_id=foreign_class.id,
+        workshop_id=foreign_workshop.id,
         student_id=student.id,
         label_id=label.id,
         sub_label_id=sub_label.id,
@@ -150,10 +150,10 @@ def test_student_list_excludes_other_institutions(
     assert response.json() == []
 
 
-def test_class_list_excludes_other_institutions(
+def test_workshop_list_excludes_other_institutions(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str]
 ) -> None:
-    response = api.get("/classes", headers=manager_headers)
+    response = api.get("/workshops", headers=manager_headers)
 
     assert response.json() == []
 
@@ -210,23 +210,25 @@ def test_foreign_section_type_cannot_be_renamed(
     assert response.status_code == 404
 
 
-def test_student_cannot_be_created_in_a_foreign_class(
+def test_student_cannot_be_created_in_a_foreign_workshop(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str]
 ) -> None:
     response = api.post(
         "/students",
         headers=manager_headers,
-        json={"full_name": "חדש", "class_id": str(foreign.class_id)},
+        json={"full_name": "חדש", "workshop_id": str(foreign.workshop_id)},
     )
 
     assert response.status_code == 404
 
 
-def test_foreign_class_cannot_be_renamed(
+def test_foreign_workshop_cannot_be_renamed(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str]
 ) -> None:
     response = api.patch(
-        f"/classes/{foreign.class_id}", headers=manager_headers, json={"name": "נחטף"}
+        f"/workshops/{foreign.workshop_id}",
+        headers=manager_headers,
+        json={"name": "נחטף", "color": "#3F8420"},
     )
 
     assert response.status_code == 404
@@ -280,7 +282,7 @@ def test_foreign_student_write_paths_are_not_found(
     suffix: str,
 ) -> None:
     body = {
-        "": {"full_name": "נחטף", "class_id": str(foreign.class_id)},
+        "": {"full_name": "נחטף", "workshop_id": str(foreign.workshop_id)},
         "/details": {},
         "/social-note": {"content": "נחטף"},
         "/functional-report": {"general_background": "נחטף"},
@@ -319,7 +321,7 @@ def test_foreign_extra_section_cannot_be_written(
     assert response.status_code == 404
 
 
-@pytest.mark.parametrize("path", ["/students/archived", "/classes/archived"])
+@pytest.mark.parametrize("path", ["/students/archived", "/workshops/archived"])
 def test_archived_lists_exclude_other_institutions(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str], path: str
 ) -> None:
@@ -330,10 +332,10 @@ def test_archived_lists_exclude_other_institutions(
 
 
 @pytest.mark.parametrize("action", ["archive", "restore"])
-def test_foreign_class_cannot_be_archived_or_restored(
+def test_foreign_workshop_cannot_be_archived_or_restored(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str], action: str
 ) -> None:
-    response = api.post(f"/classes/{foreign.class_id}/{action}", headers=manager_headers)
+    response = api.post(f"/workshops/{foreign.workshop_id}/{action}", headers=manager_headers)
 
     assert response.status_code == 404
 

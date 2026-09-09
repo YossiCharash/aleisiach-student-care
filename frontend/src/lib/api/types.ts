@@ -14,7 +14,7 @@ export interface UserResponse {
   email: string;
   username: string | null;
   role: UserRole;
-  class_id: string | null;
+  workshop_id: string | null;
   status: UserStatus;
   institution_id: string | null;
 }
@@ -75,7 +75,6 @@ export interface InvitationCommand {
   full_name: string;
   email: string;
   role: InvitableRole;
-  class_id: string | null;
 }
 
 export interface PasswordChangeRequest {
@@ -96,29 +95,37 @@ export interface UserUpdateRequest {
   full_name: string;
   email: string;
   role: UserRole;
-  class_id: string | null;
 }
 
-export interface ClassResponse {
+export interface WorkshopResponse {
   id: string;
   name: string;
+  color: string;
+  instructor_id: string | null;
+  instructor_name: string | null;
+}
+
+export interface WorkshopUpsertRequest {
+  name: string;
+  color: string;
+  instructor_id: string | null;
 }
 
 export interface StudentResponse {
   id: string;
-  class_id: string;
+  workshop_id: string;
   full_name: string;
   is_archived: boolean;
 }
 
 export interface StudentUpdateRequest {
   full_name: string;
-  class_id: string;
+  workshop_id: string;
 }
 
 export interface StudentCreateRequest {
   full_name: string;
-  class_id: string;
+  workshop_id: string;
   national_id?: string | null;
   date_of_birth?: string | null;
 }

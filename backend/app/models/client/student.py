@@ -12,15 +12,15 @@ class Student(TenantScoped, Base):
     __tablename__ = "students"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["class_id", "institution_id"],
-            ["classes.id", "classes.institution_id"],
-            name="fk_students_class_institution",
+            ["workshop_id", "institution_id"],
+            ["workshops.id", "workshops.institution_id"],
+            name="fk_students_workshop_institution",
         ),
         UniqueConstraint("id", "institution_id", name="uq_students_id_institution"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    class_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
+    workshop_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
     full_name: Mapped[str] = mapped_column(String(200), nullable=False)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -66,6 +66,6 @@ class BootstrapAdminSeeder:
             username=self._settings.username,
             password_hash=self._hasher.hash(self._settings.password),
             role=UserRole.SUPER_ADMIN,
-            class_id=None,
+            workshop_id=None,
             status=UserStatus.ACTIVE,
         )

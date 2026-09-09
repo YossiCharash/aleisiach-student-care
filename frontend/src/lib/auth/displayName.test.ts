@@ -8,7 +8,7 @@ const baseUser: UserResponse = {
   email: "mor@example.com",
   username: "mor.c",
   role: "instructor",
-  class_id: "c1",
+  workshop_id: "c1",
   status: "active",
   institution_id: "i1",
 };

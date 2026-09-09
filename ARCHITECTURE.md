@@ -141,7 +141,7 @@ erDiagram
         string password_hash "argon2/bcrypt; null until invite accepted"
         enum role "super_admin|manager|instructor|professional_teacher"
         uuid institution_id "null only for super_admin"
-        uuid class_id "instructor only"
+        uuid workshop_id "instructor only"
         enum status "invited|active|disabled"
     }
     AUTH_TOKEN {
@@ -154,7 +154,7 @@ erDiagram
     }
     STUDENT {
         uuid id
-        uuid class_id
+        uuid workshop_id
         string full_name
         bool is_archived "soft-delete; hidden from lists"
         timestamp archived_at "nullable"
@@ -343,7 +343,7 @@ WHERE institution_id = bound"]
 - **The filter does not reach column-only selects** (`select(func.max(Skill.order))`). Those few
   queries filter by institution explicitly via `TenantBinding.require(session)`.
 - **Composite foreign keys** carry `institution_id` into every parent/child link
-  (`students(class_id, institution_id) → classes(id, institution_id)`, the taxonomy chain, and the
+  (`students(workshop_id, institution_id) → classes(id, institution_id)`, the taxonomy chain, and the
   student-owned content chain), so a cross-institution link cannot be written even by a buggy
   service.
 - **Repository `get()` uses `populate_existing=True`** so an identity-map hit cannot bypass the
@@ -364,17 +364,17 @@ WHERE institution_id = bound"]
 
 ```mermaid
 flowchart LR
-    R["Client request"] --> S["Session\n(role + class_id)"]
+    R["Client request"] --> S["Session\n(role + workshop_id)"]
     S --> P{"Policy check"}
-    P -->|instructor| C1["only students WHERE class_id = user.class_id"]
+    P -->|instructor| C1["only students WHERE workshop_id = user.workshop_id"]
     P -->|professional teacher| C2["all students · read-only · Tab 3 + guardianship blocked"]
     P -->|manager| C3["everything + settings + Tab 3 write"]
     C1 & C2 & C3 --> DB[("Postgres")]
 ```
 
 - **Enforcement point:** the **service layer** in Python. A FastAPI dependency resolves the
-  current user (role + `class_id`) and injects it; each service applies the role's filter before
-  the client/repository queries the DB (e.g. instructor → `class_id = user.class_id`).
+  current user (role + `workshop_id`) and injects it; each service applies the role's filter before
+  the client/repository queries the DB (e.g. instructor → `workshop_id = user.workshop_id`).
 - Implement as an authorization policy object (Strategy per role) injected into services — SOLID,
   and easy to unit-test in isolation.
 - **The UI** hides tabs/fields by role — but this is a convenience layer only, not security.

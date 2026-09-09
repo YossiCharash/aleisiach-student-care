@@ -10,9 +10,9 @@ class StudentAccessPolicy:
     @staticmethod
     def scope_for(user: User) -> StudentAccessScope:
         if user.role == UserRole.INSTRUCTOR:
-            return StudentAccessScope(all_classes=False, class_id=user.class_id)
+            return StudentAccessScope(all_workshops=False, workshop_id=user.workshop_id)
         if user.role in _ALL_CLASS_ROLES:
-            return StudentAccessScope(all_classes=True)
+            return StudentAccessScope(all_workshops=True)
         raise AuthorizationError
 
     @staticmethod

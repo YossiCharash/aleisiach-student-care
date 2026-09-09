@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.auth.auth_token_repository import AuthTokenRepository
-from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.auth.auth_settings import AuthSettings
 from backend.app.configuration.email.email_settings import EmailSettings
@@ -57,7 +56,6 @@ def _service(session: Session, sender: CapturingEmailSender | None = None) -> Us
     tokens = AuthTokenRepository(session)
     return UserManagementService(
         UserRepository(session),
-        ClassRepository(session),
         InvitationDispatcher(
             tokens,
             TokenIssuer(tokens, TokenFactory()),

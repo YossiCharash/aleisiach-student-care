@@ -5,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
@@ -22,6 +21,7 @@ from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_status import UserStatus
+from backend.app.models.client.workshop import Workshop
 from backend.app.seed.demo_credentials import (
     ALL_ACCOUNTS,
     DEMO_INSTITUTION_CODE,
@@ -46,10 +46,10 @@ class DemoSeeder:
         if self.is_seeded():
             return
         institution = self._seed_institution()
-        classes = self._seed_classes(institution.id)
-        self._seed_users(classes["כיתה א׳"].id, institution.id)
+        workshops = self._seed_workshops(institution.id)
+        self._seed_users(workshops["סדנה א׳"].id, institution.id)
         skills = self._seed_taxonomy(institution.id)
-        students = self._seed_students(classes, institution.id)
+        students = self._seed_students(workshops, institution.id)
         self._seed_meeting(students["נועה כהן"].id, skills, institution.id)
         self._seed_details(students["נועה כהן"].id, institution.id)
         self._seed_social_note(students["נועה כהן"].id, institution.id)
@@ -61,23 +61,23 @@ class DemoSeeder:
         TenantBinding.bind(self._session, institution.id)
         return institution
 
-    def _seed_classes(self, institution_id: uuid.UUID) -> dict[str, ClassEntity]:
-        classes = {
-            name: ClassEntity(name=name, institution_id=institution_id)
-            for name in ("כיתה א׳", "כיתה ב׳")
+    def _seed_workshops(self, institution_id: uuid.UUID) -> dict[str, Workshop]:
+        workshops = {
+            name: Workshop(name=name, color=color, institution_id=institution_id)
+            for name, color in (("סדנה א׳", "#3F8420"), ("סדנה ב׳", "#85C441"))
         }
-        self._session.add_all(classes.values())
+        self._session.add_all(workshops.values())
         self._session.flush()
-        return classes
+        return workshops
 
-    def _seed_users(self, instructor_class_id: uuid.UUID, institution_id: uuid.UUID) -> None:
+    def _seed_users(self, instructor_workshop_id: uuid.UUID, institution_id: uuid.UUID) -> None:
         for account in ALL_ACCOUNTS:
-            class_id = instructor_class_id if account is INSTRUCTOR else None
-            self._session.add(self._build_user(account, class_id, institution_id))
+            workshop_id = instructor_workshop_id if account is INSTRUCTOR else None
+            self._session.add(self._build_user(account, workshop_id, institution_id))
         self._session.flush()
 
     def _build_user(
-        self, account: DemoAccount, class_id: uuid.UUID | None, institution_id: uuid.UUID
+        self, account: DemoAccount, workshop_id: uuid.UUID | None, institution_id: uuid.UUID
     ) -> User:
         return User(
             full_name=account.full_name,
@@ -85,7 +85,7 @@ class DemoSeeder:
             username=account.username,
             password_hash=self._hasher.hash(DEMO_PASSWORD),
             role=account.role,
-            class_id=class_id,
+            workshop_id=workshop_id,
             status=UserStatus.ACTIVE,
             institution_id=institution_id,
         )
@@ -109,18 +109,18 @@ class DemoSeeder:
         return {"expression": expression, "listening": listening, "organization": organization}
 
     def _seed_students(
-        self, classes: dict[str, ClassEntity], institution_id: uuid.UUID
+        self, workshops: dict[str, Workshop], institution_id: uuid.UUID
     ) -> dict[str, Student]:
         students = {
             name: Student(
                 full_name=name,
-                class_id=classes[class_name].id,
+                workshop_id=workshops[workshop_name].id,
                 institution_id=institution_id,
             )
-            for name, class_name in (
-                ("נועה כהן", "כיתה א׳"),
-                ("איתי לוי", "כיתה א׳"),
-                ("מאיה ברק", "כיתה ב׳"),
+            for name, workshop_name in (
+                ("נועה כהן", "סדנה א׳"),
+                ("איתי לוי", "סדנה א׳"),
+                ("מאיה ברק", "סדנה ב׳"),
             )
         }
         self._session.add_all(students.values())
@@ -231,8 +231,8 @@ class DemoSeeder:
                 expression_mode="דיבור מילולי שוטף",
                 language_comprehension="מבין הוראות מורכבות",
                 previous_institution="גן תקשורת עירוני",
-                current_institution="כיתת תקשורת בבית הספר",
-                prior_task_experience="סייעה בחלוקת חומרים בכיתה.",
+                current_institution="סדנת תקשורת בבית הספר",
+                prior_task_experience="סייעה בחלוקת חומרים בסדנה.",
                 interests_strengths="אוהבת ציור ומוזיקה; חזקה בזיכרון חזותי.",
                 triggers="רעש פתאומי חזק.",
                 distress_early_signs="כיסוי אוזניים והימנעות מקשר עין.",
@@ -248,7 +248,7 @@ class DemoSeeder:
             SocialNote(
                 student_id=student_id,
                 institution_id=institution_id,
-                content="הערת עו״ס לדוגמה — התלמידה משתלבת יפה ומראה התקדמות.",
+                content="סיכום עו״ס לדוגמה — התלמידה משתלבת יפה ומראה התקדמות.",
                 updated_by=manager.id,
                 updated_at=datetime.now(UTC),
             )

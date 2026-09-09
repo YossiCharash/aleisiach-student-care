@@ -32,7 +32,7 @@ describe("ArchivedStudentsPage", () => {
 
   it("lists archived students", async () => {
     listArchivedMock.mockResolvedValue([
-      { id: "s1", class_id: "c1", full_name: "דנה", is_archived: true },
+      { id: "s1", workshop_id: "c1", full_name: "דנה", is_archived: true },
     ]);
 
     renderPage(<ArchivedStudentsPage />);
@@ -50,11 +50,11 @@ describe("ArchivedStudentsPage", () => {
 
   it("restores a student via POST /students/{id}/restore", async () => {
     listArchivedMock.mockResolvedValue([
-      { id: "s1", class_id: "c1", full_name: "דנה", is_archived: true },
+      { id: "s1", workshop_id: "c1", full_name: "דנה", is_archived: true },
     ]);
     restoreMock.mockResolvedValue({
       id: "s1",
-      class_id: "c1",
+      workshop_id: "c1",
       full_name: "דנה",
       is_archived: false,
     });

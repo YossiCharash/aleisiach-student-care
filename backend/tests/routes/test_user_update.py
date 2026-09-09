@@ -12,18 +12,17 @@ from backend.app.models.client.user_role import UserRole
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
-SeedClass = Callable[..., uuid.UUID]
+SeedWorkshop = Callable[..., uuid.UUID]
 
 
-def test_manager_updates_name_email_and_class(
+def test_manager_updates_name_and_email(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    origin_id = seed_class("Aleph")
-    target_id = seed_class("Bet")
-    teacher_id = seed_user("teacher", UserRole.INSTRUCTOR, class_id=origin_id).id
+    origin_id = seed_workshop("Aleph")
+    teacher_id = seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=origin_id).id
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -33,7 +32,6 @@ def test_manager_updates_name_email_and_class(
             "full_name": "Fixed Name",
             "email": "fixed@example.com",
             "role": UserRole.INSTRUCTOR.value,
-            "class_id": str(target_id),
         },
         headers=headers,
     )
@@ -42,17 +40,17 @@ def test_manager_updates_name_email_and_class(
     body = response.json()
     assert body["full_name"] == "Fixed Name"
     assert body["email"] == "fixed@example.com"
-    assert body["class_id"] == str(target_id)
+    assert body["workshop_id"] == str(origin_id)
 
 
-def test_promoting_instructor_to_manager_clears_class(
+def test_promoting_instructor_to_manager_clears_workshop(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    teacher_id = seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id).id
+    workshop_id = seed_workshop("Aleph")
+    teacher_id = seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id).id
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -62,35 +60,12 @@ def test_promoting_instructor_to_manager_clears_class(
             "full_name": "User",
             "email": "teacher@example.com",
             "role": UserRole.MANAGER.value,
-            "class_id": str(class_id),
         },
         headers=headers,
     )
 
     assert response.status_code == 200
-    assert response.json()["class_id"] is None
-
-
-def test_instructor_without_class_is_rejected(
-    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
-) -> None:
-    prof_id = seed_user("prof", UserRole.PROFESSIONAL_TEACHER).id
-    seed_user("boss", UserRole.MANAGER)
-    headers = auth_headers(api, "boss")
-
-    response = api.patch(
-        f"/users/{prof_id}",
-        json={
-            "full_name": "User",
-            "email": "prof@example.com",
-            "role": UserRole.INSTRUCTOR.value,
-            "class_id": None,
-        },
-        headers=headers,
-    )
-
-    assert response.status_code == 400
-    assert response.json()["code"] == "instructor_requires_class"
+    assert response.json()["workshop_id"] is None
 
 
 def test_manager_cannot_change_own_role(
@@ -105,7 +80,6 @@ def test_manager_cannot_change_own_role(
             "full_name": "User",
             "email": "boss@example.com",
             "role": UserRole.PROFESSIONAL_TEACHER.value,
-            "class_id": None,
         },
         headers=headers,
     )
@@ -126,7 +100,6 @@ def test_manager_may_still_fix_own_name(
             "full_name": "Real Name",
             "email": "boss@example.com",
             "role": UserRole.MANAGER.value,
-            "class_id": None,
         },
         headers=headers,
     )
@@ -148,7 +121,6 @@ def test_email_taken_by_another_user_is_rejected(
             "full_name": "User",
             "email": "boss@example.com",
             "role": UserRole.PROFESSIONAL_TEACHER.value,
-            "class_id": None,
         },
         headers=headers,
     )
@@ -173,7 +145,6 @@ def test_update_records_only_changed_fields_in_audit(
             "full_name": "Renamed",
             "email": "prof@example.com",
             "role": UserRole.PROFESSIONAL_TEACHER.value,
-            "class_id": None,
         },
         headers=headers,
     )
@@ -183,27 +154,6 @@ def test_update_records_only_changed_fields_in_audit(
     assert logs[-1].actor_id == boss_id
     assert logs[-1].entity_type == "user"
     assert logs[-1].changes == ["full_name"]
-
-
-def test_unknown_class_returns_404(
-    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
-) -> None:
-    prof_id = seed_user("prof", UserRole.PROFESSIONAL_TEACHER).id
-    seed_user("boss", UserRole.MANAGER)
-    headers = auth_headers(api, "boss")
-
-    response = api.patch(
-        f"/users/{prof_id}",
-        json={
-            "full_name": "User",
-            "email": "prof@example.com",
-            "role": UserRole.INSTRUCTOR.value,
-            "class_id": str(uuid.uuid4()),
-        },
-        headers=headers,
-    )
-
-    assert response.status_code == 404
 
 
 def test_unknown_user_returns_404(
@@ -218,7 +168,6 @@ def test_unknown_user_returns_404(
             "full_name": "Ghost",
             "email": "ghost@example.com",
             "role": UserRole.MANAGER.value,
-            "class_id": None,
         },
         headers=headers,
     )
@@ -228,18 +177,17 @@ def test_unknown_user_returns_404(
 
 def test_update_is_manager_only(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    teacher = seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
+    workshop_id = seed_workshop("Aleph")
+    teacher = seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     payload = {
         "full_name": "Hacked",
         "email": "hacked@example.com",
         "role": UserRole.MANAGER.value,
-        "class_id": None,
     }
 
     by_teacher = api.patch(
@@ -258,7 +206,6 @@ def test_update_requires_authentication(api: TestClient) -> None:
             "full_name": "Anon",
             "email": "anon@example.com",
             "role": UserRole.MANAGER.value,
-            "class_id": None,
         },
     )
     assert response.status_code == 401

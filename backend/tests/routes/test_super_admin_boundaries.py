@@ -14,7 +14,7 @@ AuthHeaders = Callable[..., dict[str, str]]
 
 TENANT_PATHS = (
     "/students",
-    "/classes",
+    "/workshops",
     "/users",
     "/taxonomy/labels",
     "/diagnoses",

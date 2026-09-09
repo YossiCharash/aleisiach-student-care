@@ -35,7 +35,7 @@ function user(overrides: Partial<UserResponse>): UserResponse {
     email: "mor@example.com",
     username: null,
     role: "instructor",
-    class_id: null,
+    workshop_id: null,
     status: "active",
     institution_id: "inst-1",
     ...overrides,
