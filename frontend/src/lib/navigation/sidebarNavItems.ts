@@ -8,20 +8,22 @@ export interface SidebarNavItem {
   isActive: (pathname: string) => boolean;
 }
 
+const ARCHIVED_STUDENTS_PATH = "/students/archived";
+
 const students: SidebarNavItem = {
   to: "/students",
   label: "תלמידים",
   icon: Users,
   isActive: (pathname) =>
     pathname === "/" ||
-    (pathname.startsWith("/students") && pathname !== "/students/archived"),
+    (pathname.startsWith("/students") && !pathname.startsWith(ARCHIVED_STUDENTS_PATH)),
 };
 
 const archivedStudents: SidebarNavItem = {
-  to: "/students/archived",
+  to: ARCHIVED_STUDENTS_PATH,
   label: "ארכיון תלמידים",
   icon: Archive,
-  isActive: (pathname) => pathname === "/students/archived",
+  isActive: (pathname) => pathname.startsWith(ARCHIVED_STUDENTS_PATH),
 };
 
 const institutions: SidebarNavItem = {

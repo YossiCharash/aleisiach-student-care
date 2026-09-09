@@ -31,11 +31,23 @@ const classes: WorkshopResponse[] = [
     instructor_id: null,
     instructor_name: null,
   },
+  {
+    id: "c2",
+    name: "סדנה ב׳",
+    color: "#E6B800",
+    instructor_id: null,
+    instructor_name: null,
+  },
 ];
 
-function render(): void {
+const studentsInBothWorkshops: StudentResponse[] = [
+  { id: "s1", workshop_id: "c1", full_name: "איתי", is_archived: false },
+  { id: "s2", workshop_id: "c2", full_name: "נועה", is_archived: false },
+];
+
+function render(path = "/students"): void {
   renderWithClient(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <StudentsPage />
     </MemoryRouter>
   );
@@ -82,5 +94,47 @@ describe("StudentsPage", () => {
 
     expect(await screen.findByText(/נפילת רשת/)).toBeInTheDocument();
     expect(screen.queryByText(UNKNOWN_WORKSHOP_LABEL)).not.toBeInTheDocument();
+  });
+  it("offers a chip for every workshop plus an all-workshops chip", async () => {
+    listStudents.mockResolvedValue(studentsInBothWorkshops);
+    listClasses.mockResolvedValue(classes);
+
+    render();
+
+    expect(await screen.findByRole("link", { name: "כל הסדנאות" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("link", { name: "סדנה א׳" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "סדנה ב׳" })).toBeInTheDocument();
+  });
+
+  it("marks the filtered workshop as current and lists only its students", async () => {
+    listStudents.mockResolvedValue(studentsInBothWorkshops);
+    listClasses.mockResolvedValue(classes);
+
+    render("/students?workshop=c1");
+
+    expect(await screen.findByRole("link", { name: "סדנה א׳" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("link", { name: "כל הסדנאות" })).not.toHaveAttribute(
+      "aria-current"
+    );
+    expect(screen.getByText("איתי")).toBeInTheDocument();
+    expect(screen.queryByText("נועה")).not.toBeInTheDocument();
+  });
+
+  it("clears the filter through the all-workshops chip", async () => {
+    listStudents.mockResolvedValue(studentsInBothWorkshops);
+    listClasses.mockResolvedValue(classes);
+
+    render("/students?workshop=c1");
+
+    expect(await screen.findByRole("link", { name: "כל הסדנאות" })).toHaveAttribute(
+      "href",
+      "/students"
+    );
   });
 });

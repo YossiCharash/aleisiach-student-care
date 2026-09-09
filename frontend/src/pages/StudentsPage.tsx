@@ -93,7 +93,7 @@ function WorkshopFilters({
       {workshops.map((workshop) => (
         <FilterChip
           key={workshop.id}
-          to={`/students?workshop=${workshop.id}`}
+          to={`/students?workshop=${encodeURIComponent(workshop.id)}`}
           label={workshop.name}
           color={workshop.color}
           active={activeId === workshop.id}
@@ -117,7 +117,7 @@ function FilterChip({
   return (
     <Link
       to={to}
-      aria-current={active ? "true" : undefined}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm transition-colors",
         active

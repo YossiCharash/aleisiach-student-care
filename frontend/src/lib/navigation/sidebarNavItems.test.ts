@@ -46,7 +46,15 @@ describe("sidebarNavItems", () => {
     );
   });
 
-  it("activates settings for the account sub-route", () => {
-    expect(itemFor("manager", "הגדרות").isActive("/settings?tab=account")).toBe(true);
+  it("keeps the archive link active on an archive sub-route", () => {
+    expect(itemFor("manager", "תלמידים").isActive("/students/archived/s1")).toBe(false);
+    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived/s1")).toBe(
+      true
+    );
+  });
+
+  it("activates settings on the settings route and its sub-routes", () => {
+    expect(itemFor("manager", "הגדרות").isActive("/settings")).toBe(true);
+    expect(itemFor("manager", "הגדרות").isActive("/settings/personal")).toBe(true);
   });
 });

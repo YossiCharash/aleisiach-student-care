@@ -217,9 +217,9 @@ function ContactList({ contacts }: { contacts: ContactInfo[] }): ReactNode {
   }
   return (
     <ul className="space-y-2">
-      {contacts.map((contact, index) => (
+      {contacts.map((contact) => (
         <li
-          key={index}
+          key={`${contact.full_name}-${contact.phone}`}
           className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm"
         >
           <div className="font-medium text-ink">{contact.full_name}</div>

@@ -16,7 +16,7 @@ export function Sidebar(): ReactNode {
   const navigate = useNavigate();
 
   async function handleLogout(): Promise<void> {
-    await logout();
+    await logout().catch(() => undefined);
     navigate("/login", { replace: true });
   }
 
@@ -30,7 +30,7 @@ export function Sidebar(): ReactNode {
       : (institutionName ?? "מערכת ניהול תלמידים");
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-e border-slate-200 bg-white px-5 py-6">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col self-start overflow-y-auto border-e border-slate-200 bg-white px-5 py-6">
       <Link to={homePath(user)} className="flex items-center gap-3 px-1 pb-6">
         <img src="/logo.png" alt="עלי שיח" className="h-10 w-auto" />
         <span className="text-sm text-ink-muted">{subtitle}</span>

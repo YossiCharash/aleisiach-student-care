@@ -7,7 +7,9 @@ export function AppShell(): ReactNode {
     <div className="flex min-h-screen bg-surface">
       <Sidebar />
       <main className="min-w-0 flex-1 px-10 py-8">
-        <Outlet />
+        <div className="mx-auto w-full max-w-7xl">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

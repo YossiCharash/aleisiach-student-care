@@ -61,26 +61,38 @@ export function PlanForm({
   });
 
   if (programQuery.isLoading || treeQuery.isLoading) {
-    return <LoadingState />;
+    return (
+      <PlanFormShell>
+        <LoadingState />
+      </PlanFormShell>
+    );
   }
   if (programQuery.isError) {
-    return <ErrorState error={programQuery.error} />;
+    return (
+      <PlanFormShell>
+        <ErrorState error={programQuery.error} />
+      </PlanFormShell>
+    );
   }
   if (treeQuery.isError) {
-    return <ErrorState error={treeQuery.error} />;
+    return (
+      <PlanFormShell>
+        <ErrorState error={treeQuery.error} />
+      </PlanFormShell>
+    );
   }
 
   const areas = programQuery.data?.areas_to_strengthen ?? [];
   if (areas.length === 0) {
     return (
-      <div className="space-y-4">
+      <PlanFormShell>
         <EmptyState>
           אין מוקדים לחיזוק. יש לסמן מוקדים לחיזוק בתווית המוקדים לפני בניית תוכנית.
         </EmptyState>
         <Button variant="ghost" onClick={onDone}>
           חזרה
         </Button>
-      </div>
+      </PlanFormShell>
     );
   }
 
@@ -105,42 +117,48 @@ export function PlanForm({
   }
 
   return (
+    <PlanFormShell>
+      <p className="text-sm leading-relaxed text-ink-muted">
+        בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
+        הקודמת תיכנס להיסטוריה.
+      </p>
+
+      {validationError && <Alert tone="error">{validationError}</Alert>}
+      {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+
+      <div className="space-y-2.5">
+        {areas.map((area) => (
+          <AreaSolutions
+            key={area.skill_id}
+            area={area}
+            solutions={(solutionsMap[area.skill_id] ?? []).filter(
+              (solution) => solution.rating === area.rating
+            )}
+            selected={selections[area.skill_id] ?? []}
+            onToggle={(solutionId) => toggle(area.skill_id, solutionId)}
+          />
+        ))}
+      </div>
+
+      <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+        <Button onClick={handleSubmit} disabled={mutation.isPending}>
+          {mutation.isPending ? "שומר…" : "שמירת תוכנית"}
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          ביטול
+        </Button>
+      </div>
+    </PlanFormShell>
+  );
+}
+
+function PlanFormShell({ children }: { children: ReactNode }): ReactNode {
+  return (
     <Card>
       <CardHeader>
         <CardTitle>יצירת תוכנית אישית</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm leading-relaxed text-ink-muted">
-          בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
-          הקודמת תיכנס להיסטוריה.
-        </p>
-
-        {validationError && <Alert tone="error">{validationError}</Alert>}
-        {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
-
-        <div className="space-y-2.5">
-          {areas.map((area) => (
-            <AreaSolutions
-              key={area.skill_id}
-              area={area}
-              solutions={(solutionsMap[area.skill_id] ?? []).filter(
-                (solution) => solution.rating === area.rating
-              )}
-              selected={selections[area.skill_id] ?? []}
-              onToggle={(solutionId) => toggle(area.skill_id, solutionId)}
-            />
-          ))}
-        </div>
-
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
-            {mutation.isPending ? "שומר…" : "שמירת תוכנית"}
-          </Button>
-          <Button variant="ghost" onClick={onDone}>
-            ביטול
-          </Button>
-        </div>
-      </CardContent>
+      <CardContent className="space-y-4">{children}</CardContent>
     </Card>
   );
 }

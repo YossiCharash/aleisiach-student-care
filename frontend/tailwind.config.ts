@@ -40,16 +40,14 @@ const config: Config = {
         },
         surface: {
           DEFAULT: "#F6F7F3",
-          muted: "#F7F8F4",
-          chip: "#EFF1EB",
         },
         slate: {
           50: "#FAFBF8",
           100: "#EDEFEA",
           200: "#E6E8E1",
           300: "#CDD2C6",
-          400: "#B7BCAF",
-          500: "#9AA093",
+          400: "#8C9285",
+          500: "#6F7667",
           600: "#7A8172",
           700: "#5C6155",
           800: "#3F433B",
