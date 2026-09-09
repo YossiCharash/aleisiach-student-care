@@ -7,7 +7,6 @@ from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.label import Label
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.label_create_request import LabelCreateRequest
 from backend.app.schema.routes.label_response import LabelResponse
 from backend.app.schema.routes.label_tree_node import LabelTreeNode
@@ -20,9 +19,6 @@ from backend.app.schema.routes.solution_create_request import SolutionCreateRequ
 from backend.app.schema.routes.solution_response import SolutionResponse
 from backend.app.schema.routes.solution_tree_node import SolutionTreeNode
 from backend.app.schema.routes.solution_update_request import SolutionUpdateRequest
-from backend.app.schema.routes.sub_label_create_request import SubLabelCreateRequest
-from backend.app.schema.routes.sub_label_response import SubLabelResponse
-from backend.app.schema.routes.sub_label_tree_node import SubLabelTreeNode
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 from backend.app.utils.service.ordered_node_updater import OrderedNodeUpdater
@@ -56,52 +52,19 @@ class TaxonomyService:
         self._audit.record(actor_id, AuditAction.UPDATE, label.id, changes)
         return LabelResponse.model_validate(label)
 
-    def list_sub_labels(
-        self, label_id: uuid.UUID, include_inactive: bool
-    ) -> list[SubLabelResponse]:
+    def list_skills(self, label_id: uuid.UUID, include_inactive: bool) -> list[SkillResponse]:
         if self._taxonomy.get_label(label_id) is None:
             raise NotFoundError("label")
-        sub_labels = self._taxonomy.list_sub_labels(label_id, include_inactive)
-        return [SubLabelResponse.model_validate(sub_label) for sub_label in sub_labels]
-
-    def create_sub_label(
-        self, request: SubLabelCreateRequest, actor_id: uuid.UUID
-    ) -> SubLabelResponse:
-        if self._taxonomy.get_label(request.label_id) is None:
-            raise NotFoundError("label")
-        sub_label = SubLabel(
-            label_id=request.label_id,
-            name=request.name,
-            order=self._taxonomy.next_sub_label_order(request.label_id),
-        )
-        self._taxonomy.add_sub_label(sub_label)
-        self._audit.record(actor_id, AuditAction.CREATE, sub_label.id, ["name"])
-        return SubLabelResponse.model_validate(sub_label)
-
-    def update_sub_label(
-        self, sub_label_id: uuid.UUID, request: OrderedNodeUpdateRequest, actor_id: uuid.UUID
-    ) -> SubLabelResponse:
-        sub_label = self._taxonomy.get_sub_label(sub_label_id)
-        if sub_label is None:
-            raise NotFoundError("sub_label")
-        changes = OrderedNodeUpdater.apply(sub_label, request)
-        self._taxonomy.flush()
-        self._audit.record(actor_id, AuditAction.UPDATE, sub_label.id, changes)
-        return SubLabelResponse.model_validate(sub_label)
-
-    def list_skills(self, sub_label_id: uuid.UUID, include_inactive: bool) -> list[SkillResponse]:
-        if self._taxonomy.get_sub_label(sub_label_id) is None:
-            raise NotFoundError("sub_label")
-        skills = self._taxonomy.list_skills(sub_label_id, include_inactive)
+        skills = self._taxonomy.list_skills(label_id, include_inactive)
         return [SkillResponse.model_validate(skill) for skill in skills]
 
     def create_skill(self, request: SkillCreateRequest, actor_id: uuid.UUID) -> SkillResponse:
-        if self._taxonomy.get_sub_label(request.sub_label_id) is None:
-            raise NotFoundError("sub_label")
+        if self._taxonomy.get_label(request.label_id) is None:
+            raise NotFoundError("label")
         skill = Skill(
-            sub_label_id=request.sub_label_id,
+            label_id=request.label_id,
             name=request.name,
-            order=self._taxonomy.next_skill_order(request.sub_label_id),
+            order=self._taxonomy.next_skill_order(request.label_id),
             green_text=request.ratings.green,
             yellow_text=request.ratings.yellow,
             red_text=request.ratings.red,
@@ -173,13 +136,9 @@ class TaxonomyService:
         return SolutionResponse.model_validate(solution)
 
     def active_tree(self) -> list[LabelTreeNode]:
-        sub_labels_by_label: dict[uuid.UUID, list[SubLabel]] = defaultdict(list)
-        for sub_label in self._taxonomy.active_sub_labels():
-            sub_labels_by_label[sub_label.label_id].append(sub_label)
-
-        skills_by_sub_label: dict[uuid.UUID, list[Skill]] = defaultdict(list)
+        skills_by_label: dict[uuid.UUID, list[Skill]] = defaultdict(list)
         for skill in self._taxonomy.active_skills():
-            skills_by_sub_label[skill.sub_label_id].append(skill)
+            skills_by_label[skill.label_id].append(skill)
 
         solutions_by_skill: dict[uuid.UUID, list[Solution]] = defaultdict(list)
         for solution in self._taxonomy.active_solutions():
@@ -189,30 +148,23 @@ class TaxonomyService:
             LabelTreeNode(
                 id=label.id,
                 name=label.name,
-                sub_labels=[
-                    SubLabelTreeNode(
-                        id=sub_label.id,
-                        name=sub_label.name,
-                        skills=[
-                            SkillTreeNode(
-                                id=skill.id,
-                                name=skill.name,
-                                green_text=skill.green_text,
-                                yellow_text=skill.yellow_text,
-                                red_text=skill.red_text,
-                                solutions=[
-                                    SolutionTreeNode(
-                                        id=solution.id,
-                                        text=solution.text,
-                                        rating=solution.rating,
-                                    )
-                                    for solution in solutions_by_skill[skill.id]
-                                ],
+                skills=[
+                    SkillTreeNode(
+                        id=skill.id,
+                        name=skill.name,
+                        green_text=skill.green_text,
+                        yellow_text=skill.yellow_text,
+                        red_text=skill.red_text,
+                        solutions=[
+                            SolutionTreeNode(
+                                id=solution.id,
+                                text=solution.text,
+                                rating=solution.rating,
                             )
-                            for skill in skills_by_sub_label[sub_label.id]
+                            for solution in solutions_by_skill[skill.id]
                         ],
                     )
-                    for sub_label in sub_labels_by_label[label.id]
+                    for skill in skills_by_label[label.id]
                 ],
             )
             for label in self._taxonomy.active_labels()

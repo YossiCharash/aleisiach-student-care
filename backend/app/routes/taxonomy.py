@@ -18,8 +18,6 @@ from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
 from backend.app.schema.routes.solution_response import SolutionResponse
 from backend.app.schema.routes.solution_update_request import SolutionUpdateRequest
-from backend.app.schema.routes.sub_label_create_request import SubLabelCreateRequest
-from backend.app.schema.routes.sub_label_response import SubLabelResponse
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.taxonomy.taxonomy_service import TaxonomyService
 
@@ -61,35 +59,11 @@ def update_label(
     return service.update_label(label_id, request, manager.id)
 
 
-@router.get("/sub-labels", response_model=list[SubLabelResponse])
-def list_sub_labels(
-    label_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
-) -> list[SubLabelResponse]:
-    return service.list_sub_labels(label_id, include_inactive)
-
-
-@router.post("/sub-labels", response_model=SubLabelResponse, status_code=status.HTTP_201_CREATED)
-def create_sub_label(
-    request: SubLabelCreateRequest, service: ServiceDep, manager: Manager
-) -> SubLabelResponse:
-    return service.create_sub_label(request, manager.id)
-
-
-@router.patch("/sub-labels/{sub_label_id}", response_model=SubLabelResponse)
-def update_sub_label(
-    sub_label_id: uuid.UUID,
-    request: OrderedNodeUpdateRequest,
-    service: ServiceDep,
-    manager: Manager,
-) -> SubLabelResponse:
-    return service.update_sub_label(sub_label_id, request, manager.id)
-
-
 @router.get("/skills", response_model=list[SkillResponse])
 def list_skills(
-    sub_label_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
+    label_id: uuid.UUID, service: ServiceDep, _: CurrentUser, include_inactive: bool = False
 ) -> list[SkillResponse]:
-    return service.list_skills(sub_label_id, include_inactive)
+    return service.list_skills(label_id, include_inactive)
 
 
 @router.post("/skills", response_model=SkillResponse, status_code=status.HTTP_201_CREATED)

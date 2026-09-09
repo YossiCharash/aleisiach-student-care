@@ -41,7 +41,6 @@ import type {
   StudentDetailsUpsertRequest,
   StudentResponse,
   StudentUpdateRequest,
-  SubLabelResponse,
   UserResponse,
   UserUpdateRequest,
 } from "@/lib/api/types";
@@ -240,16 +239,9 @@ export const taxonomyApi = {
     ),
   createLabel: (name: string): Promise<LabelResponse> =>
     apiClient.post<LabelResponse>("/taxonomy/labels", { name }),
-  listSubLabels: (
-    labelId: string,
-    includeInactive = false
-  ): Promise<SubLabelResponse[]> =>
-    apiClient.get<SubLabelResponse[]>(
-      `/taxonomy/sub-labels?label_id=${labelId}&include_inactive=${includeInactive}`
-    ),
-  listSkills: (subLabelId: string, includeInactive = false): Promise<SkillResponse[]> =>
+  listSkills: (labelId: string, includeInactive = false): Promise<SkillResponse[]> =>
     apiClient.get<SkillResponse[]>(
-      `/taxonomy/skills?sub_label_id=${subLabelId}&include_inactive=${includeInactive}`
+      `/taxonomy/skills?label_id=${labelId}&include_inactive=${includeInactive}`
     ),
   listSolutions: (
     skillId: string,
@@ -258,15 +250,13 @@ export const taxonomyApi = {
     apiClient.get<SolutionResponse[]>(
       `/taxonomy/solutions?skill_id=${skillId}&include_inactive=${includeInactive}`
     ),
-  createSubLabel: (labelId: string, name: string): Promise<SubLabelResponse> =>
-    apiClient.post<SubLabelResponse>("/taxonomy/sub-labels", { label_id: labelId, name }),
   createSkill: (
-    subLabelId: string,
+    labelId: string,
     name: string,
     ratings: SkillRatings
   ): Promise<SkillResponse> =>
     apiClient.post<SkillResponse>("/taxonomy/skills", {
-      sub_label_id: subLabelId,
+      label_id: labelId,
       name,
       ratings,
     }),
@@ -282,11 +272,6 @@ export const taxonomyApi = {
     }),
   updateLabel: (labelId: string, body: NamedTaxonomyUpdate): Promise<LabelResponse> =>
     apiClient.patch<LabelResponse>(`/taxonomy/labels/${labelId}`, body),
-  updateSubLabel: (
-    subLabelId: string,
-    body: NamedTaxonomyUpdate
-  ): Promise<SubLabelResponse> =>
-    apiClient.patch<SubLabelResponse>(`/taxonomy/sub-labels/${subLabelId}`, body),
   updateSkill: (skillId: string, body: SkillUpdate): Promise<SkillResponse> =>
     apiClient.patch<SkillResponse>(`/taxonomy/skills/${skillId}`, body),
   updateSolution: (solutionId: string, body: SolutionUpdate): Promise<SolutionResponse> =>

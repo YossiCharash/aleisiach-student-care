@@ -19,15 +19,10 @@ def test_manager_builds_taxonomy_tree(
     headers = auth_headers(api, "boss")
 
     label = api.post("/taxonomy/labels", headers=headers, json={"name": "עצמאות"}).json()
-    sub_label = api.post(
-        "/taxonomy/sub-labels",
-        headers=headers,
-        json={"label_id": label["id"], "name": "היגיינה"},
-    ).json()
     skill = api.post(
         "/taxonomy/skills",
         headers=headers,
-        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
+        json={"label_id": label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
     ).json()
     api.post(
         "/taxonomy/solutions",
@@ -38,7 +33,7 @@ def test_manager_builds_taxonomy_tree(
     tree = api.get("/taxonomy/tree", headers=headers)
     assert tree.status_code == 200
     body = tree.json()
-    skill_node = body[0]["sub_labels"][0]["skills"][0]
+    skill_node = body[0]["skills"][0]
     assert skill_node["yellow_text"] == "בהשגחה"
     assert skill_node["solutions"][0]["text"] == "תרגול יומי"
     assert skill_node["solutions"][0]["rating"] == "yellow"
@@ -50,17 +45,12 @@ def test_skill_requires_all_three_rating_texts(
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     label = api.post("/taxonomy/labels", headers=headers, json={"name": "עצמאות"}).json()
-    sub_label = api.post(
-        "/taxonomy/sub-labels",
-        headers=headers,
-        json={"label_id": label["id"], "name": "היגיינה"},
-    ).json()
 
     response = api.post(
         "/taxonomy/skills",
         headers=headers,
         json={
-            "sub_label_id": sub_label["id"],
+            "label_id": label["id"],
             "name": "רחיצת ידיים",
             "ratings": {"green": "עצמאי", "yellow": "", "red": "בתלות"},
         },
@@ -73,7 +63,7 @@ def test_solution_rejects_green_rating(
 ) -> None:
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
-    _, _, skill, _ = _build_leaf(api, headers)
+    _, skill, _ = _build_leaf(api, headers)
 
     response = api.post(
         "/taxonomy/solutions",
@@ -110,22 +100,19 @@ def test_update_unknown_label_returns_404(
 
 def _build_leaf(
     api: TestClient, headers: dict[str, str]
-) -> tuple[dict[str, str], dict[str, str], dict[str, str], dict[str, str]]:
+) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
     label = api.post("/taxonomy/labels", headers=headers, json={"name": "עצמאות"}).json()
-    sub_label = api.post(
-        "/taxonomy/sub-labels", headers=headers, json={"label_id": label["id"], "name": "היגיינה"}
-    ).json()
     skill = api.post(
         "/taxonomy/skills",
         headers=headers,
-        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
+        json={"label_id": label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
     ).json()
     solution = api.post(
         "/taxonomy/solutions",
         headers=headers,
         json={"skill_id": skill["id"], "text": "תרגול יומי", "rating": "yellow"},
     ).json()
-    return label, sub_label, skill, solution
+    return label, skill, solution
 
 
 def test_deactivated_children_are_listable_and_reactivatable(
@@ -133,34 +120,30 @@ def test_deactivated_children_are_listable_and_reactivatable(
 ) -> None:
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
-    label, sub_label, skill, solution = _build_leaf(api, headers)
+    label, skill, solution = _build_leaf(api, headers)
 
     for path in (
-        f"/taxonomy/sub-labels/{sub_label['id']}",
         f"/taxonomy/skills/{skill['id']}",
         f"/taxonomy/solutions/{solution['id']}",
     ):
         assert api.patch(path, headers=headers, json={"is_active": False}).status_code == 200
 
-    subs = f"/taxonomy/sub-labels?label_id={label['id']}"
-    skills = f"/taxonomy/skills?sub_label_id={sub_label['id']}"
+    skills = f"/taxonomy/skills?label_id={label['id']}"
     solutions = f"/taxonomy/solutions?skill_id={skill['id']}"
 
-    assert api.get(subs, headers=headers).json() == []
     assert api.get(skills, headers=headers).json() == []
     assert api.get(solutions, headers=headers).json() == []
 
-    assert len(api.get(f"{subs}&include_inactive=true", headers=headers).json()) == 1
     assert len(api.get(f"{skills}&include_inactive=true", headers=headers).json()) == 1
     assert len(api.get(f"{solutions}&include_inactive=true", headers=headers).json()) == 1
 
     assert (
         api.patch(
-            f"/taxonomy/sub-labels/{sub_label['id']}", headers=headers, json={"is_active": True}
+            f"/taxonomy/skills/{skill['id']}", headers=headers, json={"is_active": True}
         ).status_code
         == 200
     )
-    assert len(api.get(subs, headers=headers).json()) == 1
+    assert len(api.get(skills, headers=headers).json()) == 1
 
 
 def test_list_children_of_unknown_parent_returns_404(
@@ -170,12 +153,10 @@ def test_list_children_of_unknown_parent_returns_404(
     headers = auth_headers(api, "boss")
     missing = uuid.uuid4()
 
-    assert api.get(f"/taxonomy/sub-labels?label_id={missing}", headers=headers).status_code == 404
-    assert api.get(f"/taxonomy/skills?sub_label_id={missing}", headers=headers).status_code == 404
+    assert api.get(f"/taxonomy/skills?label_id={missing}", headers=headers).status_code == 404
     assert api.get(f"/taxonomy/solutions?skill_id={missing}", headers=headers).status_code == 404
 
 
 def test_listing_children_requires_authentication(api: TestClient) -> None:
-    assert api.get(f"/taxonomy/sub-labels?label_id={uuid.uuid4()}").status_code == 401
-    assert api.get(f"/taxonomy/skills?sub_label_id={uuid.uuid4()}").status_code == 401
+    assert api.get(f"/taxonomy/skills?label_id={uuid.uuid4()}").status_code == 401
     assert api.get(f"/taxonomy/solutions?skill_id={uuid.uuid4()}").status_code == 401

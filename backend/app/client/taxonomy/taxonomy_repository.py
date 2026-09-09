@@ -6,7 +6,6 @@ from backend.app.client.database.ordered_node_repository import OrderedNodeRepos
 from backend.app.models.client.label import Label
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
-from backend.app.models.client.sub_label import SubLabel
 
 
 class TaxonomyRepository(OrderedNodeRepository):
@@ -22,29 +21,17 @@ class TaxonomyRepository(OrderedNodeRepository):
     def next_label_order(self) -> int:
         return self._next_order(Label)
 
-    def add_sub_label(self, sub_label: SubLabel) -> SubLabel:
-        return self._add(sub_label)
-
-    def get_sub_label(self, sub_label_id: uuid.UUID) -> SubLabel | None:
-        return self._get(SubLabel, sub_label_id)
-
-    def list_sub_labels(self, label_id: uuid.UUID, include_inactive: bool) -> list[SubLabel]:
-        return self._ordered(SubLabel, include_inactive, SubLabel.label_id == label_id)
-
-    def next_sub_label_order(self, label_id: uuid.UUID) -> int:
-        return self._next_order(SubLabel, SubLabel.label_id == label_id)
-
     def add_skill(self, skill: Skill) -> Skill:
         return self._add(skill)
 
     def get_skill(self, skill_id: uuid.UUID) -> Skill | None:
         return self._get(Skill, skill_id)
 
-    def list_skills(self, sub_label_id: uuid.UUID, include_inactive: bool) -> list[Skill]:
-        return self._ordered(Skill, include_inactive, Skill.sub_label_id == sub_label_id)
+    def list_skills(self, label_id: uuid.UUID, include_inactive: bool) -> list[Skill]:
+        return self._ordered(Skill, include_inactive, Skill.label_id == label_id)
 
-    def next_skill_order(self, sub_label_id: uuid.UUID) -> int:
-        return self._next_order(Skill, Skill.sub_label_id == sub_label_id)
+    def next_skill_order(self, label_id: uuid.UUID) -> int:
+        return self._next_order(Skill, Skill.label_id == label_id)
 
     def add_solution(self, solution: Solution) -> Solution:
         return self._add(solution)
@@ -61,9 +48,6 @@ class TaxonomyRepository(OrderedNodeRepository):
 
     def active_labels(self) -> list[Label]:
         return self._ordered(Label, include_inactive=False)
-
-    def active_sub_labels(self) -> list[SubLabel]:
-        return self._ordered(SubLabel, include_inactive=False)
 
     def active_skills(self) -> list[Skill]:
         return self._ordered(Skill, include_inactive=False)

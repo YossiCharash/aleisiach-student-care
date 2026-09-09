@@ -17,7 +17,6 @@ from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.program import Program
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.student import Student
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.focus_rating_request import FocusRatingRequest
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
@@ -56,11 +55,8 @@ def _setup(session: Session) -> _Bundle:
     label = Label(name="עצמאות")
     session.add(label)
     session.flush()
-    sub_label = SubLabel(label_id=label.id, name="היגיינה")
-    session.add(sub_label)
-    session.flush()
-    skill_a = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
-    skill_b = Skill(sub_label_id=sub_label.id, name="צחצוח שיניים")
+    skill_a = Skill(label_id=label.id, name="רחיצת ידיים")
+    skill_b = Skill(label_id=label.id, name="צחצוח שיניים")
     session.add_all([skill_a, skill_b])
     session.flush()
     program = ProgramService(

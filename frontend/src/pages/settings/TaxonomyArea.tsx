@@ -14,7 +14,6 @@ import type {
   MeetingRating,
   SkillRatings,
   SkillTreeNode,
-  SubLabelTreeNode,
 } from "@/lib/api/types";
 import { ratingLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
@@ -72,8 +71,8 @@ export function TaxonomyArea(): ReactNode {
           <div>
             <h2 className="text-lg font-semibold text-ink">כישורים</h2>
             <p className="mt-1 text-sm text-ink-muted">
-              תוויות ← תת-תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום),
-              ופתרונות מוגדרים תחת צהוב ואדום. שינויים משתקפים מיד בטופסי התלמיד.
+              תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום), ופתרונות מוגדרים
+              תחת צהוב ואדום. שינויים משתקפים מיד בטופסי התלמיד.
             </p>
           </div>
           <Button
@@ -179,13 +178,8 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateLabel(label.id, { is_active: false })
   );
-  const createSubLabel = useTreeMutation((name: string) =>
-    taxonomyApi.createSubLabel(label.id, name)
-  );
-
-  const skillCount = label.sub_labels.reduce(
-    (total, subLabel) => total + subLabel.skills.length,
-    0
+  const createSkill = useTreeMutation((args: { name: string; ratings: SkillRatings }) =>
+    taxonomyApi.createSkill(label.id, args.name, args.ratings)
   );
 
   return (
@@ -203,79 +197,30 @@ function LabelNode({ label, index }: { label: LabelTreeNode; index: number }): R
           onRename={(name) => rename(name)}
           onDeactivate={() => deactivate(undefined)}
           confirmLabel="להשבית את התווית וכל תוכנה?"
-          extra={
-            <Chip>
-              {label.sub_labels.length} תת-תוויות · {skillCount} כישורים
-            </Chip>
-          }
+          extra={<Chip>{label.skills.length} כישורים</Chip>}
         />
         <CollapseToggle open={open} onClick={() => setOpen((value) => !value)} />
       </div>
       {open && (
         <div className="space-y-3 border-t border-slate-100 p-4">
-          <AddSettingInput
-            placeholder="שם תת-תווית"
-            buttonLabel="הוספת תת-תווית"
-            onSubmit={createSubLabel}
-          />
-          {label.sub_labels.map((subLabel) => (
-            <SubLabelNode key={subLabel.id} subLabel={subLabel} />
-          ))}
+          <AddSkillForm onSubmit={(name, ratings) => createSkill({ name, ratings })} />
+          {label.skills.length > 0 && (
+            <div className="ms-4 space-y-2">
+              {label.skills.map((skill) => (
+                <SkillNode key={skill.id} skill={skill} />
+              ))}
+            </div>
+          )}
           <InactiveNodeList
-            heading="תת-תוויות מושבתות"
-            emptyLabel="אין תת-תוויות מושבתות."
-            queryKey={queryKeys.taxonomySubLabels(label.id)}
-            queryFn={() => taxonomyApi.listSubLabels(label.id, true)}
-            getLabel={(subLabel) => subLabel.name}
-            onReactivate={(id) => taxonomyApi.updateSubLabel(id, { is_active: true })}
+            heading="כישורים מושבתים"
+            emptyLabel="אין כישורים מושבתים."
+            queryKey={queryKeys.taxonomySkills(label.id)}
+            queryFn={() => taxonomyApi.listSkills(label.id, true)}
+            getLabel={(skill) => skill.name}
+            onReactivate={(id) => taxonomyApi.updateSkill(id, { is_active: true })}
           />
         </div>
       )}
-    </div>
-  );
-}
-
-function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
-  const rename = useTreeMutation((name: string) =>
-    taxonomyApi.updateSubLabel(subLabel.id, { name })
-  );
-  const deactivate = useTreeMutation(() =>
-    taxonomyApi.updateSubLabel(subLabel.id, { is_active: false })
-  );
-  const createSkill = useTreeMutation((args: { name: string; ratings: SkillRatings }) =>
-    taxonomyApi.createSkill(subLabel.id, args.name, args.ratings)
-  );
-
-  return (
-    <div className="ms-4 rounded-lg border border-s-4 border-slate-200 border-s-brand-300 bg-white">
-      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50/50 px-3 py-2.5">
-        <NodeName
-          name={subLabel.name}
-          className="text-sm font-semibold text-ink"
-          onRename={(name) => rename(name)}
-          onDeactivate={() => deactivate(undefined)}
-          confirmLabel="להשבית את תת-התווית?"
-          extra={<Chip>{subLabel.skills.length} כישורים</Chip>}
-        />
-      </div>
-      <div className="space-y-2 p-3">
-        <AddSkillForm onSubmit={(name, ratings) => createSkill({ name, ratings })} />
-        {subLabel.skills.length > 0 && (
-          <div className="ms-4 space-y-2">
-            {subLabel.skills.map((skill) => (
-              <SkillNode key={skill.id} skill={skill} />
-            ))}
-          </div>
-        )}
-        <InactiveNodeList
-          heading="כישורים מושבתים"
-          emptyLabel="אין כישורים מושבתים."
-          queryKey={queryKeys.taxonomySkills(subLabel.id)}
-          queryFn={() => taxonomyApi.listSkills(subLabel.id, true)}
-          getLabel={(skill) => skill.name}
-          onReactivate={(id) => taxonomyApi.updateSkill(id, { is_active: true })}
-        />
-      </div>
     </div>
   );
 }

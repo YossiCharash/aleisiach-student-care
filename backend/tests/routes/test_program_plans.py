@@ -9,7 +9,6 @@ from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.workshop import Workshop
@@ -40,10 +39,7 @@ def _seed_domain(session: Session, workshop_id: uuid.UUID) -> _Domain:
     label = Label(name="L")
     session.add(label)
     session.flush()
-    sub_label = SubLabel(label_id=label.id, name="S")
-    session.add(sub_label)
-    session.flush()
-    skill = Skill(sub_label_id=sub_label.id, name="הקשבה")
+    skill = Skill(label_id=label.id, name="הקשבה")
     session.add(skill)
     session.flush()
     solution = Solution(skill_id=skill.id, text="ישיבה בקדמת הקבוצה", rating=MeetingRating.YELLOW)

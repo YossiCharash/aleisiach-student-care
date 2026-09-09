@@ -18,7 +18,6 @@ from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -38,7 +37,6 @@ class ForeignData:
     workshop_id: uuid.UUID
     student_id: uuid.UUID
     label_id: uuid.UUID
-    sub_label_id: uuid.UUID
     skill_id: uuid.UUID
     solution_id: uuid.UUID
     diagnosis_id: uuid.UUID
@@ -70,13 +68,12 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     db_session.flush()
     foreign_workshop, label, diagnosis, section_type, manager = entities
     student = Student(full_name="תלמיד זר", workshop_id=foreign_workshop.id, institution_id=owner)
-    sub_label = SubLabel(name="תת-תווית זרה", order=0, label_id=label.id, institution_id=owner)
     option = DetailOption(
         field=DetailOptionField.ASSISTIVE_DEVICE, name="אביזר זר", order=0, institution_id=owner
     )
-    db_session.add_all([student, sub_label, option])
+    db_session.add_all([student, option])
     db_session.flush()
-    skill = Skill(name="מיומנות זרה", order=0, sub_label_id=sub_label.id, institution_id=owner)
+    skill = Skill(name="מיומנות זרה", order=0, label_id=label.id, institution_id=owner)
     db_session.add(skill)
     db_session.flush()
     solution = Solution(
@@ -104,7 +101,6 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
         workshop_id=foreign_workshop.id,
         student_id=student.id,
         label_id=label.id,
-        sub_label_id=sub_label.id,
         skill_id=skill.id,
         solution_id=solution.id,
         diagnosis_id=diagnosis.id,
@@ -345,7 +341,6 @@ def test_foreign_workshop_cannot_be_archived_or_restored(
 @pytest.mark.parametrize(
     ("collection", "attribute"),
     [
-        ("sub-labels", "sub_label_id"),
         ("skills", "skill_id"),
         ("solutions", "solution_id"),
     ],
@@ -368,8 +363,7 @@ def test_foreign_taxonomy_nodes_cannot_be_updated(
 @pytest.mark.parametrize(
     ("collection", "body_key", "attribute"),
     [
-        ("sub-labels", "label_id", "label_id"),
-        ("skills", "sub_label_id", "sub_label_id"),
+        ("skills", "label_id", "label_id"),
         ("solutions", "skill_id", "skill_id"),
     ],
 )
@@ -399,8 +393,7 @@ def test_taxonomy_children_cannot_hang_off_a_foreign_parent(
 @pytest.mark.parametrize(
     ("collection", "attribute"),
     [
-        ("sub-labels?label_id=", "label_id"),
-        ("skills?sub_label_id=", "sub_label_id"),
+        ("skills?label_id=", "label_id"),
         ("solutions?skill_id=", "skill_id"),
     ],
 )

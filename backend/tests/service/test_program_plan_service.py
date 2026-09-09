@@ -18,7 +18,6 @@ from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.focus_rating_request import FocusRatingRequest
 from backend.app.schema.routes.plan_create_request import PlanCreateRequest
@@ -64,11 +63,8 @@ def _setup(session: Session) -> _Bundle:
     label = Label(name="עצמאות")
     session.add(label)
     session.flush()
-    sub_label = SubLabel(label_id=label.id, name="היגיינה")
-    session.add(sub_label)
-    session.flush()
-    skill_green = Skill(sub_label_id=sub_label.id, name="הבעה בעל פה")
-    skill_area = Skill(sub_label_id=sub_label.id, name="הקשבה בקבוצה")
+    skill_green = Skill(label_id=label.id, name="הבעה בעל פה")
+    skill_area = Skill(label_id=label.id, name="הקשבה בקבוצה")
     session.add_all([skill_green, skill_area])
     session.flush()
     solution_area = Solution(

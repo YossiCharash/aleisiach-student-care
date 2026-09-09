@@ -2,10 +2,10 @@ import uuid
 
 from pydantic import BaseModel, Field
 
-from backend.app.schema.routes.sub_label_tree_node import SubLabelTreeNode
+from backend.app.schema.routes.skill_tree_node import SkillTreeNode
 
 
 class LabelTreeNode(BaseModel):
     id: uuid.UUID
     name: str
-    sub_labels: list[SubLabelTreeNode] = Field(default_factory=list)
+    skills: list[SkillTreeNode] = Field(default_factory=list)
