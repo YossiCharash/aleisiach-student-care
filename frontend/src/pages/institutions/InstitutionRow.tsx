@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MailPlus, Pencil, Power } from "lucide-react";
+import { Building2, MailPlus, Pencil, Power } from "lucide-react";
 import { institutionsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { InstitutionSummary } from "@/lib/api/types";
@@ -51,15 +51,25 @@ export function InstitutionRow({
   return (
     <tr className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70">
       <td className="px-5 py-3 font-semibold text-ink">
-        {institution.name}
-        {institution.pending_manager_email !== null && (
-          <div className="text-xs font-normal text-ink-muted">
-            ממתין לאישור הזמנה: {institution.pending_manager_email}
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand"
+            aria-hidden
+          >
+            <Building2 className="h-5 w-5" />
+          </span>
+          <div>
+            {institution.name}
+            {institution.pending_manager_email !== null && (
+              <div className="text-xs font-normal text-ink-muted">
+                ממתין לאישור הזמנה: {institution.pending_manager_email}
+              </div>
+            )}
+            {actionError !== null && (
+              <div className="text-xs font-normal text-rating-red">{actionError}</div>
+            )}
           </div>
-        )}
-        {actionError !== null && (
-          <div className="text-xs font-normal text-rating-red">{actionError}</div>
-        )}
+        </div>
       </td>
       <td className="px-5 py-3 text-ink-muted">
         {institution.contact_name ?? "—"}

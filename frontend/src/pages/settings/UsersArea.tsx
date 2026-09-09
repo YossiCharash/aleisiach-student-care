@@ -46,13 +46,13 @@ function UsersTable({ users }: { users: UserResponse[] }): ReactNode {
     <Card>
       <CardContent className="p-0">
         <table className="w-full text-start text-sm">
-          <thead className="border-b border-slate-100 text-ink-muted">
+          <thead className="border-b border-slate-200 bg-slate-50 text-xs tracking-wide text-ink-muted">
             <tr>
-              <th className="px-4 py-3 text-start font-medium">שם</th>
-              <th className="px-4 py-3 text-start font-medium">דוא״ל</th>
-              <th className="px-4 py-3 text-start font-medium">תפקיד</th>
-              <th className="px-4 py-3 text-start font-medium">סטטוס</th>
-              <th className="px-4 py-3 text-start font-medium">פעולות</th>
+              <th className="px-4 py-3 text-start font-semibold">שם</th>
+              <th className="px-4 py-3 text-start font-semibold">דוא״ל</th>
+              <th className="px-4 py-3 text-start font-semibold">תפקיד</th>
+              <th className="px-4 py-3 text-start font-semibold">סטטוס</th>
+              <th className="px-4 py-3 text-start font-semibold">פעולות</th>
             </tr>
           </thead>
           <tbody>
@@ -99,7 +99,7 @@ function UserRow({ user }: { user: UserResponse }): ReactNode {
   });
 
   return (
-    <tr className="border-b border-slate-50 last:border-0">
+    <tr className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70">
       <td className="px-4 py-3 font-medium text-ink">{user.full_name}</td>
       <td className="px-4 py-3 text-ink-muted">{user.email}</td>
       <td className="px-4 py-3 text-ink-muted">{roleLabels[user.role]}</td>

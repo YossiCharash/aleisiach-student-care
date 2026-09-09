@@ -20,7 +20,7 @@ export function ArchivedStudentsPage(): ReactNode {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink">תלמידים בארכיון</h1>
+          <h1 className="text-2xl font-extrabold text-ink">תלמידים בארכיון</h1>
           <p className="mt-1 text-sm text-ink-muted">
             תלמידים שהועברו לארכיון. ניתן לשחזר אותם לרשימה הפעילה.
           </p>

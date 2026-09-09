@@ -79,7 +79,7 @@ export function SettingsPage(): ReactNode {
         <ChevronRight className="h-4 w-4" />
         חזרה לעמוד הקודם
       </button>
-      <h1 className="mb-6 text-2xl font-bold text-ink">הגדרות</h1>
+      <h1 className="mb-6 text-2xl font-extrabold text-ink">הגדרות</h1>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
           {canManage && (

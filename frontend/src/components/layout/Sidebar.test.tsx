@@ -11,7 +11,10 @@ vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 
 const logout = vi.fn();
 
-function signedInAs(role: UserRole, institutionName: string | null = "מרכז עלי שיח"): void {
+function signedInAs(
+  role: UserRole,
+  institutionName: string | null = "מרכז עלי שיח"
+): void {
   const user: Partial<UserResponse> = {
     id: "u1",
     full_name: "רונית כהן",
