@@ -123,10 +123,12 @@ erDiagram
     STUDENT ||--o{ TEAM_MEETING : "meetings (Tab 2)"
     STUDENT ||--|| SOCIAL_NOTE : "social note (Tab 3)"
     STUDENT ||--|| FUNCTIONAL_REPORT : "functional report (Tab 5)"
-    TEAM_MEETING ||--o{ MEETING_ENTRY : "entries"
-    MEETING_ENTRY }o--|| SKILL : "assessed skill (ref)"
-    MEETING_ENTRY ||--o{ MEETING_ENTRY_SOLUTION : "chosen solutions"
-    MEETING_ENTRY_SOLUTION }o--|| SOLUTION : "ref"
+    TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
+    TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
+    MEETING_FOCI_ENTRY }o--|| SKILL : "ref"
+    MEETING_PLAN_ENTRY }o--|| SKILL : "ref"
+    MEETING_PLAN_ENTRY ||--o{ MEETING_PLAN_SOLUTION : "chosen solutions"
+    MEETING_PLAN_SOLUTION }o--|| SOLUTION : "ref"
     LABEL ||--o{ SUBLABEL : ""
     SUBLABEL ||--o{ SKILL : ""
     SKILL ||--o{ SOLUTION : "possible solutions"
@@ -191,23 +193,31 @@ erDiagram
     TEAM_MEETING {
         uuid id
         uuid student_id
-        int year
-        int month
+        date meeting_date "chosen; defaults to today"
+        text summary "editable after save"
         uuid author_id
         timestamp created_at
+        timestamp updated_at
     }
-    MEETING_ENTRY {
+    MEETING_FOCI_ENTRY {
         uuid id
         uuid meeting_id
-        uuid skill_id "ref (may be deactivated later)"
-        string skill_name_snapshot "text at save time"
-        enum rating "green=independent|yellow=supervised|red=dependent"
+        uuid skill_id "ref"
+        string skill_name_snapshot "foci text at meeting time"
+        enum rating "green=strength|yellow/red=area"
     }
-    MEETING_ENTRY_SOLUTION {
+    MEETING_PLAN_ENTRY {
         uuid id
-        uuid meeting_entry_id
+        uuid meeting_id
+        uuid skill_id "ref"
+        string skill_name_snapshot "plan text at meeting time"
+        enum rating "yellow|red"
+    }
+    MEETING_PLAN_SOLUTION {
+        uuid id
+        uuid meeting_plan_entry_id
         uuid solution_id "ref"
-        string solution_text_snapshot "text at save time"
+        string solution_text_snapshot "text at meeting time"
     }
     LABEL { uuid id; string name; int order; bool is_active }
     SUBLABEL { uuid id; uuid label_id; string name; int order; bool is_active }
@@ -222,9 +232,9 @@ erDiagram
   date. Created/edited by the **manager only** via the dateless meeting-style form; instructors and
   professional teachers read only. The read view is derived from the stored entries: green →
   strengths (מוקדי כוח); yellow/red → areas to strengthen (מוקדים לחיזוק) with the chosen solutions
-  as the "path to solution", plus a separate personal-plan card listing those paths. The
-  skill/solution validation + snapshotting is shared with the meeting form via `SkillRatingResolver`.
-  (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it**.)
+  as the "path to solution", plus a separate personal-plan card listing those paths.
+  (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it** — since
+  ADR-022 they instead read a snapshot *from* it.)
 - **Tab 5 (Functional report, "Form 33") is a manager-authored document** — own table
   `FUNCTIONAL_REPORT` (one per student, `student_id` PK), six free-text sections plus
   `updated_by`/`updated_at`, mirroring `SOCIAL_NOTE` widened. The identity header (name · national id ·
@@ -232,14 +242,17 @@ erDiagram
   `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
   Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
   communication fields; **superseded — ADR-020**.)
+- **Tab 2 (Team meetings) is a dated read-only snapshot + summary** (decided 2026-09-09, ADR-022):
+  one `TEAM_MEETING` per dated meeting with `meeting_date` and an editable `summary`, plus frozen
+  copies of the foci (`MEETING_FOCI_ENTRY`) and the latest personal plan (`MEETING_PLAN_ENTRY` +
+  `MEETING_PLAN_SOLUTION`) taken from Tab 1 at creation. The snapshot is immutable; only `summary`
+  can change afterwards. The old accordion rating form and its `MEETING_ENTRY` tables are removed.
 - **The taxonomy (Label → SubLabel → Skill → Solution)** is the dynamic core. It is managed on
-  the Settings page and feeds the Tab 2 form. Do not hard-code it.
-- **`MEETING_ENTRY.rating`**: green=independent, yellow=supervised, red=dependent. On yellow/red
-  a solution must be chosen → `MEETING_ENTRY_SOLUTION`.
-- **Taxonomy history (decided): snapshot + soft-delete.** On save, each entry copies the skill and
-  chosen-solution **text** into `*_snapshot` columns, so historical meeting summaries stay faithful
+  the Settings page and feeds the Tab 1 foci/plan authoring. Do not hard-code it.
+- **Taxonomy history (decided): snapshot + soft-delete.** Foci, plans and meeting snapshots copy the
+  skill and chosen-solution **text** into `*_snapshot` columns, so historical records stay faithful
   even if the taxonomy later changes. Taxonomy rows are **never hard-deleted** — Settings toggles
-  `is_active=false` (deactivated rows disappear from the Tab 2 form but keep their FKs valid).
+  `is_active=false` (deactivated rows disappear from the authoring forms but keep their FKs valid).
 - **Tab 4 extra sections (headings 5+) — normalized tables** (decided): `EXTRA_SECTION_TYPE`
   holds the heading text (configurable in Settings, so exact wording is data, not schema), and
   `STUDENT_EXTRA_SECTION` holds each student's content per heading. Exact heading names still to
@@ -250,33 +263,28 @@ erDiagram
 
 ---
 
-## 4. Key flow — Team-meeting form (Tab 2)
+## 4. Key flow — Team-meeting snapshot (Tab 2)
 
-This is the most complex flow. A single long accordion page composed dynamically from the taxonomy.
+A team meeting is a point-in-time minutes document: it freezes the current foci and plan and adds a
+summary. It does not author foci/plan — that happens in Tab 1.
 
 ```mermaid
 flowchart TD
-    A["Click 'Add monthly meeting'"] --> B["Load taxonomy from DB\nLabels → SubLabels → Skills → Solutions"]
-    B --> C["Render accordion:\nper label → sub-labels → skills"]
-    C --> D{"Choose rating for a skill"}
-    D -->|green = independent| E["Continue to next skill"]
-    D -->|yellow = supervised / red = dependent| F["A 'solutions' field opens\n(from that skill's Settings)"]
-    F --> G["Choose solution(s)"]
-    G --> E
-    E --> H{"All skills filled?"}
-    H -->|no| C
-    H -->|yes| I["Save"]
-    I --> J["Generate meeting summary"]
-    J --> L["Print / PDF export option"]
+    A["Click 'ישיבת צוות חדשה'"] --> B["Load current foci + latest plan from Tab 1"]
+    B --> C["Show foci + plan read-only\n+ date picker (today) + summary field"]
+    C --> I["Save"]
+    I --> J["Copy foci + plan into meeting snapshot tables\n(skill/solution text snapshotted)"]
+    J --> K["History lists meetings by date (newest first)"]
+    K --> M["Edit summary (snapshot stays frozen)"]
+    K --> L["Per-meeting PDF export"]
 ```
 
 **Implementation rules:**
-- Validation: cannot save while any skill rated yellow/red has no chosen solution.
-- **Tab 1 (Program) is a separate, manually authored document** (ADR-019) — this meeting form no
-  longer writes or updates it. The two share the accordion UI (`SkillRatingTree`) and the backend
-  validation/snapshot logic (`SkillRatingResolver`); the promotion-program form is the same flow
-  without the month/year step.
-- Save must be atomic (transaction): meeting + all entries + solution links.
+- The snapshot is immutable once saved; only `summary` is editable (HTTP `PATCH`). Foci/plan edits in
+  Tab 1 after the meeting do not change past meetings.
+- A meeting may be created with no foci/plan yet (empty snapshot + summary).
+- Save is atomic (transaction): meeting + foci-entry copies + plan-entry/solution copies.
+- Team meetings **read** Tab 1 but never write it.
 
 ---
 
@@ -342,8 +350,8 @@ WHERE institution_id = bound"]
   filter.
 - Cross-institution access raises `NotFoundError` → **404**, matching `StudentAccessGuard` and
   never disclosing that a foreign row exists.
-- **Rows owned through a student** — details, extra sections, meetings, meeting entries, entry
-  solutions and social notes — are `TenantScoped` like everything else (migration
+- **Rows owned through a student** — details, extra sections, meetings, meeting foci/plan snapshot
+  entries, snapshot solutions and social notes — are `TenantScoped` like everything else (migration
   `0018_tenant_scope_content`), so all three layers apply to them too. `StudentAccessGuard` remains
   the first gate and answers 404; the filter and the composite keys are the backstop for a query
   that ever skips it. `tests/client/test_tenant_foreign_keys.py` runs against SQLite with

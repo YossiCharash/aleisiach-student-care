@@ -1,8 +1,5 @@
-from datetime import date
-
 from pydantic import BaseModel, Field
 
 
-class MeetingCreateRequest(BaseModel):
-    meeting_date: date
+class MeetingUpdateRequest(BaseModel):
     summary: str = Field(default="", max_length=10000)

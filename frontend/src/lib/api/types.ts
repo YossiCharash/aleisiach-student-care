@@ -186,40 +186,26 @@ export interface SolutionUpdate {
   is_active?: boolean;
 }
 
-export interface MeetingEntrySolutionResponse {
-  id: string;
-  solution_id: string;
-  solution_text_snapshot: string;
-}
-
-export interface MeetingEntryResponse {
-  id: string;
-  skill_id: string;
-  skill_name_snapshot: string;
-  rating: MeetingRating;
-  solutions: MeetingEntrySolutionResponse[];
-}
-
 export interface MeetingResponse {
   id: string;
   student_id: string;
-  year: number;
-  month: number;
   author_id: string;
+  meeting_date: string;
+  summary: string;
   created_at: string;
-  entries: MeetingEntryResponse[];
-}
-
-export interface SkillRatingRequest {
-  skill_id: string;
-  rating: MeetingRating;
-  solution_ids: string[];
+  updated_at: string;
+  strengths: ProgramStrength[];
+  areas_to_strengthen: ProgramArea[];
+  plan_entries: PlanEntryResponse[];
 }
 
 export interface MeetingCreateRequest {
-  year: number;
-  month: number;
-  entries: SkillRatingRequest[];
+  meeting_date: string;
+  summary: string;
+}
+
+export interface MeetingUpdateRequest {
+  summary: string;
 }
 
 export interface ProgramEntryResponse {

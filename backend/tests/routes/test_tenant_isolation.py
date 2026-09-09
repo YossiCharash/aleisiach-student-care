@@ -1,6 +1,7 @@
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,7 +14,7 @@ from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
-from backend.app.models.client.meeting_entry import MeetingEntry
+from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
@@ -81,13 +82,13 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     solution = Solution(text="פתרון זר", skill_id=skill.id, institution_id=owner)
     meeting = TeamMeeting(
         student_id=student.id,
-        year=2026,
-        month=5,
+        meeting_date=date(2026, 5, 1),
+        summary="",
         author_id=manager.id,
         institution_id=owner,
     )
-    meeting.entries = [
-        MeetingEntry(
+    meeting.foci_entries = [
+        MeetingFociEntry(
             skill_id=skill.id,
             skill_name_snapshot=skill.name,
             rating=MeetingRating.GREEN,
@@ -283,11 +284,7 @@ def test_foreign_student_write_paths_are_not_found(
         "/details": {},
         "/social-note": {"content": "נחטף"},
         "/functional-report": {"general_background": "נחטף"},
-        "/meetings": {
-            "year": 2026,
-            "month": 6,
-            "entries": [{"skill_id": str(foreign.skill_id), "rating": "green"}],
-        },
+        "/meetings": {"meeting_date": "2026-06-01", "summary": "נחטף"},
     }.get(suffix)
     call = getattr(api, method)
     path = f"/students/{foreign.student_id}{suffix}"

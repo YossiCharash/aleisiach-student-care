@@ -1,4 +1,5 @@
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy import select
@@ -6,26 +7,30 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.meetings.meeting_repository import MeetingRepository
+from backend.app.client.program.program_plan_repository import ProgramPlanRepository
+from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.errors.service.invalid_skill_rating_error import InvalidSkillRatingError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
+from backend.app.models.client.program import Program
+from backend.app.models.client.program_entry import ProgramEntry
+from backend.app.models.client.program_plan import ProgramPlan
+from backend.app.models.client.program_plan_entry import ProgramPlanEntry
+from backend.app.models.client.program_plan_solution import ProgramPlanSolution
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
-from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
+from backend.app.schema.routes.meeting_update_request import MeetingUpdateRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
-from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 from backend.tests.support.seeding import seed_actor
 
 _ALL = StudentAccessScope(all_classes=True)
@@ -35,20 +40,18 @@ class _Fixture:
     def __init__(
         self,
         service: MeetingService,
+        session: Session,
         student_id: uuid.UUID,
+        bare_student_id: uuid.UUID,
         author_id: uuid.UUID,
-        skill_id: uuid.UUID,
-        other_skill_id: uuid.UUID,
-        solution_id: uuid.UUID,
-        other_solution_id: uuid.UUID,
+        program: Program,
     ) -> None:
         self.service = service
+        self.session = session
         self.student_id = student_id
+        self.bare_student_id = bare_student_id
         self.author_id = author_id
-        self.skill_id = skill_id
-        self.other_skill_id = other_skill_id
-        self.solution_id = solution_id
-        self.other_solution_id = other_solution_id
+        self.program = program
 
 
 def _setup(session: Session) -> _Fixture:
@@ -56,67 +59,112 @@ def _setup(session: Session) -> _Fixture:
     session.add(class_entity)
     session.flush()
     student = Student(full_name="Dana", class_id=class_entity.id)
-    session.add(student)
+    bare_student = Student(full_name="Roni", class_id=class_entity.id)
+    session.add_all([student, bare_student])
     label = Label(name="עצמאות")
     session.add(label)
     session.flush()
     sub_label = SubLabel(label_id=label.id, name="היגיינה")
     session.add(sub_label)
     session.flush()
-    skill = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
-    other_skill = Skill(sub_label_id=sub_label.id, name="צחצוח שיניים")
-    session.add_all([skill, other_skill])
+    strength = Skill(sub_label_id=sub_label.id, name="הבעה")
+    area = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
+    session.add_all([strength, area])
     session.flush()
-    solution = Solution(skill_id=skill.id, text="תרגול יומי")
-    other_solution = Solution(skill_id=other_skill.id, text="פתרון אחר")
-    session.add_all([solution, other_solution])
+    solution = Solution(skill_id=area.id, text="תרגול יומי")
+    session.add(solution)
     session.flush()
+    author_id = seed_actor(session)
+
+    program = Program(student_id=student.id, author_id=author_id)
+    program.entries = [
+        ProgramEntry(
+            skill_id=strength.id,
+            skill_name_snapshot=strength.name,
+            rating=MeetingRating.GREEN,
+            position=0,
+        ),
+        ProgramEntry(
+            skill_id=area.id,
+            skill_name_snapshot=area.name,
+            rating=MeetingRating.YELLOW,
+            position=1,
+        ),
+    ]
+    session.add(program)
+
+    plan = ProgramPlan(student_id=student.id, author_id=author_id)
+    plan_entry = ProgramPlanEntry(
+        skill_id=area.id,
+        skill_name_snapshot=area.name,
+        rating=MeetingRating.YELLOW,
+        position=0,
+    )
+    plan_entry.solutions = [
+        ProgramPlanSolution(
+            solution_id=solution.id,
+            solution_text_snapshot=solution.text,
+            position=0,
+        )
+    ]
+    plan.entries = [plan_entry]
+    session.add(plan)
+    session.flush()
+
     service = MeetingService(
         MeetingRepository(session),
+        ProgramRepository(session),
+        ProgramPlanRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        SkillRatingResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
-    return _Fixture(
-        service,
-        student.id,
-        seed_actor(session),
-        skill.id,
-        other_skill.id,
-        solution.id,
-        other_solution.id,
-    )
+    return _Fixture(service, session, student.id, bare_student.id, author_id, program)
 
 
-def test_create_captures_snapshots(db_session: Session) -> None:
+def _request(summary: str = "סיכום") -> MeetingCreateRequest:
+    return MeetingCreateRequest(meeting_date=date(2026, 8, 15), summary=summary)
+
+
+def test_create_snapshots_current_foci_and_latest_plan(db_session: Session) -> None:
     fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(
-                skill_id=fx.skill_id,
-                rating=MeetingRating.YELLOW,
-                solution_ids=[fx.solution_id],
-            )
-        ],
-    )
 
-    meeting = fx.service.create(fx.student_id, request, _ALL, fx.author_id)
+    meeting = fx.service.create(fx.student_id, _request(), _ALL, fx.author_id)
 
-    assert meeting.entries[0].skill_name_snapshot == "רחיצת ידיים"
-    assert meeting.entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
+    assert meeting.meeting_date == date(2026, 8, 15)
+    assert meeting.summary == "סיכום"
+    assert [strength.skill_name for strength in meeting.strengths] == ["הבעה"]
+    assert [area.skill_name for area in meeting.areas_to_strengthen] == ["רחיצת ידיים"]
+    assert meeting.plan_entries[0].skill_name_snapshot == "רחיצת ידיים"
+    assert meeting.plan_entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
+
+
+def test_create_without_foci_or_plan_is_allowed(db_session: Session) -> None:
+    fx = _setup(db_session)
+
+    meeting = fx.service.create(fx.bare_student_id, _request("רק סיכום"), _ALL, fx.author_id)
+
+    assert meeting.strengths == []
+    assert meeting.areas_to_strengthen == []
+    assert meeting.plan_entries == []
+    assert meeting.summary == "רק סיכום"
+
+
+def test_snapshot_is_frozen_when_foci_change_later(db_session: Session) -> None:
+    fx = _setup(db_session)
+    meeting = fx.service.create(fx.student_id, _request(), _ALL, fx.author_id)
+
+    fx.program.entries = []
+    fx.session.flush()
+
+    reloaded = fx.service.get(fx.student_id, meeting.id, _ALL)
+    assert [strength.skill_name for strength in reloaded.strengths] == ["הבעה"]
+    assert [area.skill_name for area in reloaded.areas_to_strengthen] == ["רחיצת ידיים"]
 
 
 def test_create_is_audited(db_session: Session) -> None:
     fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
-    )
 
-    fx.service.create(fx.student_id, request, _ALL, fx.author_id)
+    fx.service.create(fx.student_id, _request(), _ALL, fx.author_id)
 
     log = db_session.scalars(select(AuditLog)).one()
     assert log.action == AuditAction.CREATE
@@ -124,131 +172,43 @@ def test_create_is_audited(db_session: Session) -> None:
     assert log.actor_id == fx.author_id
 
 
-def test_yellow_without_solution_is_rejected(db_session: Session) -> None:
+def test_update_summary_changes_text_without_touching_the_snapshot(db_session: Session) -> None:
     fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.RED)],
+    meeting = fx.service.create(fx.student_id, _request("ראשוני"), _ALL, fx.author_id)
+
+    updated = fx.service.update_summary(
+        fx.student_id, meeting.id, MeetingUpdateRequest(summary="מעודכן"), _ALL, fx.author_id
     )
 
-    with pytest.raises(InvalidSkillRatingError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
+    assert updated.summary == "מעודכן"
+    assert [strength.skill_name for strength in updated.strengths] == ["הבעה"]
+    assert updated.plan_entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
 
 
-def test_green_with_solution_is_rejected(db_session: Session) -> None:
+def test_update_summary_is_audited_as_update(db_session: Session) -> None:
     fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(
-                skill_id=fx.skill_id,
-                rating=MeetingRating.GREEN,
-                solution_ids=[fx.solution_id],
-            )
-        ],
+    meeting = fx.service.create(fx.student_id, _request(), _ALL, fx.author_id)
+
+    fx.service.update_summary(
+        fx.student_id, meeting.id, MeetingUpdateRequest(summary="מעודכן"), _ALL, fx.author_id
     )
 
-    with pytest.raises(InvalidSkillRatingError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
+    actions = [log.action for log in db_session.scalars(select(AuditLog)).all()]
+    assert AuditAction.UPDATE in actions
 
 
-def test_solution_from_another_skill_is_rejected(db_session: Session) -> None:
+def test_update_summary_for_unknown_meeting_is_not_found(db_session: Session) -> None:
     fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(
-                skill_id=fx.skill_id,
-                rating=MeetingRating.YELLOW,
-                solution_ids=[fx.other_solution_id],
-            )
-        ],
-    )
-
-    with pytest.raises(InvalidSkillRatingError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
-
-
-def test_unknown_skill_is_not_found(db_session: Session) -> None:
-    fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[SkillRatingRequest(skill_id=uuid.uuid4(), rating=MeetingRating.GREEN)],
-    )
 
     with pytest.raises(NotFoundError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
+        fx.service.update_summary(
+            fx.student_id, uuid.uuid4(), MeetingUpdateRequest(summary="x"), _ALL, fx.author_id
+        )
 
 
 def test_student_outside_scope_is_hidden(db_session: Session) -> None:
     fx = _setup(db_session)
     foreign_scope = StudentAccessScope(all_classes=False, class_id=uuid.uuid4())
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN)],
-    )
 
     with pytest.raises(NotFoundError):
-        fx.service.create(fx.student_id, request, foreign_scope, fx.author_id)
-
-
-def test_duplicate_skill_in_meeting_is_rejected(db_session: Session) -> None:
-    fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
-            SkillRatingRequest(
-                skill_id=fx.skill_id,
-                rating=MeetingRating.RED,
-                solution_ids=[fx.solution_id],
-            ),
-        ],
-    )
-
-    with pytest.raises(InvalidSkillRatingError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
-
-
-def test_duplicate_solution_in_entry_is_rejected(db_session: Session) -> None:
-    fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(
-                skill_id=fx.skill_id,
-                rating=MeetingRating.YELLOW,
-                solution_ids=[fx.solution_id, fx.solution_id],
-            )
-        ],
-    )
-
-    with pytest.raises(InvalidSkillRatingError):
-        fx.service.create(fx.student_id, request, _ALL, fx.author_id)
-
-
-def test_entries_are_persisted_in_request_order(db_session: Session) -> None:
-    fx = _setup(db_session)
-    request = MeetingCreateRequest(
-        year=2026,
-        month=8,
-        entries=[
-            SkillRatingRequest(skill_id=fx.other_skill_id, rating=MeetingRating.GREEN),
-            SkillRatingRequest(skill_id=fx.skill_id, rating=MeetingRating.GREEN),
-        ],
-    )
-    fx.service.create(fx.student_id, request, _ALL, fx.author_id)
-
-    reloaded = fx.service.list_for_student(fx.student_id, _ALL)[0]
-
-    assert [entry.skill_name_snapshot for entry in reloaded.entries] == [
-        "צחצוח שיניים",
-        "רחיצת ידיים",
-    ]
+        fx.service.create(fx.student_id, _request(), foreign_scope, fx.author_id)

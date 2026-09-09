@@ -424,6 +424,50 @@ The combined report renders every version chronologically in one PDF.
 
 ---
 
+## ADR-022 — Tab 2 (Team meetings) becomes a dated snapshot of foci + plan with a summary
+
+**Date:** 2026-09-09
+**Decision:** A team meeting is no longer its own skill-rating form. Opening a new meeting now
+**freezes a read-only snapshot** of the student's current **foci** (מוקדי כוח ומוקדים לחיזוק) and
+**latest personal plan** (תוכנית אישית) at that moment, alongside a single free-text **summary**
+(סיכום). Meetings are keyed **by date** (a manager/instructor picks `meeting_date`, defaulting to
+today) rather than by month. The snapshot is immutable; only the **summary stays editable** after
+saving. Each meeting in the history exports to a **per-meeting PDF** (server-side WeasyPrint,
+ADR-015). Write access is unchanged (manager + instructor write, professional teacher reads).
+
+This **supersedes the Tab-2 parts of ADR-019/ADR-021** (the accordion rating form with per-skill
+red/yellow/green + solutions is removed) while leaving Tab 1 itself intact — team meetings still do
+not feed Tab 1; they now *read* from it.
+
+**Context:** The client asked that a team meeting present the student's current foci and personal
+plan for discussion, unchangeable in that view, with a large summary field — and that the record
+keep the foci and plan **as they were at the time of the meeting**, dated, printable per meeting.
+The meeting is therefore a point-in-time minutes document, not an editing surface.
+
+**Data model:** the old `team_meetings` (year/month) / `meeting_entries` / `meeting_entry_solutions`
+tables are **dropped**. `team_meetings` is rebuilt with `meeting_date` (Date), `summary` (Text),
+`author_id`, `created_at`, `updated_at`. Three tenant-scoped snapshot tables hold the frozen copy
+(migration `0025_meeting_snapshots`): `meeting_foci_entries` (skill name + rating), and
+`meeting_plan_entries` / `meeting_plan_solutions` (skill name + rating + chosen solution text).
+`MeetingService.create` copies the current `Program` and the latest `ProgramPlan` into these tables;
+a meeting created with no foci/plan yet is allowed (empty snapshot + summary). `update_summary`
+(HTTP `PATCH`) changes only the summary. Meetings are audited under `entity_type="team_meeting"`
+(create + summary update). Since the prototype holds demo data only, the migration rebuilds cleanly
+with no data conversion.
+
+**Alternatives:** Store the snapshot as a single JSON column on the meeting — rejected; normalized
+tables match the `program_plan` precedent, keep `TenantScoped` + composite foreign keys enforcing
+institution isolation, and honour the "no loose dicts" rule. Reference the live `Program`/plan by id
+instead of copying — rejected; foci are mutable (upsert overwrites), so only a copy freezes the
+picture. Lock the summary after save — rejected; the client asked to keep editing the summary.
+
+**Consequences:** A meeting's foci/plan view never changes even after the student's foci or plan are
+later edited. There is no meeting edit beyond the summary; the rating accordion, its `SkillRatingTree`
+frontend components, and the month-name helpers are gone. `SkillRatingResolver` stays as a generic
+taxonomy utility.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

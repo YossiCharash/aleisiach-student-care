@@ -1,11 +1,12 @@
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
-from sqlalchemy import DateTime, ForeignKey, ForeignKeyConstraint, Integer, UniqueConstraint
+from sqlalchemy import Date, DateTime, ForeignKey, ForeignKeyConstraint, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.models.base import Base
-from backend.app.models.client.meeting_entry import MeetingEntry
+from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
+from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
 from backend.app.models.client.tenant_scoped import TenantScoped
 
 
@@ -22,12 +23,21 @@ class TeamMeeting(TenantScoped, Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     student_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
-    year: Mapped[int] = mapped_column(Integer, nullable=False)
-    month: Mapped[int] = mapped_column(Integer, nullable=False)
+    meeting_date: Mapped[date] = mapped_column(Date, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
     )
-    entries: Mapped[list[MeetingEntry]] = relationship(
-        cascade="all, delete-orphan", order_by=MeetingEntry.position
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+    foci_entries: Mapped[list[MeetingFociEntry]] = relationship(
+        cascade="all, delete-orphan", order_by=MeetingFociEntry.position
+    )
+    plan_entries: Mapped[list[MeetingPlanEntry]] = relationship(
+        cascade="all, delete-orphan", order_by=MeetingPlanEntry.position
     )

@@ -9,8 +9,9 @@ from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
-from backend.app.models.client.meeting_entry import MeetingEntry
-from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
+from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
+from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
+from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.social_note import SocialNote
@@ -133,32 +134,50 @@ class DemoSeeder:
         assert author is not None
         meeting = TeamMeeting(
             student_id=student_id,
-            year=2026,
-            month=6,
+            meeting_date=date(2026, 6, 15),
+            summary=(
+                "בישיבת הצוות סקרנו את מוקדי הכוח והמוקדים לחיזוק של נועה ואת התוכנית האישית. "
+                "סוכם להמשיך בתרגול היומי ולעקוב אחר ההתקדמות בישיבה הבאה."
+            ),
             author_id=author.id,
             institution_id=institution_id,
         )
-        meeting.entries = [
-            self._entry(skills["expression"], MeetingRating.GREEN, 0, [], institution_id),
-            self._entry(
-                skills["listening"], MeetingRating.YELLOW, 1, ["ישיבה בקדמת הקבוצה"], institution_id
+        meeting.foci_entries = [
+            self._foci_entry(skills["expression"], MeetingRating.GREEN, 0, institution_id),
+            self._foci_entry(skills["listening"], MeetingRating.YELLOW, 1, institution_id),
+            self._foci_entry(skills["organization"], MeetingRating.RED, 2, institution_id),
+        ]
+        meeting.plan_entries = [
+            self._plan_entry(
+                skills["listening"], MeetingRating.YELLOW, 0, ["ישיבה בקדמת הקבוצה"], institution_id
             ),
-            self._entry(
-                skills["organization"], MeetingRating.RED, 2, ["לוח משימות מצויר"], institution_id
+            self._plan_entry(
+                skills["organization"], MeetingRating.RED, 1, ["לוח משימות מצויר"], institution_id
             ),
         ]
         self._session.add(meeting)
         self._session.flush()
 
-    def _entry(
+    def _foci_entry(
+        self, skill: Skill, rating: MeetingRating, position: int, institution_id: uuid.UUID
+    ) -> MeetingFociEntry:
+        return MeetingFociEntry(
+            skill_id=skill.id,
+            skill_name_snapshot=skill.name,
+            rating=rating,
+            position=position,
+            institution_id=institution_id,
+        )
+
+    def _plan_entry(
         self,
         skill: Skill,
         rating: MeetingRating,
         position: int,
         solution_texts: list[str],
         institution_id: uuid.UUID,
-    ) -> MeetingEntry:
-        entry = MeetingEntry(
+    ) -> MeetingPlanEntry:
+        entry = MeetingPlanEntry(
             skill_id=skill.id,
             skill_name_snapshot=skill.name,
             rating=rating,
@@ -166,18 +185,18 @@ class DemoSeeder:
             institution_id=institution_id,
         )
         entry.solutions = [
-            self._entry_solution(skill.id, text, index, institution_id)
+            self._plan_solution(skill.id, text, index, institution_id)
             for index, text in enumerate(solution_texts)
         ]
         return entry
 
-    def _entry_solution(
+    def _plan_solution(
         self, skill_id: uuid.UUID, text: str, position: int, institution_id: uuid.UUID
-    ) -> MeetingEntrySolution:
+    ) -> MeetingPlanSolution:
         solution = self._session.scalars(
             select(Solution).where(Solution.skill_id == skill_id, Solution.text == text)
         ).one()
-        return MeetingEntrySolution(
+        return MeetingPlanSolution(
             solution_id=solution.id,
             solution_text_snapshot=text,
             position=position,
