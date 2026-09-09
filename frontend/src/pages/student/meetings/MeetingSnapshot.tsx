@@ -26,7 +26,7 @@ export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactN
                 {data.strengths.map((strength) => (
                   <li
                     key={strength.skill_id}
-                    className="rounded-lg border-s-4 border-rating-green bg-accent-50 px-3 py-2 font-medium text-brand-700"
+                    className="rounded-xl border-s-4 border-rating-green bg-accent-50 px-3.5 py-2.5 font-medium text-brand-700"
                   >
                     {strength.skill_name}
                   </li>
@@ -48,7 +48,7 @@ export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactN
                 {data.areas_to_strengthen.map((area) => (
                   <li
                     key={area.skill_id}
-                    className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5"
                   >
                     <span className="font-medium text-ink">{area.skill_name}</span>
                     <RatingPill rating={area.rating} />
@@ -72,7 +72,7 @@ export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactN
               {data.plan_entries.map((entry) => (
                 <li
                   key={entry.skill_id}
-                  className="rounded-lg border border-slate-100 px-3 py-2"
+                  className="rounded-xl border border-slate-200 px-3.5 py-2.5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-ink">

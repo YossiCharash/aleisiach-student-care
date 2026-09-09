@@ -141,7 +141,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
             {rows.map((row, index) => (
               <div
                 key={row.key}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                className="rounded-xl border border-slate-200 bg-slate-50 p-3"
               >
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium text-ink-muted">
@@ -191,7 +191,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
                       onChange={(event) =>
                         updateRow(row.key, { role: event.target.value as InvitableRole })
                       }
-                      className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
+                      className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm"
                     >
                       {(Object.keys(invitableRoleLabels) as InvitableRole[]).map(
                         (value) => (

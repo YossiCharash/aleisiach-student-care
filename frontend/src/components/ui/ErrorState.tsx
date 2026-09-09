@@ -18,7 +18,7 @@ export function ErrorState({ error }: { error: unknown }): ReactNode {
 
 export function EmptyState({ children }: { children: ReactNode }): ReactNode {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 py-10 text-center text-ink-muted">
+    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-10 text-center text-ink-muted">
       {children}
     </div>
   );

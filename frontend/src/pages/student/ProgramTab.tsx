@@ -141,7 +141,7 @@ function FocusPanel({
 
 function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
   return (
-    <li className="rounded-lg border-s-4 border-rating-green bg-accent-50 px-3 py-2 font-medium text-brand-700">
+    <li className="rounded-xl border-s-4 border-rating-green bg-accent-50 px-3.5 py-2.5 font-medium text-brand-700">
       {strength.skill_name}
     </li>
   );
@@ -149,7 +149,7 @@ function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
 
 function AreaRow({ area }: { area: ProgramArea }): ReactNode {
   return (
-    <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+    <li className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5">
       <span className="font-medium text-ink">{area.skill_name}</span>
       <RatingPill rating={area.rating} />
     </li>

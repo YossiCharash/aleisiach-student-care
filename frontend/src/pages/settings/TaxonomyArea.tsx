@@ -281,7 +281,7 @@ function AddSkillForm({
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+    <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/50 p-3">
       <Input
         autoFocus
         placeholder="שם כישור"
@@ -355,7 +355,7 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   );
 
   return (
-    <div className="rounded-lg border border-s-4 border-slate-200 border-s-brand-200 bg-white">
+    <div className="rounded-xl border border-s-4 border-slate-200 border-s-brand-200 bg-white">
       <div
         className="flex cursor-pointer items-center gap-2 px-3 py-2"
         {...headerToggleProps(() => setOpen((value) => !value))}
@@ -404,7 +404,7 @@ function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-3">
+      <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-3">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-xs font-medium text-ink-muted">דרגות</span>
           <SettingsIconButton
@@ -421,7 +421,7 @@ function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
           {RATING_ROWS.map((rating) => (
             <div key={rating}>
               <RatingFieldLabel rating={rating} />
-              <div className="min-h-9 whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-ink">
+              <div className="min-h-9 whitespace-pre-wrap break-words rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-ink">
                 {current[rating].trim() === "" ? (
                   <span className="text-slate-400">—</span>
                 ) : (
@@ -436,7 +436,7 @@ function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/40 p-3">
+    <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/40 p-3">
       <RatingTextFields ratings={draft} onChange={setDraft} />
       <div className="flex items-center gap-2">
         <Button
@@ -480,7 +480,7 @@ function RatingSolutions({
   const solutions = skill.solutions.filter((solution) => solution.rating === rating);
 
   return (
-    <div className="rounded-lg border border-slate-200 p-3">
+    <div className="rounded-xl border border-slate-200 p-3">
       <div className="mb-2 flex items-center gap-2">
         <span
           className={`flex h-3 w-3 shrink-0 rounded-full ${ratingDotClass[rating]}`}

@@ -97,7 +97,7 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
                 type="color"
                 value={color}
                 onChange={(event) => setColor(event.target.value)}
-                className="h-10 w-16 cursor-pointer rounded-lg border border-slate-300 bg-white p-1"
+                className="h-10 w-16 cursor-pointer rounded-xl border border-slate-300 bg-white p-1"
               />
               <span className="text-sm text-ink-muted">{color}</span>
             </div>
@@ -109,7 +109,7 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
               value={instructorId}
               onChange={(event) => setInstructorId(event.target.value)}
               disabled={instructorsQuery.isLoading || instructorsQuery.isError}
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
+              className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
             >
               <option value="">ללא מדריך</option>
               {instructors.map((instructor) => (

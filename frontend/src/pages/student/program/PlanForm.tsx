@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { programApi, programPlansApi, taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, ProgramArea, SolutionTreeNode } from "@/lib/api/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/Spinner";
@@ -60,26 +61,38 @@ export function PlanForm({
   });
 
   if (programQuery.isLoading || treeQuery.isLoading) {
-    return <LoadingState />;
+    return (
+      <PlanFormShell>
+        <LoadingState />
+      </PlanFormShell>
+    );
   }
   if (programQuery.isError) {
-    return <ErrorState error={programQuery.error} />;
+    return (
+      <PlanFormShell>
+        <ErrorState error={programQuery.error} />
+      </PlanFormShell>
+    );
   }
   if (treeQuery.isError) {
-    return <ErrorState error={treeQuery.error} />;
+    return (
+      <PlanFormShell>
+        <ErrorState error={treeQuery.error} />
+      </PlanFormShell>
+    );
   }
 
   const areas = programQuery.data?.areas_to_strengthen ?? [];
   if (areas.length === 0) {
     return (
-      <div className="space-y-4">
+      <PlanFormShell>
         <EmptyState>
           אין מוקדים לחיזוק. יש לסמן מוקדים לחיזוק בתווית המוקדים לפני בניית תוכנית.
         </EmptyState>
         <Button variant="ghost" onClick={onDone}>
           חזרה
         </Button>
-      </div>
+      </PlanFormShell>
     );
   }
 
@@ -104,8 +117,8 @@ export function PlanForm({
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-ink-muted">
+    <PlanFormShell>
+      <p className="text-sm leading-relaxed text-ink-muted">
         בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
         הקודמת תיכנס להיסטוריה.
       </p>
@@ -113,7 +126,7 @@ export function PlanForm({
       {validationError && <Alert tone="error">{validationError}</Alert>}
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {areas.map((area) => (
           <AreaSolutions
             key={area.skill_id}
@@ -135,7 +148,18 @@ export function PlanForm({
           ביטול
         </Button>
       </div>
-    </div>
+    </PlanFormShell>
+  );
+}
+
+function PlanFormShell({ children }: { children: ReactNode }): ReactNode {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>יצירת תוכנית אישית</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
+    </Card>
   );
 }
 
@@ -151,8 +175,8 @@ function AreaSolutions({
   onToggle: (solutionId: string) => void;
 }): ReactNode {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5">
+      <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="font-semibold text-ink">{area.skill_name}</span>
         <RatingPill rating={area.rating} />
       </div>
@@ -161,12 +185,15 @@ function AreaSolutions({
       ) : (
         <div className="space-y-1">
           {solutions.map((solution) => (
-            <label key={solution.id} className="flex items-center gap-2 text-sm text-ink">
+            <label
+              key={solution.id}
+              className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-ink transition-colors hover:bg-slate-50"
+            >
               <input
                 type="checkbox"
                 checked={selected.includes(solution.id)}
                 onChange={() => onToggle(solution.id)}
-                className="h-4 w-4 accent-brand"
+                className="h-4 w-4 shrink-0 accent-brand"
               />
               {solution.text}
             </label>

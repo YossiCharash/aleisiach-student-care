@@ -29,7 +29,7 @@ export function WorkshopPicker({
         onChange={(event) => onChange(event.target.value)}
         required={required}
         disabled={query.isLoading || query.isError}
-        className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
+        className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
       >
         <option value="" disabled>
           {query.isLoading ? "טוען סדנאות…" : "בחר/י סדנה"}

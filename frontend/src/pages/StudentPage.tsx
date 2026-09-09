@@ -6,6 +6,7 @@ import { studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
+import { initials } from "@/lib/utils/initials";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LoadingState } from "@/components/ui/Spinner";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -49,16 +50,23 @@ export function StudentPage(): ReactNode {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <Link
-            to="/students"
-            className="mb-2 inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink"
+      <Link
+        to="/students"
+        className="mb-3 inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink"
+      >
+        <ChevronRight className="h-4 w-4" />
+        חזרה לרשימת התלמידים
+      </Link>
+
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-lg font-bold text-brand"
+            aria-hidden
           >
-            <ChevronRight className="h-4 w-4" />
-            חזרה לרשימת התלמידים
-          </Link>
-          <h1 className="text-2xl font-bold text-ink">{student.full_name}</h1>
+            {initials(student.full_name)}
+          </span>
+          <h1 className="text-2xl font-extrabold text-ink">{student.full_name}</h1>
         </div>
         {permissions.canManage(user) && !student.is_archived && (
           <StudentActionsMenu student={student} />
@@ -66,7 +74,7 @@ export function StudentPage(): ReactNode {
       </div>
 
       <Tabs defaultValue={initialTab}>
-        <TabsList>
+        <TabsList variant="pill">
           <TabsTrigger value="details">פרטים אישיים</TabsTrigger>
           <TabsTrigger value="program">תוכנית קידום</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
