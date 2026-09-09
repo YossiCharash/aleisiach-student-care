@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import ForeignKeyConstraint, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.client.ordered_taxonomy_node import OrderedTaxonomyNode
@@ -18,3 +18,6 @@ class Skill(OrderedTaxonomyNode):
     )
 
     sub_label_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
+    green_text: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    yellow_text: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    red_text: Mapped[str] = mapped_column(String(500), nullable=False, default="")

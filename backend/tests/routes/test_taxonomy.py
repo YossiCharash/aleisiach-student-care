@@ -9,6 +9,8 @@ from backend.app.models.client.user_role import UserRole
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
 
+_RATINGS = {"green": "עצמאי", "yellow": "בהשגחה", "red": "בתלות"}
+
 
 def test_manager_builds_taxonomy_tree(
     api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
@@ -25,18 +27,60 @@ def test_manager_builds_taxonomy_tree(
     skill = api.post(
         "/taxonomy/skills",
         headers=headers,
-        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים"},
+        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
     ).json()
     api.post(
         "/taxonomy/solutions",
         headers=headers,
-        json={"skill_id": skill["id"], "text": "תרגול יומי"},
+        json={"skill_id": skill["id"], "text": "תרגול יומי", "rating": "yellow"},
     )
 
     tree = api.get("/taxonomy/tree", headers=headers)
     assert tree.status_code == 200
     body = tree.json()
-    assert body[0]["sub_labels"][0]["skills"][0]["solutions"][0]["text"] == "תרגול יומי"
+    skill_node = body[0]["sub_labels"][0]["skills"][0]
+    assert skill_node["yellow_text"] == "בהשגחה"
+    assert skill_node["solutions"][0]["text"] == "תרגול יומי"
+    assert skill_node["solutions"][0]["rating"] == "yellow"
+
+
+def test_skill_requires_all_three_rating_texts(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    label = api.post("/taxonomy/labels", headers=headers, json={"name": "עצמאות"}).json()
+    sub_label = api.post(
+        "/taxonomy/sub-labels",
+        headers=headers,
+        json={"label_id": label["id"], "name": "היגיינה"},
+    ).json()
+
+    response = api.post(
+        "/taxonomy/skills",
+        headers=headers,
+        json={
+            "sub_label_id": sub_label["id"],
+            "name": "רחיצת ידיים",
+            "ratings": {"green": "עצמאי", "yellow": "", "red": "בתלות"},
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_solution_rejects_green_rating(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    _, _, skill, _ = _build_leaf(api, headers)
+
+    response = api.post(
+        "/taxonomy/solutions",
+        headers=headers,
+        json={"skill_id": skill["id"], "text": "פתרון ירוק", "rating": "green"},
+    )
+    assert response.status_code == 422
 
 
 def test_instructor_can_read_but_not_write(
@@ -74,10 +118,12 @@ def _build_leaf(
     skill = api.post(
         "/taxonomy/skills",
         headers=headers,
-        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים"},
+        json={"sub_label_id": sub_label["id"], "name": "רחיצת ידיים", "ratings": _RATINGS},
     ).json()
     solution = api.post(
-        "/taxonomy/solutions", headers=headers, json={"skill_id": skill["id"], "text": "תרגול יומי"}
+        "/taxonomy/solutions",
+        headers=headers,
+        json={"skill_id": skill["id"], "text": "תרגול יומי", "rating": "yellow"},
     ).json()
     return label, sub_label, skill, solution
 

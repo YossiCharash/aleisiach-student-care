@@ -36,7 +36,13 @@ const tree: LabelTreeNode[] = [
           {
             id: "sk1",
             name: "הקשבה",
-            solutions: [{ id: "sol1", text: "ישיבה בקדמת הקבוצה" }],
+            green_text: "עצמאי",
+            yellow_text: "בהשגחה",
+            red_text: "בתלות",
+            solutions: [
+              { id: "sol1", text: "ישיבה בקדמת הקבוצה", rating: "yellow" },
+              { id: "sol2", text: "פתרון אדום", rating: "red" },
+            ],
           },
         ],
       },
@@ -69,6 +75,13 @@ describe("PlanForm", () => {
     expect(createMock).toHaveBeenCalledWith("s1", {
       entries: [{ skill_id: "sk1", solution_ids: ["sol1"] }],
     });
+  });
+
+  it("shows only solutions matching the area rating", async () => {
+    renderWithClient(<PlanForm studentId="s1" onDone={vi.fn()} />);
+
+    expect(await screen.findByLabelText("ישיבה בקדמת הקבוצה")).toBeInTheDocument();
+    expect(screen.queryByLabelText("פתרון אדום")).not.toBeInTheDocument();
   });
 
   it("blocks saving with no chosen solution", async () => {

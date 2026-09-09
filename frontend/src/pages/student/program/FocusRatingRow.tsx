@@ -1,10 +1,18 @@
 import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { MeetingRating, SkillTreeNode } from "@/lib/api/types";
-import { ratingLabels } from "@/lib/utils/hebrew";
 import { cn } from "@/lib/utils/cn";
 
 const ratingOrder: MeetingRating[] = ["green", "yellow", "red"];
+
+function ratingText(skill: SkillTreeNode, rating: MeetingRating): string {
+  const text = {
+    green: skill.green_text,
+    yellow: skill.yellow_text,
+    red: skill.red_text,
+  }[rating];
+  return text.trim() === "" ? "—" : text;
+}
 
 const activeRowClass: Record<MeetingRating, string> = {
   green: "border-rating-green bg-accent-50 text-brand-700",
@@ -65,7 +73,7 @@ export function FocusRatingRow({
               >
                 {active && <Check className="h-3.5 w-3.5" />}
               </span>
-              <span className="font-medium">{ratingLabels[value]}</span>
+              <span className="font-medium">{ratingText(skill, value)}</span>
             </button>
           );
         })}

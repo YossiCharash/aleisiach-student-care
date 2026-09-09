@@ -42,8 +42,10 @@ def _setup(session: Session) -> _Fixture:
     other_skill = Skill(sub_label_id=sub_label.id, name="צחצוח שיניים")
     session.add_all([skill, other_skill])
     session.flush()
-    solution = Solution(skill_id=skill.id, text="תרגול יומי")
-    other_solution = Solution(skill_id=other_skill.id, text="פתרון אחר")
+    solution = Solution(skill_id=skill.id, text="תרגול יומי", rating=MeetingRating.YELLOW)
+    other_solution = Solution(
+        skill_id=other_skill.id, text="פתרון אחר", rating=MeetingRating.YELLOW
+    )
     session.add_all([solution, other_solution])
     session.flush()
     return _Fixture(

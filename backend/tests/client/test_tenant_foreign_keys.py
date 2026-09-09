@@ -72,7 +72,10 @@ class Tenant:
         session.add(self.skill)
         session.flush()
         self.solution = Solution(
-            text=f"solution-{code}", skill_id=self.skill.id, institution_id=institution_id
+            text=f"solution-{code}",
+            skill_id=self.skill.id,
+            rating=MeetingRating.YELLOW,
+            institution_id=institution_id,
         )
         session.add(self.solution)
         session.flush()

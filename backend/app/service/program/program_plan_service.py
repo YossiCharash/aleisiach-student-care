@@ -105,8 +105,7 @@ class ProgramPlanService:
             raise InvalidPlanError("נבחר כישור שאינו מוקד לחיזוק.")
         self._reject_duplicate_solutions(entry)
         solutions = [
-            self._resolve_solution(solution_id, entry.skill_id)
-            for solution_id in entry.solution_ids
+            self._resolve_solution(solution_id, area) for solution_id in entry.solution_ids
         ]
         return ResolvedPlanEntry(
             skill_id=area.skill_id,
@@ -115,12 +114,14 @@ class ProgramPlanService:
             solutions=solutions,
         )
 
-    def _resolve_solution(self, solution_id: uuid.UUID, skill_id: uuid.UUID) -> ResolvedSolution:
+    def _resolve_solution(self, solution_id: uuid.UUID, area: ProgramEntry) -> ResolvedSolution:
         solution = self._taxonomy.get_solution(solution_id)
         if solution is None:
             raise NotFoundError("solution")
-        if solution.skill_id != skill_id:
+        if solution.skill_id != area.skill_id:
             raise InvalidPlanError("פתרון שנבחר אינו שייך לכישור שלו.")
+        if solution.rating != area.rating:
+            raise InvalidPlanError("פתרון שנבחר אינו תואם לדירוג הכישור.")
         return ResolvedSolution(solution_id=solution.id, solution_text=solution.text)
 
     def _reject_duplicate_skills(self, entries: list[PlanEntryRequest]) -> None:

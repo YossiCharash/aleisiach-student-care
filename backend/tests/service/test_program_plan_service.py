@@ -71,7 +71,9 @@ def _setup(session: Session) -> _Bundle:
     skill_area = Skill(sub_label_id=sub_label.id, name="הקשבה בקבוצה")
     session.add_all([skill_green, skill_area])
     session.flush()
-    solution_area = Solution(skill_id=skill_area.id, text="ישיבה בקדמת הקבוצה")
+    solution_area = Solution(
+        skill_id=skill_area.id, text="ישיבה בקדמת הקבוצה", rating=MeetingRating.YELLOW
+    )
     session.add(solution_area)
     session.flush()
     program = ProgramService(
@@ -159,12 +161,25 @@ def test_plan_over_non_area_skill_is_rejected(db_session: Session) -> None:
 
 def test_solution_from_other_skill_is_rejected(db_session: Session) -> None:
     bundle = _setup(db_session)
-    stray = Solution(skill_id=bundle.skill_green, text="לא שייך")
+    stray = Solution(skill_id=bundle.skill_green, text="לא שייך", rating=MeetingRating.YELLOW)
     db_session.add(stray)
     db_session.flush()
 
     request = PlanCreateRequest(
         entries=[PlanEntryRequest(skill_id=bundle.skill_area, solution_ids=[stray.id])]
+    )
+    with pytest.raises(InvalidPlanError):
+        bundle.plans.create(bundle.student_id, request, _ALL, bundle.author_id)
+
+
+def test_solution_with_mismatched_rating_is_rejected(db_session: Session) -> None:
+    bundle = _setup(db_session)
+    red_solution = Solution(skill_id=bundle.skill_area, text="פתרון אדום", rating=MeetingRating.RED)
+    db_session.add(red_solution)
+    db_session.flush()
+
+    request = PlanCreateRequest(
+        entries=[PlanEntryRequest(skill_id=bundle.skill_area, solution_ids=[red_solution.id])]
     )
     with pytest.raises(InvalidPlanError):
         bundle.plans.create(bundle.student_id, request, _ALL, bundle.author_id)

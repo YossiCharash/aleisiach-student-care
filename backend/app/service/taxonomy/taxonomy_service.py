@@ -15,6 +15,7 @@ from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpd
 from backend.app.schema.routes.skill_create_request import SkillCreateRequest
 from backend.app.schema.routes.skill_response import SkillResponse
 from backend.app.schema.routes.skill_tree_node import SkillTreeNode
+from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
 from backend.app.schema.routes.solution_response import SolutionResponse
 from backend.app.schema.routes.solution_tree_node import SolutionTreeNode
@@ -101,18 +102,39 @@ class TaxonomyService:
             sub_label_id=request.sub_label_id,
             name=request.name,
             order=self._taxonomy.next_skill_order(request.sub_label_id),
+            green_text=request.ratings.green,
+            yellow_text=request.ratings.yellow,
+            red_text=request.ratings.red,
         )
         self._taxonomy.add_skill(skill)
-        self._audit.record(actor_id, AuditAction.CREATE, skill.id, ["name"])
+        self._audit.record(
+            actor_id,
+            AuditAction.CREATE,
+            skill.id,
+            ["name", "green_text", "yellow_text", "red_text"],
+        )
         return SkillResponse.model_validate(skill)
 
     def update_skill(
-        self, skill_id: uuid.UUID, request: OrderedNodeUpdateRequest, actor_id: uuid.UUID
+        self, skill_id: uuid.UUID, request: SkillUpdateRequest, actor_id: uuid.UUID
     ) -> SkillResponse:
         skill = self._taxonomy.get_skill(skill_id)
         if skill is None:
             raise NotFoundError("skill")
-        changes = OrderedNodeUpdater.apply(skill, request)
+        changes: list[str] = []
+        for field, value in (
+            ("name", request.name),
+            ("order", request.order),
+            ("is_active", request.is_active),
+        ):
+            if value is not None:
+                setattr(skill, field, value)
+                changes.append(field)
+        if request.ratings is not None:
+            skill.green_text = request.ratings.green
+            skill.yellow_text = request.ratings.yellow
+            skill.red_text = request.ratings.red
+            changes.extend(["green_text", "yellow_text", "red_text"])
         self._taxonomy.flush()
         self._audit.record(actor_id, AuditAction.UPDATE, skill.id, changes)
         return SkillResponse.model_validate(skill)
@@ -128,9 +150,9 @@ class TaxonomyService:
     ) -> SolutionResponse:
         if self._taxonomy.get_skill(request.skill_id) is None:
             raise NotFoundError("skill")
-        solution = Solution(skill_id=request.skill_id, text=request.text)
+        solution = Solution(skill_id=request.skill_id, text=request.text, rating=request.rating)
         self._taxonomy.add_solution(solution)
-        self._audit.record(actor_id, AuditAction.CREATE, solution.id, ["text"])
+        self._audit.record(actor_id, AuditAction.CREATE, solution.id, ["text", "rating"])
         return SolutionResponse.model_validate(solution)
 
     def update_solution(
@@ -175,8 +197,15 @@ class TaxonomyService:
                             SkillTreeNode(
                                 id=skill.id,
                                 name=skill.name,
+                                green_text=skill.green_text,
+                                yellow_text=skill.yellow_text,
+                                red_text=skill.red_text,
                                 solutions=[
-                                    SolutionTreeNode(id=solution.id, text=solution.text)
+                                    SolutionTreeNode(
+                                        id=solution.id,
+                                        text=solution.text,
+                                        rating=solution.rating,
+                                    )
                                     for solution in solutions_by_skill[skill.id]
                                 ],
                             )

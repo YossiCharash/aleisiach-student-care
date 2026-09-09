@@ -245,12 +245,15 @@ on purpose: it has no access to any of these.
     - **Sub-tab A — foci** (מוקדי כוח ומוקדים לחיזוק): one current **rating-only** document per
       student. Created/edited via a **"יצירת/עריכת מוקדים"** button opening the accordion (label →
       sub-label → skill) where each skill is rated by **checking one of three rows** — top = green
-      (עצמאי → strength), middle = yellow (בהשגחה), bottom = red (בתלות) → area to strengthen.
+      (strength), middle = yellow, bottom = red → area to strengthen. Each row shows the skill's
+      **own rating description** (authored per skill in Settings — ADR-023 — replacing the fixed
+      עצמאי/בהשגחה/בתלות labels).
       **No solutions here** — the sub-tab shows only strengths and areas to strengthen, with no
       solution text. (Uses program-only rating components — the meeting form of Tab 2 is unchanged.)
     - **Sub-tab B — personal plan** (תוכנית אישית): a **dated, versioned series**. Shows the latest
       plan or "אין תוכנית" + a **"יצירת תוכנית"** button. Creating a plan pulls the **latest foci's
-      areas to strengthen** and lets the manager pick the **solution paths** (sourced from Settings)
+      areas to strengthen** and lets the manager pick the **solution paths** (sourced from Settings,
+      **scoped to each area's rating** — yellow shows yellow solutions, red shows red — ADR-023)
       per area; it saves as a new version **stamped with its date**, pushing the previous plan into
       **history** (a **"היסטוריה"** button reveals past versions). A plan snapshots **only the areas
       to strengthen + their chosen solutions** (green strengths live only in sub-tab A). **PDF

@@ -34,6 +34,32 @@ const tree: LabelTreeNode[] = [
   },
 ];
 
+const treeWithSkill: LabelTreeNode[] = [
+  {
+    id: "l1",
+    name: "תווית פעילה",
+    sub_labels: [
+      {
+        id: "sl1",
+        name: "תת-תווית פעילה",
+        skills: [
+          {
+            id: "sk1",
+            name: "הקשבה",
+            green_text: "עצמאי",
+            yellow_text: "בהשגחה",
+            red_text: "בתלות",
+            solutions: [
+              { id: "so-y", text: "פתרון צהוב", rating: "yellow" },
+              { id: "so-r", text: "פתרון אדום", rating: "red" },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 describe("TaxonomyArea — reactivation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -97,5 +123,81 @@ describe("TaxonomyArea — reactivation", () => {
     await userEvent.click(screen.getByRole("button", { name: "הצג מושבתים" }));
 
     expect(screen.getByRole("button", { name: "תוויות מושבתות" })).toBeInTheDocument();
+  });
+});
+
+describe("TaxonomyArea — rating-scoped skills", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    api.tree.mockResolvedValue(tree);
+    api.listLabels.mockResolvedValue([]);
+    api.listSubLabels.mockResolvedValue([]);
+    api.listSkills.mockResolvedValue([]);
+    api.listSolutions.mockResolvedValue([]);
+    api.createSkill.mockResolvedValue({
+      id: "sk-new",
+      sub_label_id: "sl1",
+      name: "כישור חדש",
+      order: 0,
+      is_active: true,
+      green_text: "ג",
+      yellow_text: "צ",
+      red_text: "א",
+    });
+  });
+
+  it("creates a skill only after all three rating texts are filled", async () => {
+    renderWithClient(<TaxonomyArea />);
+    await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
+    await userEvent.click(await screen.findByRole("button", { name: "הוספת כישור" }));
+
+    await userEvent.type(screen.getByPlaceholderText("שם כישור"), "כישור חדש");
+
+    const save = screen.getByRole("button", { name: "שמירת כישור" });
+    expect(save).toBeDisabled();
+
+    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת עצמאי"), "ג");
+    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת בהשגחה"), "צ");
+    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת בתלות"), "א");
+
+    expect(save).toBeEnabled();
+    await userEvent.click(save);
+
+    await waitFor(() =>
+      expect(api.createSkill).toHaveBeenCalledWith("sl1", "כישור חדש", {
+        green: "ג",
+        yellow: "צ",
+        red: "א",
+      })
+    );
+  });
+
+  it("adds a solution under the chosen rating and groups solutions by rating", async () => {
+    api.tree.mockResolvedValue(treeWithSkill);
+    api.createSolution.mockResolvedValue({
+      id: "so-new",
+      skill_id: "sk1",
+      text: "פתרון חדש",
+      rating: "yellow",
+      is_active: true,
+    });
+
+    renderWithClient(<TaxonomyArea />);
+    await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
+    await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
+
+    expect(await screen.findByText("פתרונות לדרגת בהשגחה")).toBeInTheDocument();
+    expect(screen.getByText("פתרונות לדרגת בתלות")).toBeInTheDocument();
+    expect(screen.getByText("פתרון צהוב")).toBeInTheDocument();
+    expect(screen.getByText("פתרון אדום")).toBeInTheDocument();
+
+    const addButtons = screen.getAllByRole("button", { name: "הוספת פתרון" });
+    await userEvent.click(addButtons[0]);
+    await userEvent.type(screen.getByPlaceholderText("טקסט פתרון"), "פתרון חדש");
+    await userEvent.click(screen.getByRole("button", { name: "שמירה" }));
+
+    await waitFor(() =>
+      expect(api.createSolution).toHaveBeenCalledWith("sk1", "פתרון חדש", "yellow")
+    );
   });
 });

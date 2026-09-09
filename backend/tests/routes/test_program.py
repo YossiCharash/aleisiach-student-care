@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from backend.app.models.client.label import Label
+from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
@@ -42,7 +43,7 @@ def _seed_domain(session: Session, workshop_id: uuid.UUID) -> _Domain:
     skill = Skill(sub_label_id=sub_label.id, name="Wash")
     session.add(skill)
     session.flush()
-    solution = Solution(skill_id=skill.id, text="Daily")
+    solution = Solution(skill_id=skill.id, text="Daily", rating=MeetingRating.YELLOW)
     session.add(solution)
     session.flush()
     return _Domain(student.id, skill.id)

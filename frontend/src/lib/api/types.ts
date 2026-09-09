@@ -133,11 +133,21 @@ export interface StudentCreateRequest {
 export interface SolutionTreeNode {
   id: string;
   text: string;
+  rating: MeetingRating;
+}
+
+export interface SkillRatings {
+  green: string;
+  yellow: string;
+  red: string;
 }
 
 export interface SkillTreeNode {
   id: string;
   name: string;
+  green_text: string;
+  yellow_text: string;
+  red_text: string;
   solutions: SolutionTreeNode[];
 }
 
@@ -174,18 +184,28 @@ export interface SkillResponse {
   name: string;
   order: number;
   is_active: boolean;
+  green_text: string;
+  yellow_text: string;
+  red_text: string;
 }
 
 export interface SolutionResponse {
   id: string;
   skill_id: string;
   text: string;
+  rating: MeetingRating;
   is_active: boolean;
 }
 
 export interface NamedTaxonomyUpdate {
   name?: string;
   is_active?: boolean;
+}
+
+export interface SkillUpdate {
+  name?: string;
+  is_active?: boolean;
+  ratings?: SkillRatings;
 }
 
 export interface SolutionUpdate {

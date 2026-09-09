@@ -120,7 +120,9 @@ export function PlanForm({
           <AreaSolutions
             key={area.skill_id}
             area={area}
-            solutions={solutionsMap[area.skill_id] ?? []}
+            solutions={(solutionsMap[area.skill_id] ?? []).filter(
+              (solution) => solution.rating === area.rating
+            )}
             selected={selections[area.skill_id] ?? []}
             onToggle={(solutionId) => toggle(area.skill_id, solutionId)}
           />

@@ -96,14 +96,42 @@ class DemoSeeder:
         verbal = self._add_sub_label("תקשורת מילולית", communication.id, 0, institution_id)
         daily = self._add_sub_label("כישורי יומיום", independence.id, 0, institution_id)
 
-        expression = self._add_skill("הבעה בעל פה", verbal.id, 0, institution_id)
-        listening = self._add_skill("הקשבה בקבוצה", verbal.id, 1, institution_id)
-        organization = self._add_skill("התארגנות בוקר", daily.id, 0, institution_id)
+        expression = self._add_skill(
+            "הבעה בעל פה",
+            verbal.id,
+            0,
+            institution_id,
+            green="מביע צרכים ורצונות באופן עצמאי",
+            yellow="מביע צרכים בעזרת עידוד והכוונה",
+            red="נמנע מהבעה מילולית וזקוק לתיווך מלא",
+        )
+        listening = self._add_skill(
+            "הקשבה בקבוצה",
+            verbal.id,
+            1,
+            institution_id,
+            green="מקשיב וממתין לתורו באופן עצמאי",
+            yellow="מקשיב בהשגחה וזקוק לתזכורות",
+            red="מתקשה להקשיב וזקוק להשגחה צמודה",
+        )
+        organization = self._add_skill(
+            "התארגנות בוקר",
+            daily.id,
+            0,
+            institution_id,
+            green="מתארגן בבוקר באופן עצמאי",
+            yellow="מתארגן בעזרת תזכורות חלקיות",
+            red="זקוק לליווי מלא בהתארגנות הבוקר",
+        )
 
-        self._add_solution("תרגול יומי מול המראה", expression.id, institution_id)
-        self._add_solution("שימוש בכרטיסיות תמונה", expression.id, institution_id)
-        self._add_solution("ישיבה בקדמת הקבוצה", listening.id, institution_id)
-        self._add_solution("לוח משימות מצויר", organization.id, institution_id)
+        self._add_solution(
+            "תרגול יומי מול המראה", expression.id, MeetingRating.YELLOW, institution_id
+        )
+        self._add_solution(
+            "שימוש בכרטיסיות תמונה", expression.id, MeetingRating.RED, institution_id
+        )
+        self._add_solution("ישיבה בקדמת הקבוצה", listening.id, MeetingRating.YELLOW, institution_id)
+        self._add_solution("לוח משימות מצויר", organization.id, MeetingRating.RED, institution_id)
         self._session.flush()
 
         return {"expression": expression, "listening": listening, "organization": organization}
@@ -272,17 +300,34 @@ class DemoSeeder:
         return sub_label
 
     def _add_skill(
-        self, name: str, sub_label_id: uuid.UUID, order: int, institution_id: uuid.UUID
+        self,
+        name: str,
+        sub_label_id: uuid.UUID,
+        order: int,
+        institution_id: uuid.UUID,
+        green: str,
+        yellow: str,
+        red: str,
     ) -> Skill:
         skill = Skill(
-            name=name, sub_label_id=sub_label_id, order=order, institution_id=institution_id
+            name=name,
+            sub_label_id=sub_label_id,
+            order=order,
+            institution_id=institution_id,
+            green_text=green,
+            yellow_text=yellow,
+            red_text=red,
         )
         self._session.add(skill)
         self._session.flush()
         return skill
 
-    def _add_solution(self, text: str, skill_id: uuid.UUID, institution_id: uuid.UUID) -> Solution:
-        solution = Solution(text=text, skill_id=skill_id, institution_id=institution_id)
+    def _add_solution(
+        self, text: str, skill_id: uuid.UUID, rating: MeetingRating, institution_id: uuid.UUID
+    ) -> Solution:
+        solution = Solution(
+            text=text, skill_id=skill_id, rating=rating, institution_id=institution_id
+        )
         self._session.add(solution)
         self._session.flush()
         return solution

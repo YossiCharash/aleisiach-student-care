@@ -19,6 +19,7 @@ import type {
   LoginRequest,
   LoginResponse,
   MeetingCreateRequest,
+  MeetingRating,
   MeetingResponse,
   MeetingUpdateRequest,
   NamedTaxonomyUpdate,
@@ -28,7 +29,9 @@ import type {
   PlanResponse,
   ProgramResponse,
   ProgramUpsertRequest,
+  SkillRatings,
   SkillResponse,
+  SkillUpdate,
   SocialNoteResponse,
   SocialNoteUpsertRequest,
   SolutionResponse,
@@ -257,10 +260,26 @@ export const taxonomyApi = {
     ),
   createSubLabel: (labelId: string, name: string): Promise<SubLabelResponse> =>
     apiClient.post<SubLabelResponse>("/taxonomy/sub-labels", { label_id: labelId, name }),
-  createSkill: (subLabelId: string, name: string): Promise<SkillResponse> =>
-    apiClient.post<SkillResponse>("/taxonomy/skills", { sub_label_id: subLabelId, name }),
-  createSolution: (skillId: string, text: string): Promise<SolutionResponse> =>
-    apiClient.post<SolutionResponse>("/taxonomy/solutions", { skill_id: skillId, text }),
+  createSkill: (
+    subLabelId: string,
+    name: string,
+    ratings: SkillRatings
+  ): Promise<SkillResponse> =>
+    apiClient.post<SkillResponse>("/taxonomy/skills", {
+      sub_label_id: subLabelId,
+      name,
+      ratings,
+    }),
+  createSolution: (
+    skillId: string,
+    text: string,
+    rating: MeetingRating
+  ): Promise<SolutionResponse> =>
+    apiClient.post<SolutionResponse>("/taxonomy/solutions", {
+      skill_id: skillId,
+      text,
+      rating,
+    }),
   updateLabel: (labelId: string, body: NamedTaxonomyUpdate): Promise<LabelResponse> =>
     apiClient.patch<LabelResponse>(`/taxonomy/labels/${labelId}`, body),
   updateSubLabel: (
@@ -268,7 +287,7 @@ export const taxonomyApi = {
     body: NamedTaxonomyUpdate
   ): Promise<SubLabelResponse> =>
     apiClient.patch<SubLabelResponse>(`/taxonomy/sub-labels/${subLabelId}`, body),
-  updateSkill: (skillId: string, body: NamedTaxonomyUpdate): Promise<SkillResponse> =>
+  updateSkill: (skillId: string, body: SkillUpdate): Promise<SkillResponse> =>
     apiClient.patch<SkillResponse>(`/taxonomy/skills/${skillId}`, body),
   updateSolution: (solutionId: string, body: SolutionUpdate): Promise<SolutionResponse> =>
     apiClient.patch<SolutionResponse>(`/taxonomy/solutions/${solutionId}`, body),

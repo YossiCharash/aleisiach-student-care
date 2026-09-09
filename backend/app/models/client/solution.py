@@ -1,9 +1,10 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKeyConstraint, String, UniqueConstraint
+from sqlalchemy import Boolean, Enum, ForeignKeyConstraint, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
+from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.tenant_scoped import TenantScoped
 
 
@@ -21,4 +22,7 @@ class Solution(TenantScoped, Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     skill_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
     text: Mapped[str] = mapped_column(String(500), nullable=False)
+    rating: Mapped[MeetingRating] = mapped_column(
+        Enum(MeetingRating, native_enum=False, length=16), nullable=False
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

@@ -11,3 +11,6 @@ class SkillResponse(BaseModel):
     name: str
     order: int
     is_active: bool
+    green_text: str
+    yellow_text: str
+    red_text: str

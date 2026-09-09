@@ -468,6 +468,48 @@ taxonomy utility.
 
 ---
 
+## ADR-023 — Per-skill rating descriptions and rating-scoped solutions
+
+**Date:** 2026-09-09
+**Decision:** In Settings, every **skill** (כישור) now carries **three mandatory rating
+descriptions** — one for **green**, one for **yellow**, one for **red** — authored per skill instead
+of the fixed global labels (עצמאי / בהשגחה / בתלות). **Solutions are defined under a rating**:
+each solution belongs to the skill's **yellow** or **red** row (green, being a strength, has no
+solutions). When building a personal plan (Tab 1, sub-tab B), the solution picker for an area shows
+**only the solutions whose rating matches the rating the skill was given** — a yellow-rated area
+offers yellow solutions, a red-rated area offers red solutions — replacing the previous flat
+per-skill solution list.
+
+**Context:** The client asked that each skill spell out what green/yellow/red mean for that skill,
+and that solutions be entered against the specific rating so the plan offers the right options for
+the actual rating rather than one undifferentiated list.
+
+**Data model:** `skills` gains three text columns `green_text` / `yellow_text` / `red_text`
+(nullable at the DB level, `default=""`); presence of all three is **enforced at the application
+boundary** — `SkillCreateRequest.ratings` (a `SkillRatingsInput` DTO) and `SkillUpdateRequest`
+require non-empty text for each, so a skill cannot be saved or edited without all three. `solutions`
+gains a `rating` column (`MeetingRating`), constrained to **yellow/red** by a validator on
+`SolutionCreateRequest`. `ProgramPlanService` rejects a chosen solution whose `rating` does not match
+the area's rating. The taxonomy tree exposes the three texts on each skill node and the rating on
+each solution node; the foci rating form (`FocusRatingRow`) shows the per-skill text (falling back to
+the global label when empty), and `PlanForm` filters solutions by the area rating. Migration
+`0027_skill_rating_solutions` adds the columns; since the prototype holds demo data only, the demo
+seeder was rebuilt to the new shape (three descriptions per skill, each solution tagged yellow/red)
+and a database reset reseeds it — no data conversion.
+
+**Alternatives:** A normalized `skill_rating` child table — rejected; the ratings are a fixed set of
+three, so three columns plus a request DTO are simpler and still typed. Assigning existing flat
+solutions to yellow in the migration — rejected in favour of reset-and-reseed, as the prototype
+carries only demo data. Showing all of a skill's solutions regardless of rating — rejected; the
+client explicitly wanted the picker scoped to the chosen rating.
+
+**Consequences:** Managers author richer, skill-specific rating guidance, and the plan picker is
+tighter. Tab 1's foci document is unchanged in shape (still green = strength, yellow/red = area to
+strengthen, no solutions in the foci itself — ADR-021); only the **taxonomy definition** and the
+plan's **solution sourcing** changed. Green never carries solutions.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.
