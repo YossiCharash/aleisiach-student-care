@@ -9,7 +9,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 const useAuth = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 
-const logout = vi.fn();
+const logout = vi.fn<() => Promise<void>>();
 
 function signedInAs(
   role: UserRole,
@@ -36,6 +36,7 @@ describe("Sidebar", () => {
   beforeEach(() => {
     useAuth.mockReset();
     logout.mockReset();
+    logout.mockResolvedValue(undefined);
   });
 
   it("renders nothing when signed out", () => {
@@ -81,6 +82,16 @@ describe("Sidebar", () => {
 
   it("logs the user out", async () => {
     signedInAs("instructor");
+    renderSidebar();
+
+    await userEvent.click(screen.getByRole("button", { name: "יציאה" }));
+
+    await waitFor(() => expect(logout).toHaveBeenCalledOnce());
+  });
+
+  it("still leaves for the login page when signing out fails", async () => {
+    signedInAs("instructor");
+    logout.mockRejectedValue(new Error("network down"));
     renderSidebar();
 
     await userEvent.click(screen.getByRole("button", { name: "יציאה" }));

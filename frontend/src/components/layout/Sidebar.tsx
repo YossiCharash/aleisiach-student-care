@@ -16,7 +16,7 @@ export function Sidebar(): ReactNode {
   const navigate = useNavigate();
 
   async function handleLogout(): Promise<void> {
-    await logout().catch(() => undefined);
+    await Promise.resolve(logout()).catch(() => undefined);
     navigate("/login", { replace: true });
   }
 
