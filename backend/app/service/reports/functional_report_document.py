@@ -32,7 +32,7 @@ class FunctionalReportDocument:
 
     def to_html(self, report: FunctionalReportResponse, institution_name: str) -> str:
         body = self._identity(report) + self._sections(report) + self._footer(report)
-        return self._shell.render(self._css(), institution_name, "סיכום דוח תפקודי", body)
+        return self._shell.render(self._css(), institution_name, "דוח תפקודי", body)
 
     def _identity(self, report: FunctionalReportResponse) -> str:
         dob = report.date_of_birth.isoformat() if report.date_of_birth is not None else "—"

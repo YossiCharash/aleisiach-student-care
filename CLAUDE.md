@@ -275,7 +275,7 @@ on purpose: it has no access to any of these.
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
     Exact heading names to be supplied by the user (draft reading was 5. preferred communication
     channel · 6. prior educational/occupational background · 7. preferences & sensitivities).
-  - Tab 5 — **Functional report** (סיכום דוח תפקודי): a **manager-authored form** modeled on the
+  - Tab 5 — **Functional report** (דוח תפקודי): a **manager-authored form** modeled on the
     client's official **"טופס 33"** — **one stored report per student, updated in place**. Six
     free-text sections (רקע כללי · התחום התעסוקתי · התחום ההתנהגותי-רגשי · התחום התקשורתי-חברתי ·
     תחום עצמאות וכישורי חיים · סיכום והמלצות). The identity header (שם · ת"ז · תאריך לידה) is

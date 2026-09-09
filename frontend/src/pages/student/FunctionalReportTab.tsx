@@ -113,7 +113,7 @@ function IdentityCard({ report }: { report: FunctionalReportResponse }): ReactNo
   return (
     <Card>
       <CardHeader>
-        <CardTitle>סיכום דוח תפקודי</CardTitle>
+        <CardTitle>דוח תפקודי</CardTitle>
       </CardHeader>
       <CardContent>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-3">

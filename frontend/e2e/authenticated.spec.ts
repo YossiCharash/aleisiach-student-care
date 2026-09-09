@@ -22,7 +22,7 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("tab", { name: "תוכנית קידום" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "ישיבות צוות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "סיכום עו״ס" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "סיכום דוח תפקודי" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "דוח תפקודי" })).toBeVisible();
   });
 
   test("reaches settings with users and taxonomy areas", async ({ page }) => {

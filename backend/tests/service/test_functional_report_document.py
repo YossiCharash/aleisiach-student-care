@@ -30,7 +30,7 @@ def test_html_is_rtl_and_contains_all_sections() -> None:
     html = FunctionalReportDocument(BrandSettings()).to_html(_report(), "מוסד בדיקה")
 
     assert 'dir="rtl"' in html
-    assert "סיכום דוח תפקודי" in html
+    assert "דוח תפקודי" in html
     assert "נועה" in html
     assert "123456782" in html
     assert "רקע כללי" in html
