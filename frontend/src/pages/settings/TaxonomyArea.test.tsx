@@ -10,15 +10,12 @@ vi.mock("@/lib/api/endpoints", () => ({
   taxonomyApi: {
     tree: vi.fn(),
     listLabels: vi.fn(),
-    listSubLabels: vi.fn(),
     listSkills: vi.fn(),
     listSolutions: vi.fn(),
     createLabel: vi.fn(),
-    createSubLabel: vi.fn(),
     createSkill: vi.fn(),
     createSolution: vi.fn(),
     updateLabel: vi.fn(),
-    updateSubLabel: vi.fn(),
     updateSkill: vi.fn(),
     updateSolution: vi.fn(),
   },
@@ -30,7 +27,7 @@ const tree: LabelTreeNode[] = [
   {
     id: "l1",
     name: "תווית פעילה",
-    sub_labels: [{ id: "sl1", name: "תת-תווית פעילה", skills: [] }],
+    skills: [],
   },
 ];
 
@@ -38,22 +35,16 @@ const treeWithSkill: LabelTreeNode[] = [
   {
     id: "l1",
     name: "תווית פעילה",
-    sub_labels: [
+    skills: [
       {
-        id: "sl1",
-        name: "תת-תווית פעילה",
-        skills: [
-          {
-            id: "sk1",
-            name: "הקשבה",
-            green_text: "עצמאי",
-            yellow_text: "בהשגחה",
-            red_text: "בתלות",
-            solutions: [
-              { id: "so-y", text: "פתרון צהוב", rating: "yellow" },
-              { id: "so-r", text: "פתרון אדום", rating: "red" },
-            ],
-          },
+        id: "sk1",
+        name: "הקשבה",
+        green_text: "עצמאי",
+        yellow_text: "בהשגחה",
+        red_text: "בתלות",
+        solutions: [
+          { id: "so-y", text: "פתרון צהוב", rating: "yellow" },
+          { id: "so-r", text: "פתרון אדום", rating: "red" },
         ],
       },
     ],
@@ -65,21 +56,32 @@ describe("TaxonomyArea — reactivation", () => {
     vi.clearAllMocks();
     api.tree.mockResolvedValue(tree);
     api.listLabels.mockResolvedValue([]);
-    api.listSubLabels.mockResolvedValue([]);
     api.listSkills.mockResolvedValue([]);
     api.listSolutions.mockResolvedValue([]);
   });
 
-  it("reactivates a deactivated sub-label from within its label", async () => {
-    api.listSubLabels.mockResolvedValue([
-      { id: "sl9", label_id: "l1", name: "תת-תווית מושבתת", order: 0, is_active: false },
+  it("reactivates a deactivated skill from within its label", async () => {
+    api.listSkills.mockResolvedValue([
+      {
+        id: "sk9",
+        label_id: "l1",
+        name: "כישור מושבת",
+        order: 0,
+        is_active: false,
+        green_text: "ג",
+        yellow_text: "צ",
+        red_text: "א",
+      },
     ]);
-    api.updateSubLabel.mockResolvedValue({
-      id: "sl9",
+    api.updateSkill.mockResolvedValue({
+      id: "sk9",
       label_id: "l1",
-      name: "תת-תווית מושבתת",
+      name: "כישור מושבת",
       order: 0,
       is_active: true,
+      green_text: "ג",
+      yellow_text: "צ",
+      red_text: "א",
     });
 
     renderWithClient(<TaxonomyArea />);
@@ -87,14 +89,14 @@ describe("TaxonomyArea — reactivation", () => {
     await userEvent.click(await screen.findByRole("button", { name: "הצג מושבתים" }));
     await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
     await userEvent.click(
-      await screen.findByRole("button", { name: /תת-תוויות מושבתות/ })
+      await screen.findByRole("button", { name: /כישורים מושבתים/ })
     );
 
-    expect(await screen.findByText("תת-תווית מושבתת")).toBeInTheDocument();
+    expect(await screen.findByText("כישור מושבת")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /הפעלה מחדש/ }));
 
     await waitFor(() =>
-      expect(api.updateSubLabel).toHaveBeenCalledWith("sl9", { is_active: true })
+      expect(api.updateSkill).toHaveBeenCalledWith("sk9", { is_active: true })
     );
   });
 
@@ -131,12 +133,11 @@ describe("TaxonomyArea — rating-scoped skills", () => {
     vi.clearAllMocks();
     api.tree.mockResolvedValue(tree);
     api.listLabels.mockResolvedValue([]);
-    api.listSubLabels.mockResolvedValue([]);
     api.listSkills.mockResolvedValue([]);
     api.listSolutions.mockResolvedValue([]);
     api.createSkill.mockResolvedValue({
       id: "sk-new",
-      sub_label_id: "sl1",
+      label_id: "l1",
       name: "כישור חדש",
       order: 0,
       is_active: true,
@@ -164,7 +165,7 @@ describe("TaxonomyArea — rating-scoped skills", () => {
     await userEvent.click(save);
 
     await waitFor(() =>
-      expect(api.createSkill).toHaveBeenCalledWith("sl1", "כישור חדש", {
+      expect(api.createSkill).toHaveBeenCalledWith("l1", "כישור חדש", {
         green: "ג",
         yellow: "צ",
         red: "א",

@@ -28,22 +28,16 @@ const tree: LabelTreeNode[] = [
   {
     id: "l1",
     name: "תקשורת",
-    sub_labels: [
+    skills: [
       {
-        id: "sub1",
-        name: "מילולית",
-        skills: [
-          {
-            id: "sk1",
-            name: "הקשבה",
-            green_text: "עצמאי",
-            yellow_text: "בהשגחה",
-            red_text: "בתלות",
-            solutions: [
-              { id: "sol1", text: "ישיבה בקדמת הקבוצה", rating: "yellow" },
-              { id: "sol2", text: "פתרון אדום", rating: "red" },
-            ],
-          },
+        id: "sk1",
+        name: "הקשבה",
+        green_text: "עצמאי",
+        yellow_text: "בהשגחה",
+        red_text: "בתלות",
+        solutions: [
+          { id: "sol1", text: "ישיבה בקדמת הקבוצה", rating: "yellow" },
+          { id: "sol2", text: "פתרון אדום", rating: "red" },
         ],
       },
     ],

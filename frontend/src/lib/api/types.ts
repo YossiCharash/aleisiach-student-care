@@ -151,16 +151,10 @@ export interface SkillTreeNode {
   solutions: SolutionTreeNode[];
 }
 
-export interface SubLabelTreeNode {
-  id: string;
-  name: string;
-  skills: SkillTreeNode[];
-}
-
 export interface LabelTreeNode {
   id: string;
   name: string;
-  sub_labels: SubLabelTreeNode[];
+  skills: SkillTreeNode[];
 }
 
 export interface LabelResponse {
@@ -170,17 +164,9 @@ export interface LabelResponse {
   is_active: boolean;
 }
 
-export interface SubLabelResponse {
-  id: string;
-  label_id: string;
-  name: string;
-  order: number;
-  is_active: boolean;
-}
-
 export interface SkillResponse {
   id: string;
-  sub_label_id: string;
+  label_id: string;
   name: string;
   order: number;
   is_active: boolean;

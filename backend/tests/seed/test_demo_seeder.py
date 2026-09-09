@@ -13,7 +13,6 @@ from backend.app.models.client.social_note import SocialNote
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -75,7 +74,7 @@ def test_seeds_workshops_students_and_taxonomy(db_session: Session) -> None:
 
     assert _count(db_session, Workshop) == 2
     assert _count(db_session, Student) == 3
-    assert _count(db_session, SubLabel) == 2
+    assert _count(db_session, Label) == 2
     assert _count(db_session, Skill) == 3
     assert _count(db_session, Solution) == 4
 
@@ -136,7 +135,7 @@ def test_every_seeded_row_belongs_to_the_demo_institution(db_session: Session) -
         ).one()
         owners = {
             model.__name__: {row.institution_id for row in db_session.scalars(select(model)).all()}
-            for model in (Workshop, Student, Label, SubLabel, Skill, Solution)
+            for model in (Workshop, Student, Label, Skill, Solution)
         }
 
     assert owners == {model: {institution.id} for model in owners}

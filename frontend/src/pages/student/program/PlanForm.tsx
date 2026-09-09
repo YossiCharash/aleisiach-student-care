@@ -14,10 +14,8 @@ type Selections = Record<string, string[]>;
 function solutionsBySkill(tree: LabelTreeNode[]): Record<string, SolutionTreeNode[]> {
   const map: Record<string, SolutionTreeNode[]> = {};
   for (const label of tree) {
-    for (const subLabel of label.sub_labels) {
-      for (const skill of subLabel.skills) {
-        map[skill.id] = skill.solutions;
-      }
+    for (const skill of label.skills) {
+      map[skill.id] = skill.solutions;
     }
   }
   return map;

@@ -15,7 +15,6 @@ from backend.app.schema.routes.skill_create_request import SkillCreateRequest
 from backend.app.schema.routes.skill_ratings_input import SkillRatingsInput
 from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
-from backend.app.schema.routes.sub_label_create_request import SubLabelCreateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.taxonomy.taxonomy_service import TaxonomyService
 
@@ -38,11 +37,13 @@ def test_create_label_assigns_incrementing_order(db_session: Session) -> None:
     assert first.is_active is True
 
 
-def test_create_sub_label_under_unknown_label_raises(db_session: Session) -> None:
+def test_create_skill_under_unknown_label_raises(db_session: Session) -> None:
     service = _service(db_session)
 
     try:
-        service.create_sub_label(SubLabelCreateRequest(label_id=uuid.uuid4(), name="x"), _ACTOR)
+        service.create_skill(
+            SkillCreateRequest(label_id=uuid.uuid4(), name="x", ratings=_RATINGS), _ACTOR
+        )
         raise AssertionError("expected NotFoundError")
     except NotFoundError as error:
         assert error.resource == "label"
@@ -51,11 +52,8 @@ def test_create_sub_label_under_unknown_label_raises(db_session: Session) -> Non
 def test_active_tree_nests_children_and_hides_inactive(db_session: Session) -> None:
     service = _service(db_session)
     label = service.create_label(LabelCreateRequest(name="עצמאות"), _ACTOR)
-    sub_label = service.create_sub_label(
-        SubLabelCreateRequest(label_id=label.id, name="היגיינה"), _ACTOR
-    )
     skill = service.create_skill(
-        SkillCreateRequest(sub_label_id=sub_label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
+        SkillCreateRequest(label_id=label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
     )
     service.create_solution(
         SolutionCreateRequest(skill_id=skill.id, text="תרגול יומי", rating=MeetingRating.YELLOW),
@@ -67,7 +65,7 @@ def test_active_tree_nests_children_and_hides_inactive(db_session: Session) -> N
     tree = service.active_tree()
 
     assert [node.name for node in tree] == ["עצמאות"]
-    skill_node = tree[0].sub_labels[0].skills[0]
+    skill_node = tree[0].skills[0]
     assert skill_node.yellow_text == "בהשגחה"
     assert skill_node.solutions[0].text == "תרגול יומי"
     assert skill_node.solutions[0].rating == MeetingRating.YELLOW
@@ -76,27 +74,21 @@ def test_active_tree_nests_children_and_hides_inactive(db_session: Session) -> N
 def test_deactivating_skill_removes_it_from_tree(db_session: Session) -> None:
     service = _service(db_session)
     label = service.create_label(LabelCreateRequest(name="עצמאות"), _ACTOR)
-    sub_label = service.create_sub_label(
-        SubLabelCreateRequest(label_id=label.id, name="היגיינה"), _ACTOR
-    )
     skill = service.create_skill(
-        SkillCreateRequest(sub_label_id=sub_label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
+        SkillCreateRequest(label_id=label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
     )
 
     service.update_skill(skill.id, SkillUpdateRequest(is_active=False), _ACTOR)
 
     tree = service.active_tree()
-    assert tree[0].sub_labels[0].skills == []
+    assert tree[0].skills == []
 
 
 def test_update_skill_persists_new_rating_texts(db_session: Session) -> None:
     service = _service(db_session)
     label = service.create_label(LabelCreateRequest(name="עצמאות"), _ACTOR)
-    sub_label = service.create_sub_label(
-        SubLabelCreateRequest(label_id=label.id, name="היגיינה"), _ACTOR
-    )
     skill = service.create_skill(
-        SkillCreateRequest(sub_label_id=sub_label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
+        SkillCreateRequest(label_id=label.id, name="רחיצת ידיים", ratings=_RATINGS), _ACTOR
     )
 
     updated = service.update_skill(
@@ -113,7 +105,7 @@ def test_update_skill_persists_new_rating_texts(db_session: Session) -> None:
         "חדש-אדום",
     )
     tree = service.active_tree()
-    skill_node = tree[0].sub_labels[0].skills[0]
+    skill_node = tree[0].skills[0]
     assert (skill_node.green_text, skill_node.yellow_text, skill_node.red_text) == (
         "חדש-ירוק",
         "חדש-צהוב",

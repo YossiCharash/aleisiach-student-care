@@ -23,7 +23,6 @@ from backend.app.models.client.program_plan_solution import ProgramPlanSolution
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_update_request import MeetingUpdateRequest
@@ -64,11 +63,8 @@ def _setup(session: Session) -> _Fixture:
     label = Label(name="עצמאות")
     session.add(label)
     session.flush()
-    sub_label = SubLabel(label_id=label.id, name="היגיינה")
-    session.add(sub_label)
-    session.flush()
-    strength = Skill(sub_label_id=sub_label.id, name="הבעה")
-    area = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
+    strength = Skill(label_id=label.id, name="הבעה")
+    area = Skill(label_id=label.id, name="רחיצת ידיים")
     session.add_all([strength, area])
     session.flush()
     solution = Solution(skill_id=area.id, text="תרגול יומי", rating=MeetingRating.YELLOW)

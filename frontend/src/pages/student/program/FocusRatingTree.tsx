@@ -64,20 +64,13 @@ function LabelAccordion({
         {label.name}
       </summary>
       <div className="space-y-2 border-t border-slate-100 p-3">
-        {label.sub_labels.map((subLabel) => (
-          <div key={subLabel.id} className="rounded-lg bg-slate-50 p-3">
-            <div className="mb-2 text-sm font-medium text-ink-muted">{subLabel.name}</div>
-            <div className="space-y-2">
-              {subLabel.skills.map((skill) => (
-                <FocusRatingRow
-                  key={skill.id}
-                  skill={skill}
-                  rating={drafts[skill.id] ?? null}
-                  onChange={(next) => setDraft(skill.id, next)}
-                />
-              ))}
-            </div>
-          </div>
+        {label.skills.map((skill) => (
+          <FocusRatingRow
+            key={skill.id}
+            skill={skill}
+            rating={drafts[skill.id] ?? null}
+            onChange={(next) => setDraft(skill.id, next)}
+          />
         ))}
       </div>
     </details>

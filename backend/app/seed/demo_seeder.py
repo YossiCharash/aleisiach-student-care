@@ -17,7 +17,6 @@ from backend.app.models.client.social_note import SocialNote
 from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_status import UserStatus
@@ -93,12 +92,10 @@ class DemoSeeder:
     def _seed_taxonomy(self, institution_id: uuid.UUID) -> dict[str, Skill]:
         communication = self._add_label("תקשורת", 0, institution_id)
         independence = self._add_label("עצמאות", 1, institution_id)
-        verbal = self._add_sub_label("תקשורת מילולית", communication.id, 0, institution_id)
-        daily = self._add_sub_label("כישורי יומיום", independence.id, 0, institution_id)
 
         expression = self._add_skill(
             "הבעה בעל פה",
-            verbal.id,
+            communication.id,
             0,
             institution_id,
             green="מביע צרכים ורצונות באופן עצמאי",
@@ -107,7 +104,7 @@ class DemoSeeder:
         )
         listening = self._add_skill(
             "הקשבה בקבוצה",
-            verbal.id,
+            communication.id,
             1,
             institution_id,
             green="מקשיב וממתין לתורו באופן עצמאי",
@@ -116,7 +113,7 @@ class DemoSeeder:
         )
         organization = self._add_skill(
             "התארגנות בוקר",
-            daily.id,
+            independence.id,
             0,
             institution_id,
             green="מתארגן בבוקר באופן עצמאי",
@@ -289,20 +286,10 @@ class DemoSeeder:
         self._session.flush()
         return label
 
-    def _add_sub_label(
-        self, name: str, label_id: uuid.UUID, order: int, institution_id: uuid.UUID
-    ) -> SubLabel:
-        sub_label = SubLabel(
-            name=name, label_id=label_id, order=order, institution_id=institution_id
-        )
-        self._session.add(sub_label)
-        self._session.flush()
-        return sub_label
-
     def _add_skill(
         self,
         name: str,
-        sub_label_id: uuid.UUID,
+        label_id: uuid.UUID,
         order: int,
         institution_id: uuid.UUID,
         green: str,
@@ -311,7 +298,7 @@ class DemoSeeder:
     ) -> Skill:
         skill = Skill(
             name=name,
-            sub_label_id=sub_label_id,
+            label_id=label_id,
             order=order,
             institution_id=institution_id,
             green_text=green,

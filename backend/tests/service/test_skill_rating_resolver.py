@@ -10,7 +10,6 @@ from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.schema.routes.skill_rating_request import SkillRatingRequest
 from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 
@@ -35,11 +34,8 @@ def _setup(session: Session) -> _Fixture:
     label = Label(name="עצמאות")
     session.add(label)
     session.flush()
-    sub_label = SubLabel(label_id=label.id, name="היגיינה")
-    session.add(sub_label)
-    session.flush()
-    skill = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
-    other_skill = Skill(sub_label_id=sub_label.id, name="צחצוח שיניים")
+    skill = Skill(label_id=label.id, name="רחיצת ידיים")
+    other_skill = Skill(label_id=label.id, name="צחצוח שיניים")
     session.add_all([skill, other_skill])
     session.flush()
     solution = Solution(skill_id=skill.id, text="תרגול יומי", rating=MeetingRating.YELLOW)

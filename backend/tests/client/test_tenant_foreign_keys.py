@@ -24,7 +24,6 @@ from backend.app.models.client.solution import Solution
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
 from backend.app.models.client.student_extra_section import StudentExtraSection
-from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.team_meeting import TeamMeeting
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
@@ -61,13 +60,8 @@ class Tenant:
         )
         session.add_all([self.student, label, self.section_type, self.author])
         session.flush()
-        sub_label = SubLabel(
-            name=f"sub-{code}", order=0, label_id=label.id, institution_id=institution_id
-        )
-        session.add(sub_label)
-        session.flush()
         self.skill = Skill(
-            name=f"skill-{code}", order=0, sub_label_id=sub_label.id, institution_id=institution_id
+            name=f"skill-{code}", order=0, label_id=label.id, institution_id=institution_id
         )
         session.add(self.skill)
         session.flush()
