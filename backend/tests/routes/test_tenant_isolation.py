@@ -79,7 +79,9 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     skill = Skill(name="מיומנות זרה", order=0, sub_label_id=sub_label.id, institution_id=owner)
     db_session.add(skill)
     db_session.flush()
-    solution = Solution(text="פתרון זר", skill_id=skill.id, institution_id=owner)
+    solution = Solution(
+        text="פתרון זר", skill_id=skill.id, rating=MeetingRating.YELLOW, institution_id=owner
+    )
     meeting = TeamMeeting(
         student_id=student.id,
         meeting_date=date(2026, 5, 1),
@@ -379,8 +381,15 @@ def test_taxonomy_children_cannot_hang_off_a_foreign_parent(
     body_key: str,
     attribute: str,
 ) -> None:
-    payload: dict[str, str] = {body_key: str(getattr(foreign, attribute))}
-    payload["text" if collection == "solutions" else "name"] = "נחטף"
+    payload: dict[str, object] = {body_key: str(getattr(foreign, attribute))}
+    if collection == "solutions":
+        payload["text"] = "נחטף"
+        payload["rating"] = "yellow"
+    elif collection == "skills":
+        payload["name"] = "נחטף"
+        payload["ratings"] = {"green": "עצמאי", "yellow": "בהשגחה", "red": "בתלות"}
+    else:
+        payload["name"] = "נחטף"
 
     response = api.post(f"/taxonomy/{collection}", headers=manager_headers, json=payload)
 

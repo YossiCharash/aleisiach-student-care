@@ -71,7 +71,7 @@ def _setup(session: Session) -> _Fixture:
     area = Skill(sub_label_id=sub_label.id, name="רחיצת ידיים")
     session.add_all([strength, area])
     session.flush()
-    solution = Solution(skill_id=area.id, text="תרגול יומי")
+    solution = Solution(skill_id=area.id, text="תרגול יומי", rating=MeetingRating.YELLOW)
     session.add(solution)
     session.flush()
     author_id = seed_actor(session)

@@ -9,12 +9,41 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Eye, EyeOff, Pencil, RotateCcw, X } from "lucide-react";
 import { taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { LabelTreeNode, SkillTreeNode, SubLabelTreeNode } from "@/lib/api/types";
+import type {
+  LabelTreeNode,
+  MeetingRating,
+  SkillRatings,
+  SkillTreeNode,
+  SubLabelTreeNode,
+} from "@/lib/api/types";
+import { ratingLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { AddSettingInput, SettingsIconButton } from "@/pages/settings/SettingsList";
+
+const RATING_ROWS: MeetingRating[] = ["green", "yellow", "red"];
+const AREA_RATINGS: MeetingRating[] = ["yellow", "red"];
+
+const ratingDotClass: Record<MeetingRating, string> = {
+  green: "bg-rating-green",
+  yellow: "bg-rating-yellow",
+  red: "bg-rating-red",
+};
+
+const ratingFieldLabel: Record<MeetingRating, string> = {
+  green: "תיאור דרגת ירוק",
+  yellow: "תיאור דרגת צהוב",
+  red: "תיאור דרגת אדום",
+};
+
+const ratingFieldHint: Record<MeetingRating, string> = {
+  green: "לדוגמה: מבצע באופן עצמאי",
+  yellow: "לדוגמה: מבצע בעזרת הכוונה",
+  red: "לדוגמה: זקוק לליווי מלא",
+};
 
 const ShowInactiveContext = createContext(false);
 
@@ -43,7 +72,8 @@ export function TaxonomyArea(): ReactNode {
           <div>
             <h2 className="text-lg font-semibold text-ink">כישורים</h2>
             <p className="mt-1 text-sm text-ink-muted">
-              תוויות ← תת-תוויות ← כישורים ← פתרונות. שינויים משתקפים מיד בטופס הישיבות.
+              תוויות ← תת-תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום),
+              ופתרונות מוגדרים תחת צהוב ואדום. שינויים משתקפים מיד בטופסי התלמיד.
             </p>
           </div>
           <Button
@@ -212,8 +242,8 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateSubLabel(subLabel.id, { is_active: false })
   );
-  const createSkill = useTreeMutation((name: string) =>
-    taxonomyApi.createSkill(subLabel.id, name)
+  const createSkill = useTreeMutation((args: { name: string; ratings: SkillRatings }) =>
+    taxonomyApi.createSkill(subLabel.id, args.name, args.ratings)
   );
 
   return (
@@ -229,11 +259,7 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
         />
       </div>
       <div className="space-y-2 p-3">
-        <AddSettingInput
-          placeholder="שם כישור"
-          buttonLabel="הוספת כישור"
-          onSubmit={createSkill}
-        />
+        <AddSkillForm onSubmit={(name, ratings) => createSkill({ name, ratings })} />
         {subLabel.skills.length > 0 && (
           <div className="ms-4 space-y-2">
             {subLabel.skills.map((skill) => (
@@ -254,6 +280,126 @@ function SubLabelNode({ subLabel }: { subLabel: SubLabelTreeNode }): ReactNode {
   );
 }
 
+function ratingsFromSkill(skill: SkillTreeNode): SkillRatings {
+  return { green: skill.green_text, yellow: skill.yellow_text, red: skill.red_text };
+}
+
+function AddSkillForm({
+  onSubmit,
+}: {
+  onSubmit: (name: string, ratings: SkillRatings) => Promise<unknown>;
+}): ReactNode {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [ratings, setRatings] = useState<SkillRatings>({
+    green: "",
+    yellow: "",
+    red: "",
+  });
+  const [busy, setBusy] = useState(false);
+
+  const complete =
+    name.trim() !== "" &&
+    ratings.green.trim() !== "" &&
+    ratings.yellow.trim() !== "" &&
+    ratings.red.trim() !== "";
+
+  function reset(): void {
+    setName("");
+    setRatings({ green: "", yellow: "", red: "" });
+    setOpen(false);
+  }
+
+  async function submit(): Promise<void> {
+    if (!complete) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSubmit(name.trim(), {
+        green: ratings.green.trim(),
+        yellow: ratings.yellow.trim(),
+        red: ratings.red.trim(),
+      });
+      reset();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>
+        הוספת כישור
+      </Button>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+      <Input
+        autoFocus
+        placeholder="שם כישור"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        className="h-9"
+      />
+      <p className="text-xs text-ink-muted">הגדירו תיאור לכל שלוש הדרגות (חובה):</p>
+      <RatingTextFields ratings={ratings} onChange={setRatings} />
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => void submit()}
+          disabled={!complete || busy}
+        >
+          שמירת כישור
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={reset}>
+          ביטול
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function RatingFieldLabel({ rating }: { rating: MeetingRating }): ReactNode {
+  return (
+    <span className="mb-1 flex items-center gap-2 text-xs font-medium text-ink-muted">
+      <span
+        className={`flex h-2.5 w-2.5 shrink-0 rounded-full ${ratingDotClass[rating]}`}
+        aria-hidden
+      />
+      {ratingFieldLabel[rating]}
+    </span>
+  );
+}
+
+function RatingTextFields({
+  ratings,
+  onChange,
+}: {
+  ratings: SkillRatings;
+  onChange: (next: SkillRatings) => void;
+}): ReactNode {
+  return (
+    <div className="space-y-3">
+      {RATING_ROWS.map((rating) => (
+        <label key={rating} className="block">
+          <RatingFieldLabel rating={rating} />
+          <Textarea
+            aria-label={ratingFieldLabel[rating]}
+            placeholder={ratingFieldHint[rating]}
+            value={ratings[rating]}
+            onChange={(event) => onChange({ ...ratings, [rating]: event.target.value })}
+            className="min-h-16"
+          />
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   const [open, setOpen] = useState(false);
   const rename = useTreeMutation((name: string) =>
@@ -261,9 +407,6 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
   );
   const deactivate = useTreeMutation(() =>
     taxonomyApi.updateSkill(skill.id, { is_active: false })
-  );
-  const createSolution = useTreeMutation((text: string) =>
-    taxonomyApi.createSolution(skill.id, text)
   );
 
   return (
@@ -283,19 +426,11 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
         <CollapseToggle open={open} onClick={() => setOpen((value) => !value)} />
       </div>
       {open && (
-        <div className="space-y-2 border-t border-slate-100 p-3">
-          <AddSettingInput
-            placeholder="טקסט פתרון"
-            buttonLabel="הוספת פתרון"
-            onSubmit={createSolution}
-          />
-          {skill.solutions.length > 0 && (
-            <ul className="space-y-1">
-              {skill.solutions.map((solution) => (
-                <SolutionRow key={solution.id} id={solution.id} text={solution.text} />
-              ))}
-            </ul>
-          )}
+        <div className="space-y-3 border-t border-slate-100 p-3">
+          <SkillRatingsEditor skill={skill} />
+          {AREA_RATINGS.map((rating) => (
+            <RatingSolutions key={rating} skill={skill} rating={rating} />
+          ))}
           <InactiveNodeList
             heading="פתרונות מושבתים"
             emptyLabel="אין פתרונות מושבתים."
@@ -305,6 +440,122 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
             onReactivate={(id) => taxonomyApi.updateSolution(id, { is_active: true })}
           />
         </div>
+      )}
+    </div>
+  );
+}
+
+function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<SkillRatings>(() => ratingsFromSkill(skill));
+  const [busy, setBusy] = useState(false);
+  const save = useTreeMutation((ratings: SkillRatings) =>
+    taxonomyApi.updateSkill(skill.id, { ratings })
+  );
+
+  const current = ratingsFromSkill(skill);
+  const complete =
+    draft.green.trim() !== "" && draft.yellow.trim() !== "" && draft.red.trim() !== "";
+
+  if (!editing) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-medium text-ink-muted">דרגות</span>
+          <SettingsIconButton
+            label="עריכת דרגות"
+            onClick={() => {
+              setDraft(current);
+              setEditing(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </SettingsIconButton>
+        </div>
+        <div className="space-y-3">
+          {RATING_ROWS.map((rating) => (
+            <div key={rating}>
+              <RatingFieldLabel rating={rating} />
+              <div className="min-h-9 whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-ink">
+                {current[rating].trim() === "" ? (
+                  <span className="text-slate-400">—</span>
+                ) : (
+                  current[rating]
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/40 p-3">
+      <RatingTextFields ratings={draft} onChange={setDraft} />
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          disabled={!complete || busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await save({
+                green: draft.green.trim(),
+                yellow: draft.yellow.trim(),
+                red: draft.red.trim(),
+              });
+              setEditing(false);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          שמירה
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+          ביטול
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function RatingSolutions({
+  skill,
+  rating,
+}: {
+  skill: SkillTreeNode;
+  rating: MeetingRating;
+}): ReactNode {
+  const createSolution = useTreeMutation((text: string) =>
+    taxonomyApi.createSolution(skill.id, text, rating)
+  );
+  const solutions = skill.solutions.filter((solution) => solution.rating === rating);
+
+  return (
+    <div className="rounded-lg border border-slate-200 p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <span
+          className={`flex h-3 w-3 shrink-0 rounded-full ${ratingDotClass[rating]}`}
+          aria-hidden
+        />
+        <span className="text-xs font-medium text-ink-muted">
+          פתרונות לדרגת {ratingLabels[rating]}
+        </span>
+      </div>
+      <AddSettingInput
+        placeholder="טקסט פתרון"
+        buttonLabel="הוספת פתרון"
+        onSubmit={createSolution}
+      />
+      {solutions.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {solutions.map((solution) => (
+            <SolutionRow key={solution.id} id={solution.id} text={solution.text} />
+          ))}
+        </ul>
       )}
     </div>
   );

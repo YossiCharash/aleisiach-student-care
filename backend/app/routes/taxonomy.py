@@ -14,6 +14,7 @@ from backend.app.schema.routes.label_tree_node import LabelTreeNode
 from backend.app.schema.routes.ordered_node_update_request import OrderedNodeUpdateRequest
 from backend.app.schema.routes.skill_create_request import SkillCreateRequest
 from backend.app.schema.routes.skill_response import SkillResponse
+from backend.app.schema.routes.skill_update_request import SkillUpdateRequest
 from backend.app.schema.routes.solution_create_request import SolutionCreateRequest
 from backend.app.schema.routes.solution_response import SolutionResponse
 from backend.app.schema.routes.solution_update_request import SolutionUpdateRequest
@@ -100,7 +101,7 @@ def create_skill(
 
 @router.patch("/skills/{skill_id}", response_model=SkillResponse)
 def update_skill(
-    skill_id: uuid.UUID, request: OrderedNodeUpdateRequest, service: ServiceDep, manager: Manager
+    skill_id: uuid.UUID, request: SkillUpdateRequest, service: ServiceDep, manager: Manager
 ) -> SkillResponse:
     return service.update_skill(skill_id, request, manager.id)
 
