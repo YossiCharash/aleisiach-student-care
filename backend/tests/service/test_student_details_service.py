@@ -16,12 +16,12 @@ from backend.app.errors.service.invalid_detail_value_error import InvalidDetailV
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.detail_option import DetailOption
 from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.models.client.student import Student
+from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -33,7 +33,7 @@ from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_details_service import StudentDetailsService
 from backend.app.utils.service.clock import Clock
 
-_ALL = StudentAccessScope(all_classes=True)
+_ALL = StudentAccessScope(all_workshops=True)
 _TODAY = date(2026, 8, 26)
 _ACTOR = uuid.uuid4()
 
@@ -47,10 +47,10 @@ class _FixedClock(Clock):
 
 
 def _setup(session: Session) -> tuple[StudentDetailsService, uuid.UUID]:
-    class_entity = ClassEntity(name="Aleph")
-    session.add(class_entity)
+    workshop = Workshop(name="Aleph")
+    session.add(workshop)
     session.flush()
-    student = Student(full_name="Dana", class_id=class_entity.id)
+    student = Student(full_name="Dana", workshop_id=workshop.id)
     session.add(student)
     session.flush()
     audit_logger = AuditLogger(AuditLogRepository(session))
@@ -181,7 +181,7 @@ def test_get_empty_details_returns_blank(db_session: Session) -> None:
 
 def test_get_for_out_of_scope_student_is_hidden(db_session: Session) -> None:
     service, student_id = _setup(db_session)
-    foreign = StudentAccessScope(all_classes=False, class_id=uuid.uuid4())
+    foreign = StudentAccessScope(all_workshops=False, workshop_id=uuid.uuid4())
 
     with pytest.raises(NotFoundError):
         service.get(student_id, foreign, include_sensitive=True)
@@ -212,7 +212,7 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
             disability_severity="קל-בינוני",
             functioning_level="בינוני",
             previous_institution="גן תקשורת",
-            current_institution="כיתת תקשורת",
+            current_institution="סדנת תקשורת",
         ),
         _ALL,
         _ACTOR,
@@ -221,7 +221,7 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
     assert saved.disability_severity == "קל-בינוני"
     assert saved.functioning_level == "בינוני"
     assert saved.previous_institution == "גן תקשורת"
-    assert saved.current_institution == "כיתת תקשורת"
+    assert saved.current_institution == "סדנת תקשורת"
 
 
 def test_functioning_level_outside_catalog_is_rejected(db_session: Session) -> None:

@@ -47,7 +47,6 @@ class InvitationService:
                 full_name=command.full_name,
                 email=command.email,
                 role=command.role,
-                class_id=command.class_id,
                 status=UserStatus.INVITED,
             )
         )
@@ -58,7 +57,7 @@ class InvitationService:
                 action=AuditAction.CREATE,
                 entity_type=_ENTITY_TYPE,
                 entity_id=user.id,
-                changes=["role", "class_id"] if command.class_id else ["role"],
+                changes=["role"],
             )
         )
         return UserResponse.model_validate(user)

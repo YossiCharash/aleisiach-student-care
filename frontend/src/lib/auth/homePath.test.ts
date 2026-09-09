@@ -9,7 +9,7 @@ function userWithRole(role: UserRole): UserResponse {
     email: "test@example.com",
     username: "tester",
     role,
-    class_id: null,
+    workshop_id: null,
     status: "active",
     institution_id: role === "super_admin" ? null : "i1",
   };

@@ -10,7 +10,7 @@ from backend.app.models.client.user_role import UserRole
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
-SeedClass = Callable[..., object]
+SeedWorkshop = Callable[..., object]
 SeedStudent = Callable[..., object]
 
 _BODY = {
@@ -39,13 +39,13 @@ _BODY = {
 
 def test_manager_upserts_and_reads_full_details(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -60,16 +60,16 @@ def test_manager_upserts_and_reads_full_details(
     assert got.json()["sensitive_visible"] is True
 
 
-def test_instructor_reads_and_writes_own_class_details(
+def test_instructor_reads_and_writes_own_workshop_details(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
     headers = auth_headers(api, "teacher")
 
     put = api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
@@ -84,13 +84,13 @@ def test_instructor_reads_and_writes_own_class_details(
 
 def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     api.put(
@@ -120,17 +120,17 @@ def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     assert forbidden.status_code == 403
 
 
-def test_instructor_cannot_write_other_class_details(
+def test_instructor_cannot_write_other_workshop_details(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_a = seed_class("Aleph")
-    class_b = seed_class("Bet")
+    class_a = seed_workshop("Aleph")
+    class_b = seed_workshop("Bet")
     student_id = seed_student(class_b)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_a)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
     headers = auth_headers(api, "teacher")
 
     response = api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
@@ -140,13 +140,13 @@ def test_instructor_cannot_write_other_class_details(
 def test_upsert_writes_audit_row_for_the_acting_user(
     api: TestClient,
     db_session: Session,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     boss_id = seed_user("boss", UserRole.MANAGER).id
     headers = auth_headers(api, "boss")
 
@@ -161,23 +161,23 @@ def test_upsert_writes_audit_row_for_the_acting_user(
 
 
 def test_details_require_authentication(
-    api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
+    api: TestClient, seed_workshop: SeedWorkshop, seed_student: SeedStudent
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/details").status_code == 401
 
 
 def test_manager_downloads_details_pdf(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     api.put(f"/students/{student_id}/details", headers=headers, json=_BODY)
@@ -189,9 +189,9 @@ def test_manager_downloads_details_pdf(
 
 
 def test_details_pdf_requires_authentication(
-    api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
+    api: TestClient, seed_workshop: SeedWorkshop, seed_student: SeedStudent
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/details/pdf").status_code == 401

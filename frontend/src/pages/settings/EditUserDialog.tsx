@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassPicker } from "@/components/ClassPicker";
 
 interface Props {
   user: UserResponse;
@@ -32,16 +31,14 @@ export function EditUserDialog({ user, isSelf, open, onOpenChange }: Props): Rea
   const [fullName, setFullName] = useState(user.full_name);
   const [email, setEmail] = useState(user.email);
   const [role, setRole] = useState<UserRole>(user.role);
-  const [classId, setClassId] = useState(user.class_id ?? "");
 
   useEffect(() => {
     if (open) {
       setFullName(user.full_name);
       setEmail(user.email);
       setRole(user.role);
-      setClassId(user.class_id ?? "");
     }
-  }, [open, user.full_name, user.email, user.role, user.class_id]);
+  }, [open, user.full_name, user.email, user.role]);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -49,7 +46,6 @@ export function EditUserDialog({ user, isSelf, open, onOpenChange }: Props): Rea
         full_name: fullName.trim(),
         email: email.trim(),
         role,
-        class_id: role === "instructor" ? classId : null,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users });
@@ -69,7 +65,9 @@ export function EditUserDialog({ user, isSelf, open, onOpenChange }: Props): Rea
       <DialogContent>
         <DialogHeader>
           <DialogTitle>עריכת משתמש</DialogTitle>
-          <DialogDescription>שם, דוא״ל, תפקיד ושיוך לכיתה.</DialogDescription>
+          <DialogDescription>
+            שם, דוא״ל ותפקיד. שיוך המדריך לסדנה נעשה בעריכת הסדנה.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
@@ -120,23 +118,8 @@ export function EditUserDialog({ user, isSelf, open, onOpenChange }: Props): Rea
               </p>
             )}
           </div>
-          {role === "instructor" && (
-            <ClassPicker
-              id="edit-user-class"
-              value={classId}
-              onChange={setClassId}
-              required
-            />
-          )}
           <div className="flex justify-start gap-2">
-            <Button
-              type="submit"
-              disabled={
-                mutation.isPending ||
-                fullName.trim() === "" ||
-                (role === "instructor" && classId === "")
-              }
-            >
+            <Button type="submit" disabled={mutation.isPending || fullName.trim() === ""}>
               {mutation.isPending ? "שומר…" : "שמירה"}
             </Button>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

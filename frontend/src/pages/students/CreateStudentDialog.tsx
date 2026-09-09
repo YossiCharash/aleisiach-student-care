@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassPicker } from "@/components/ClassPicker";
+import { WorkshopPicker } from "@/components/WorkshopPicker";
 
 interface Props {
   open: boolean;
@@ -32,7 +32,7 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
     mutationFn: () =>
       studentsApi.create({
         full_name: fullName,
-        class_id: classId,
+        workshop_id: classId,
         national_id: nationalId.trim() || null,
         date_of_birth: dateOfBirth || null,
       }),
@@ -56,7 +56,7 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>תלמיד חדש</DialogTitle>
-          <DialogDescription>הוספת תלמיד לכיתה.</DialogDescription>
+          <DialogDescription>הוספת תלמיד לסדנה.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
@@ -70,7 +70,7 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
               autoFocus
             />
           </div>
-          <ClassPicker
+          <WorkshopPicker
             id="student-class"
             value={classId}
             onChange={setClassId}

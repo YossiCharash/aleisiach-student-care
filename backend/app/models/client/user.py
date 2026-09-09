@@ -27,9 +27,9 @@ class User(OptionalTenantScoped, Base):
     __tablename__ = "users"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["class_id", "institution_id"],
-            ["classes.id", "classes.institution_id"],
-            name="fk_users_class_institution",
+            ["workshop_id", "institution_id"],
+            ["workshops.id", "workshops.institution_id"],
+            name="fk_users_workshop_institution",
         ),
         CheckConstraint(
             f"(role = {_SUPER_ADMIN} AND institution_id IS NULL)"
@@ -54,7 +54,7 @@ class User(OptionalTenantScoped, Base):
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, native_enum=False, length=32), nullable=False
     )
-    class_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True, index=True)
+    workshop_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True, index=True)
     status: Mapped[UserStatus] = mapped_column(
         Enum(UserStatus, native_enum=False, length=16),
         default=UserStatus.INVITED,

@@ -1,14 +1,10 @@
 import uuid
 
-from backend.app.client.classes.class_repository import ClassRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.errors.service.authorization_error import AuthorizationError
 from backend.app.errors.service.cannot_change_own_role_error import CannotChangeOwnRoleError
 from backend.app.errors.service.cannot_disable_self_error import CannotDisableSelfError
 from backend.app.errors.service.email_already_used_error import EmailAlreadyUsedError
-from backend.app.errors.service.instructor_requires_class_error import (
-    InstructorRequiresClassError,
-)
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.errors.service.user_not_invited_error import UserNotInvitedError
 from backend.app.models.client.audit_action import AuditAction
@@ -29,12 +25,10 @@ class UserManagementService:
     def __init__(
         self,
         users: UserRepository,
-        classes: ClassRepository,
         invitation_dispatcher: InvitationDispatcher,
         audit_logger: AuditLogger,
     ) -> None:
         self._users = users
-        self._classes = classes
         self._dispatcher = invitation_dispatcher
         self._users_audit = EntityAuditRecorder(audit_logger, _USER_ENTITY_TYPE)
         self._permissions_audit = EntityAuditRecorder(audit_logger, _PERMISSION_ENTITY_TYPE)
@@ -48,15 +42,10 @@ class UserManagementService:
         if request.role is UserRole.SUPER_ADMIN:
             raise AuthorizationError
         user = self._require(user_id)
-        class_id = request.class_id if request.role is UserRole.INSTRUCTOR else None
-        if request.role is UserRole.INSTRUCTOR and class_id is None:
-            raise InstructorRequiresClassError
-        if class_id is not None and not self._classes.active_exists(class_id):
-            raise NotFoundError("class")
         if request.role is not user.role and user_id == actor_id:
             raise CannotChangeOwnRoleError
         self._require_email_available(request.email, user)
-        changes = self._apply_update(user, request, class_id)
+        changes = self._apply_update(user, request)
         if not changes:
             return UserResponse.model_validate(user)
         if "email" in changes and user.status is UserStatus.INVITED:
@@ -70,9 +59,7 @@ class UserManagementService:
         if self._users.get_by_email(email) is not None:
             raise EmailAlreadyUsedError
 
-    def _apply_update(
-        self, user: User, request: UserUpdateRequest, class_id: uuid.UUID | None
-    ) -> list[str]:
+    def _apply_update(self, user: User, request: UserUpdateRequest) -> list[str]:
         changes: list[str] = []
         if user.full_name != request.full_name:
             user.full_name = request.full_name
@@ -83,9 +70,9 @@ class UserManagementService:
         if user.role is not request.role:
             user.role = request.role
             changes.append("role")
-        if user.class_id != class_id:
-            user.class_id = class_id
-            changes.append("class_id")
+            if request.role is not UserRole.INSTRUCTOR and user.workshop_id is not None:
+                user.workshop_id = None
+                changes.append("workshop_id")
         return changes
 
     def resend_invitation(self, user_id: uuid.UUID, actor_id: uuid.UUID) -> UserResponse:

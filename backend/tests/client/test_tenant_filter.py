@@ -8,25 +8,25 @@ from sqlalchemy.orm import Session
 from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.errors.service.authorization_error import AuthorizationError
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.student import Student
+from backend.app.models.client.workshop import Workshop
 from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 SeedInstitution = Callable[..., Institution]
 
 
-def _seed_class(session: Session, institution_id: uuid.UUID, name: str) -> ClassEntity:
-    entity = ClassEntity(name=name, institution_id=institution_id)
+def _seed_workshop(session: Session, institution_id: uuid.UUID, name: str) -> Workshop:
+    entity = Workshop(name=name, institution_id=institution_id)
     session.add(entity)
     session.flush()
     return entity
 
 
 def _seed_student(session: Session, institution_id: uuid.UUID, name: str) -> Student:
-    entity = _seed_class(session, institution_id, f"class-of-{name}")
-    student = Student(full_name=name, class_id=entity.id, institution_id=institution_id)
+    entity = _seed_workshop(session, institution_id, f"class-of-{name}")
+    student = Student(full_name=name, workshop_id=entity.id, institution_id=institution_id)
     session.add(student)
     session.flush()
     return student
@@ -80,7 +80,7 @@ def test_aggregate_counts_only_the_bound_institution(
 
 
 def test_new_rows_are_stamped_with_the_bound_institution(db_session: Session) -> None:
-    entity = ClassEntity(name="ללא שיוך")
+    entity = Workshop(name="ללא שיוך")
     db_session.add(entity)
     db_session.flush()
 
@@ -99,11 +99,11 @@ def test_platform_scope_sees_every_institution(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
     other = seed_institution("מוסד אחר", "other")
-    _seed_class(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
-    _seed_class(db_session, other.id, "שלהם")
+    _seed_workshop(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
+    _seed_workshop(db_session, other.id, "שלהם")
 
     with TenantBinding.platform(db_session):
-        names = sorted(entity.name for entity in db_session.scalars(select(ClassEntity)).all())
+        names = sorted(entity.name for entity in db_session.scalars(select(Workshop)).all())
 
     assert names == ["שלהם", "שלנו"]
 

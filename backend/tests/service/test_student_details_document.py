@@ -32,7 +32,7 @@ def _details(
         expression_mode="דיבור מילולי שוטף",
         language_comprehension="מבין הוראות מורכבות",
         previous_institution="גן שפתי",
-        current_institution="כיתת תקשורת",
+        current_institution="סדנת תקשורת",
         prior_task_experience="עבודה במטבח",
         interests_strengths="ציור",
         triggers="רעש",

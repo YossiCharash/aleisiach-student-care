@@ -12,7 +12,7 @@
 המערכת משרתת כיום מוסד אחד. המטרה: מספר מוסדות באותה התקנה, כך ש:
 
 - **מנהל מערכת עליון** (`super_admin`) — מנהל את רשימת המוסדות בלבד.
-- **מנהל מוסד** (`manager` של מוסד) — רואה **רק** את המוסד שלו: תלמידים, כיתות,
+- **מנהל מוסד** (`manager` של מוסד) — רואה **רק** את המוסד שלו: תלמידים, סדנאות,
   מדריכים, מורים מקצועיים, פגישות, טקסונומיה, הגדרות ויומן שינויים.
 - **כל ישות במערכת** שייכת למוסד אחד בדיוק, ואין שום מסלול קריאה או כתיבה שחוצה מוסדות.
 
@@ -107,8 +107,8 @@ CHECK ( (role =  'super_admin' AND institution_id IS NULL)
 sub_labels          (label_id,      institution_id) -> labels              (id, institution_id)
 skills              (sub_label_id,  institution_id) -> sub_labels          (id, institution_id)
 solutions           (skill_id,      institution_id) -> skills              (id, institution_id)
-students            (class_id,      institution_id) -> classes             (id, institution_id)
-users               (class_id,      institution_id) -> classes             (id, institution_id)
+students            (workshop_id,      institution_id) -> classes             (id, institution_id)
+users               (workshop_id,      institution_id) -> classes             (id, institution_id)
 extra_section_types (parent_id,     institution_id) -> extra_section_types (id, institution_id)
 ```
 
@@ -160,7 +160,7 @@ def _apply_tenant_filter(state): ...   # with_loader_criteria על כל מחלק
 גישה לישות של מוסד אחר מחזירה **404 `NotFoundError`**, לא 403 — בעקביות עם
 `StudentAccessGuard` הקיים, וכדי לא לחשוף קיום של ישות זרה.
 
-`StudentAccessScope` יורחב: קודם סינון מוסד, ורק אחר כך סינון כיתה למדריך.
+`StudentAccessScope` יורחב: קודם סינון מוסד, ורק אחר כך סינון סדנה למדריך.
 
 > **הקשחה עתידית (מחוץ להיקף הנוכחי):** Postgres Row-Level Security עם
 > `SET LOCAL app.institution_id` לכל טרנזקציה. מומלץ כשלב מאוחר; שכבות 1–2 מספיקות
@@ -214,7 +214,7 @@ def _apply_tenant_filter(state): ...   # with_loader_criteria על כל מחלק
 6. הסרת `UNIQUE` על `users.email` והחלפתו בזוג האילוצים מ-§3.4.
 7. הוספת `UNIQUE (id, institution_id)` להורים, והמפתחות הזרים המורכבים.
 8. הוספת ה-`CHECK` על `role`/`institution_id`.
-9. אינדקסים: `(institution_id)` על כל טבלת רמה א'; `(institution_id, class_id)`
+9. אינדקסים: `(institution_id)` על כל טבלת רמה א'; `(institution_id, workshop_id)`
    על `students`; `(institution_id, created_at)` על `audit_logs`.
 
 `downgrade` סימטרי מלא. הרצת המיגרציות כבר קורית בעליית הקונטיינר (קומיט `57242e1`).

@@ -20,12 +20,12 @@ from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.settings import Settings
 from backend.app.main import create_app
 from backend.app.models.base import Base
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.student import Student
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
+from backend.app.models.client.workshop import Workshop
 from backend.app.routes.pdf import get_pdf_renderer
 from backend.app.utils.service.password_hasher import PasswordHasher
 
@@ -127,7 +127,7 @@ def seed_user(db_session: Session, institution: Institution) -> Callable[..., Us
     def _seed(
         username: str,
         role: UserRole,
-        class_id: uuid.UUID | None = None,
+        workshop_id: uuid.UUID | None = None,
         status: UserStatus = UserStatus.ACTIVE,
         institution_id: uuid.UUID | None = None,
     ) -> User:
@@ -138,7 +138,7 @@ def seed_user(db_session: Session, institution: Institution) -> Callable[..., Us
             username=username,
             password_hash=PasswordHasher().hash("password123"),
             role=role,
-            class_id=class_id,
+            workshop_id=workshop_id,
             status=status,
             institution_id=owner,
         )
@@ -150,9 +150,9 @@ def seed_user(db_session: Session, institution: Institution) -> Callable[..., Us
 
 
 @pytest.fixture
-def seed_class(db_session: Session, institution: Institution) -> Callable[..., uuid.UUID]:
+def seed_workshop(db_session: Session, institution: Institution) -> Callable[..., uuid.UUID]:
     def _seed(name: str = "Aleph", institution_id: uuid.UUID | None = None) -> uuid.UUID:
-        entity = ClassEntity(name=name, institution_id=institution_id or institution.id)
+        entity = Workshop(name=name, institution_id=institution_id or institution.id)
         db_session.add(entity)
         db_session.flush()
         return entity.id
@@ -163,11 +163,11 @@ def seed_class(db_session: Session, institution: Institution) -> Callable[..., u
 @pytest.fixture
 def seed_student(db_session: Session, institution: Institution) -> Callable[..., uuid.UUID]:
     def _seed(
-        class_id: uuid.UUID, full_name: str = "Dana", institution_id: uuid.UUID | None = None
+        workshop_id: uuid.UUID, full_name: str = "Dana", institution_id: uuid.UUID | None = None
     ) -> uuid.UUID:
         student = Student(
             full_name=full_name,
-            class_id=class_id,
+            workshop_id=workshop_id,
             institution_id=institution_id or institution.id,
         )
         db_session.add(student)

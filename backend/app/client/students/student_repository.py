@@ -24,10 +24,10 @@ class StudentRepository:
         )
         return list(self._session.scalars(statement).all())
 
-    def list_active_by_class(self, class_id: uuid.UUID) -> list[Student]:
+    def list_active_by_workshop(self, workshop_id: uuid.UUID) -> list[Student]:
         statement = (
             select(Student)
-            .where(Student.is_archived.is_(False), Student.class_id == class_id)
+            .where(Student.is_archived.is_(False), Student.workshop_id == workshop_id)
             .order_by(Student.full_name)
         )
         return list(self._session.scalars(statement).all())

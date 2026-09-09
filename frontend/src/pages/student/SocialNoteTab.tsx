@@ -49,7 +49,7 @@ export function SocialNoteTab({ studentId }: { studentId: string }): ReactNode {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>הערת עובד/ת סוציאלי/ת</CardTitle>
+        <CardTitle>סיכום עובד/ת סוציאלי/ת</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {note?.updated_at && (
@@ -72,7 +72,7 @@ export function SocialNoteTab({ studentId }: { studentId: string }): ReactNode {
                 setSaved(false);
               }}
               className="min-h-48"
-              placeholder="כתבו כאן את הערת העו״ס…"
+              placeholder="כתבו כאן את סיכום העו״ס…"
             />
             <div className="flex justify-start">
               <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
@@ -83,7 +83,7 @@ export function SocialNoteTab({ studentId }: { studentId: string }): ReactNode {
         ) : note?.content ? (
           <p className="whitespace-pre-wrap text-sm text-ink">{note.content}</p>
         ) : (
-          <EmptyState>אין הערת עו״ס עדיין.</EmptyState>
+          <EmptyState>אין סיכום עו״ס עדיין.</EmptyState>
         )}
       </CardContent>
     </Card>

@@ -1,6 +1,7 @@
 import { apiClient, buildPdfUrl } from "@/lib/api/client";
 import type {
-  ClassResponse,
+  WorkshopResponse,
+  WorkshopUpsertRequest,
   DetailOptionField,
   DetailOptionResponse,
   DetailOptionUpdate,
@@ -97,10 +98,19 @@ export const usersApi = {
     apiClient.post<UserResponse>(`/users/${userId}/enable`),
 };
 
-export const classesApi = {
-  list: (): Promise<ClassResponse[]> => apiClient.get<ClassResponse[]>("/classes"),
-  create: (name: string): Promise<ClassResponse> =>
-    apiClient.post<ClassResponse>("/classes", { name }),
+export const workshopsApi = {
+  list: (): Promise<WorkshopResponse[]> =>
+    apiClient.get<WorkshopResponse[]>("/workshops"),
+  listArchived: (): Promise<WorkshopResponse[]> =>
+    apiClient.get<WorkshopResponse[]>("/workshops/archived"),
+  create: (body: WorkshopUpsertRequest): Promise<WorkshopResponse> =>
+    apiClient.post<WorkshopResponse>("/workshops", body),
+  update: (workshopId: string, body: WorkshopUpsertRequest): Promise<WorkshopResponse> =>
+    apiClient.patch<WorkshopResponse>(`/workshops/${workshopId}`, body),
+  archive: (workshopId: string): Promise<WorkshopResponse> =>
+    apiClient.post<WorkshopResponse>(`/workshops/${workshopId}/archive`),
+  restore: (workshopId: string): Promise<WorkshopResponse> =>
+    apiClient.post<WorkshopResponse>(`/workshops/${workshopId}/restore`),
 };
 
 export const studentsApi = {

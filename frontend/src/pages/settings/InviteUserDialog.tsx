@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
-import { ClassPicker } from "@/components/ClassPicker";
 
 interface Props {
   open: boolean;
@@ -29,7 +28,6 @@ interface InviteRow {
   fullName: string;
   email: string;
   role: InvitableRole;
-  classId: string;
 }
 
 interface RowFailure {
@@ -47,7 +45,6 @@ function newRow(): InviteRow {
     fullName: "",
     email: "",
     role: "instructor",
-    classId: "",
   };
 }
 
@@ -89,7 +86,6 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
           full_name: row.fullName,
           email: row.email,
           role: row.role,
-          class_id: row.role === "instructor" ? row.classId || null : null,
         });
       } catch (error) {
         collected.push({ key: row.key, email: row.email, message: errorMessage(error) });
@@ -206,14 +202,6 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
                       )}
                     </select>
                   </div>
-                  {row.role === "instructor" && (
-                    <ClassPicker
-                      id={`invite-class-${row.key}`}
-                      value={row.classId}
-                      onChange={(value) => updateRow(row.key, { classId: value })}
-                      required
-                    />
-                  )}
                 </div>
               </div>
             ))}

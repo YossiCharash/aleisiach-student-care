@@ -80,7 +80,7 @@ describe("EditableSettingRow", () => {
   });
 
   it("omits activation controls when onSetActive is not provided", () => {
-    const row = renderRow(<EditableSettingRow name="כיתה א" onRename={vi.fn()} />);
+    const row = renderRow(<EditableSettingRow name="סדנה א" onRename={vi.fn()} />);
 
     expect(within(row).getByRole("button", { name: "עריכה" })).toBeInTheDocument();
     expect(within(row).queryByRole("button", { name: "השבתה" })).not.toBeInTheDocument();
@@ -92,15 +92,15 @@ describe("EditableSettingRow", () => {
   it("surfaces the server message when deactivation is refused", async () => {
     const onSetActive = vi
       .fn()
-      .mockRejectedValue(new Error("לא ניתן להעביר את הכיתה לארכיון."));
+      .mockRejectedValue(new Error("לא ניתן להעביר את הסדנה לארכיון."));
     renderRow(
-      <EditableSettingRow name="כיתה א" onRename={vi.fn()} onSetActive={onSetActive} />
+      <EditableSettingRow name="סדנה א" onRename={vi.fn()} onSetActive={onSetActive} />
     );
 
     await userEvent.click(screen.getByRole("button", { name: "השבתה" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "לא ניתן להעביר את הכיתה לארכיון."
+      "לא ניתן להעביר את הסדנה לארכיון."
     );
   });
 
@@ -110,7 +110,7 @@ describe("EditableSettingRow", () => {
       .mockRejectedValueOnce(new Error("נכשל"))
       .mockResolvedValueOnce(undefined);
     renderRow(
-      <EditableSettingRow name="כיתה א" onRename={vi.fn()} onSetActive={onSetActive} />
+      <EditableSettingRow name="סדנה א" onRename={vi.fn()} onSetActive={onSetActive} />
     );
 
     await userEvent.click(screen.getByRole("button", { name: "השבתה" }));

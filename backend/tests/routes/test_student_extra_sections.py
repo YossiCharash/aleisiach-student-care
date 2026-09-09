@@ -8,7 +8,7 @@ from backend.app.models.client.user_role import UserRole
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
-SeedClass = Callable[..., uuid.UUID]
+SeedWorkshop = Callable[..., uuid.UUID]
 SeedStudent = Callable[..., uuid.UUID]
 
 
@@ -21,13 +21,13 @@ def _seed_type(api: TestClient, headers: dict[str, str], name: str) -> str:
 
 def test_manager_sets_and_reads_student_section(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     type_id = _seed_type(api, headers, "רקע חינוכי")
@@ -49,13 +49,13 @@ def test_manager_sets_and_reads_student_section(
 
 def test_professional_teacher_reads_but_cannot_write(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     type_id = _seed_type(api, auth_headers(api, "boss"), "העדפות")
@@ -72,18 +72,18 @@ def test_professional_teacher_reads_but_cannot_write(
     assert forbidden.status_code == 403
 
 
-def test_instructor_cannot_write_other_class(
+def test_instructor_cannot_write_other_workshop(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_a = seed_class("Aleph")
-    class_b = seed_class("Bet")
+    class_a = seed_workshop("Aleph")
+    class_b = seed_workshop("Bet")
     student_id = seed_student(class_b)
     seed_user("boss", UserRole.MANAGER)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_a)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
     type_id = _seed_type(api, auth_headers(api, "boss"), "העדפות")
 
     response = api.put(
@@ -96,13 +96,13 @@ def test_instructor_cannot_write_other_class(
 
 def test_content_update_replaces_previous(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     type_id = _seed_type(api, headers, "רקע")
@@ -129,13 +129,13 @@ def test_content_update_replaces_previous(
 
 def test_set_unknown_section_type_returns_404(
     api: TestClient,
-    seed_class: SeedClass,
+    seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -148,9 +148,9 @@ def test_set_unknown_section_type_returns_404(
 
 
 def test_sections_require_authentication(
-    api: TestClient, seed_class: SeedClass, seed_student: SeedStudent
+    api: TestClient, seed_workshop: SeedWorkshop, seed_student: SeedStudent
 ) -> None:
-    class_id = seed_class("Aleph")
-    student_id = seed_student(class_id)
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/extra-sections").status_code == 401

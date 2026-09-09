@@ -14,6 +14,6 @@ class UserResponse(BaseModel):
     email: str
     username: str | None
     role: UserRole
-    class_id: uuid.UUID | None
+    workshop_id: uuid.UUID | None
     status: UserStatus
     institution_id: uuid.UUID | None

@@ -4,7 +4,6 @@ from collections.abc import Callable
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.label import Label
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.solution import Solution
@@ -12,6 +11,7 @@ from backend.app.models.client.student import Student
 from backend.app.models.client.sub_label import SubLabel
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.app.models.client.workshop import Workshop
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -26,15 +26,15 @@ class _Domain:
         self.solution_area = solution_area
 
 
-def _seed_class(session: Session, name: str) -> uuid.UUID:
-    entity = ClassEntity(name=name)
+def _seed_workshop(session: Session, name: str) -> uuid.UUID:
+    entity = Workshop(name=name)
     session.add(entity)
     session.flush()
     return entity.id
 
 
-def _seed_domain(session: Session, class_id: uuid.UUID) -> _Domain:
-    student = Student(full_name="Dana", class_id=class_id)
+def _seed_domain(session: Session, workshop_id: uuid.UUID) -> _Domain:
+    student = Student(full_name="Dana", workshop_id=workshop_id)
     session.add(student)
     label = Label(name="L")
     session.add(label)
@@ -71,8 +71,8 @@ def _plan_body(domain: _Domain) -> dict[str, object]:
 def test_manager_creates_plan_and_list_reflects_it(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     _seed_area_foci(api, domain, headers)
@@ -93,8 +93,8 @@ def test_manager_creates_plan_and_list_reflects_it(
 def test_new_plan_pushes_previous_to_history(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     _seed_area_foci(api, domain, headers)
@@ -113,8 +113,8 @@ def test_new_plan_pushes_previous_to_history(
 def test_plan_without_foci_is_rejected(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
@@ -127,10 +127,10 @@ def test_plan_without_foci_is_rejected(
 def test_instructor_cannot_create_plan(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("boss", UserRole.MANAGER)
-    seed_user("teacher", UserRole.INSTRUCTOR, class_id=class_id)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
     _seed_area_foci(api, domain, auth_headers(api, "boss"))
 
     response = api.post(
@@ -144,8 +144,8 @@ def test_instructor_cannot_create_plan(
 def test_professional_teacher_can_read_plans(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     headers = auth_headers(api, "prof")
 
@@ -157,8 +157,8 @@ def test_professional_teacher_can_read_plans(
 def test_plan_pdfs_are_served(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
     _seed_area_foci(api, domain, headers)
@@ -177,8 +177,8 @@ def test_plan_pdfs_are_served(
 
 
 def test_plans_require_authentication(api: TestClient, db_session: Session) -> None:
-    class_id = _seed_class(db_session, "Aleph")
-    domain = _seed_domain(db_session, class_id)
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
 
     response = api.get(f"/students/{domain.student_id}/program/plans")
     assert response.status_code == 401
