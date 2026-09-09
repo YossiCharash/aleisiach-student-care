@@ -1,21 +1,20 @@
+from typing import cast
+
 from backend.app.client.pdf.pdf_renderer import PdfRenderer
+from backend.app.client.pdf.url_fetcher import UrlFetcher
 
 _DATA_ONLY_PROTOCOLS = frozenset({"data"})
 
 
-def _data_only_url_fetcher(url: str) -> object:
-    if not url.startswith("data:"):
-        raise ValueError("PDF rendering may only resolve data: URIs")
+def build_data_only_url_fetcher() -> UrlFetcher:
     from weasyprint.urls import URLFetcher
 
-    return URLFetcher(allowed_protocols=_DATA_ONLY_PROTOCOLS).fetch(url)
+    return cast(UrlFetcher, URLFetcher(allowed_protocols=_DATA_ONLY_PROTOCOLS))
 
 
 class WeasyPrintPdfRenderer(PdfRenderer):
     def render(self, html: str) -> bytes:
         from weasyprint import HTML
-        from weasyprint.urls import URLFetcher
 
-        fetcher = URLFetcher(allowed_protocols=_DATA_ONLY_PROTOCOLS)
-        document = HTML(string=html, url_fetcher=fetcher)
+        document = HTML(string=html, url_fetcher=build_data_only_url_fetcher())
         return bytes(document.write_pdf())
