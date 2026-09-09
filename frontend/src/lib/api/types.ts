@@ -222,16 +222,10 @@ export interface MeetingCreateRequest {
   entries: SkillRatingRequest[];
 }
 
-export interface ProgramEntrySolutionResponse {
-  solution_id: string;
-  solution_text_snapshot: string;
-}
-
 export interface ProgramEntryResponse {
   skill_id: string;
   skill_name_snapshot: string;
   rating: MeetingRating;
-  solutions: ProgramEntrySolutionResponse[];
 }
 
 export interface ProgramStrength {
@@ -243,7 +237,6 @@ export interface ProgramArea {
   skill_id: string;
   skill_name: string;
   rating: MeetingRating;
-  solutions: string[];
 }
 
 export interface ProgramResponse {
@@ -254,8 +247,42 @@ export interface ProgramResponse {
   areas_to_strengthen: ProgramArea[];
 }
 
+export interface FocusRatingRequest {
+  skill_id: string;
+  rating: MeetingRating;
+}
+
 export interface ProgramUpsertRequest {
-  entries: SkillRatingRequest[];
+  entries: FocusRatingRequest[];
+}
+
+export interface PlanSolutionResponse {
+  solution_id: string;
+  solution_text_snapshot: string;
+}
+
+export interface PlanEntryResponse {
+  skill_id: string;
+  skill_name_snapshot: string;
+  rating: MeetingRating;
+  solutions: PlanSolutionResponse[];
+}
+
+export interface PlanResponse {
+  id: string;
+  student_id: string;
+  author_id: string;
+  created_at: string;
+  entries: PlanEntryResponse[];
+}
+
+export interface PlanEntryRequest {
+  skill_id: string;
+  solution_ids: string[];
+}
+
+export interface PlanCreateRequest {
+  entries: PlanEntryRequest[];
 }
 
 export type DetailOptionField =

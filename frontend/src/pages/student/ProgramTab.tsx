@@ -3,12 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { programApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type {
-  MeetingRating,
-  ProgramArea,
-  ProgramResponse,
-  ProgramStrength,
-} from "@/lib/api/types";
+import type { ProgramArea, ProgramResponse, ProgramStrength } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -18,11 +13,10 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
 import { ProgramForm } from "@/pages/student/program/ProgramForm";
-import { cn } from "@/lib/utils/cn";
+import { PersonalPlanTab } from "@/pages/student/program/PersonalPlanTab";
 
 export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
   const { user } = useAuth();
-  const [editing, setEditing] = useState(false);
   const canWrite = user ? permissions.canWriteProgram(user) : false;
 
   const query = useQuery({
@@ -40,7 +34,34 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
     return null;
   }
 
-  const program = query.data;
+  return (
+    <Tabs defaultValue="focus">
+      <TabsList>
+        <TabsTrigger value="focus">מוקדי כוח ומוקדים לחיזוק</TabsTrigger>
+        <TabsTrigger value="personal">תוכנית אישית</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="focus">
+        <FocusPanel studentId={studentId} program={query.data} canWrite={canWrite} />
+      </TabsContent>
+
+      <TabsContent value="personal">
+        <PersonalPlanTab studentId={studentId} canWrite={canWrite} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function FocusPanel({
+  studentId,
+  program,
+  canWrite,
+}: {
+  studentId: string;
+  program: ProgramResponse;
+  canWrite: boolean;
+}): ReactNode {
+  const [editing, setEditing] = useState(false);
 
   if (editing) {
     return (
@@ -53,56 +74,42 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-muted">
           {program.exists
-            ? "מוקדי הכוח והמוקדים לחיזוק, והתוכנית האישית הנגזרת מהם."
-            : "עדיין לא נבנתה תוכנית קידום לתלמיד."}
+            ? "מוקדי הכוח והמוקדים לחיזוק של התלמיד."
+            : "עדיין לא סומנו מוקדים לתלמיד."}
         </p>
         {canWrite && (
           <Button onClick={() => setEditing(true)}>
             {program.exists ? (
               <>
                 <Pencil className="h-4 w-4" />
-                עריכת תוכנית
+                עריכת מוקדים
               </>
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                יצירת תוכנית
+                יצירת מוקדים
               </>
             )}
           </Button>
         )}
       </div>
 
-      {program.exists && <ProgramContent program={program} />}
-    </div>
-  );
-}
-
-function ProgramContent({ program }: { program: ProgramResponse }): ReactNode {
-  const { strengths, areas_to_strengthen: areas } = program;
-  return (
-    <Tabs defaultValue="focus">
-      <TabsList>
-        <TabsTrigger value="focus">מוקדי כוח ומוקדים לחיזוק</TabsTrigger>
-        <TabsTrigger value="personal">תוכנית אישית</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="focus">
+      {program.exists && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>מוקדי כוח</CardTitle>
             </CardHeader>
             <CardContent>
-              {strengths.length === 0 ? (
-                <EmptyState>אין עדיין מוקדי כוח.</EmptyState>
+              {program.strengths.length === 0 ? (
+                <EmptyState>אין מוקדי כוח.</EmptyState>
               ) : (
                 <ul className="space-y-2">
-                  {strengths.map((strength) => (
+                  {program.strengths.map((strength) => (
                     <StrengthRow key={strength.skill_id} strength={strength} />
                   ))}
                 </ul>
@@ -115,11 +122,11 @@ function ProgramContent({ program }: { program: ProgramResponse }): ReactNode {
               <CardTitle>מוקדים לחיזוק</CardTitle>
             </CardHeader>
             <CardContent>
-              {areas.length === 0 ? (
-                <EmptyState>אין עדיין מוקדים לחיזוק.</EmptyState>
+              {program.areas_to_strengthen.length === 0 ? (
+                <EmptyState>אין מוקדים לחיזוק.</EmptyState>
               ) : (
-                <ul className="space-y-3">
-                  {areas.map((area) => (
+                <ul className="space-y-2">
+                  {program.areas_to_strengthen.map((area) => (
                     <AreaRow key={area.skill_id} area={area} />
                   ))}
                 </ul>
@@ -127,33 +134,10 @@ function ProgramContent({ program }: { program: ProgramResponse }): ReactNode {
             </CardContent>
           </Card>
         </div>
-      </TabsContent>
-
-      <TabsContent value="personal">
-        <Card>
-          <CardHeader>
-            <CardTitle>תוכנית אישית</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PersonalPlan areas={areas} />
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+      )}
+    </div>
   );
 }
-
-const areaToneClass: Record<MeetingRating, string> = {
-  green: "border-s-4 border-rating-green bg-accent-50/70",
-  yellow: "border-s-4 border-rating-yellow bg-amber-50/80",
-  red: "border-s-4 border-rating-red bg-red-50/80",
-};
-
-const areaTitleClass: Record<MeetingRating, string> = {
-  green: "text-brand-700",
-  yellow: "text-amber-800",
-  red: "text-red-800",
-};
 
 function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
   return (
@@ -165,46 +149,9 @@ function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
 
 function AreaRow({ area }: { area: ProgramArea }): ReactNode {
   return (
-    <li className={cn("rounded-lg px-3 py-2", areaToneClass[area.rating])}>
-      <div className="flex items-center justify-between">
-        <span className={cn("font-semibold", areaTitleClass[area.rating])}>
-          {area.skill_name}
-        </span>
-        <RatingPill rating={area.rating} />
-      </div>
-      {area.solutions.length > 0 && (
-        <div className="mt-2">
-          <div className="mb-1 text-xs font-medium text-ink-muted">דרך לפתרון:</div>
-          <ul className="list-disc space-y-0.5 pe-5 text-sm text-ink">
-            {area.solutions.map((solution, index) => (
-              <li key={index}>{solution}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+    <li className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+      <span className="font-medium text-ink">{area.skill_name}</span>
+      <RatingPill rating={area.rating} />
     </li>
-  );
-}
-
-function PersonalPlan({ areas }: { areas: ProgramArea[] }): ReactNode {
-  const withSolutions = areas.filter((area) => area.solutions.length > 0);
-  if (withSolutions.length === 0) {
-    return (
-      <EmptyState>אין עדיין תוכנית אישית — הוסיפו דרכי פתרון למוקדים לחיזוק.</EmptyState>
-    );
-  }
-  return (
-    <ul className="space-y-3">
-      {withSolutions.map((area) => (
-        <li key={area.skill_id}>
-          <div className="mb-1 font-medium text-ink">{area.skill_name}</div>
-          <ul className="list-disc space-y-0.5 pe-5 text-sm text-ink-muted">
-            {area.solutions.map((solution, index) => (
-              <li key={index}>{solution}</li>
-            ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
   );
 }

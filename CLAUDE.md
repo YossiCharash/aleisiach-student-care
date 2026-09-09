@@ -240,15 +240,24 @@ on purpose: it has no access to any of these.
 - **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
   §3 permission matrix). The UI display order (decided 2026-09-08) is: **details · program · team
   meetings · social-worker note · functional-report summary**, and **details is the default tab**.
-  - Tab 1 — **Program** (תוכנית קידום): strength areas (מוקדי כוח) + areas to strengthen (מוקדים
-    לחיזוק) + a separate **personal-plan** card (the solution paths for the areas to strengthen).
-    **Authored manually** — one stored program per student, created/edited (**manager only**) via a
-    create/edit form: the same accordion as the meeting form (label → sub-label → skill → choose
-    red/yellow/green; on red/yellow a "solutions" field opens, sourced from Settings) but **without a
-    date**. green → strengths; yellow/red → areas to strengthen, with the chosen solutions as the
-    path. Instructors and professional teachers read only. (Changed 2026-09-08: was auto-derived as
-    the latest rating per skill across team meetings; it is now a stored, manually edited document —
-    team meetings no longer feed it. See ADR-019.)
+  - Tab 1 — **Program** (תוכנית קידום): split into **two sub-tabs** with **two separate stored
+    documents** (**manager only** to write; instructors and professional teachers read only).
+    - **Sub-tab A — foci** (מוקדי כוח ומוקדים לחיזוק): one current **rating-only** document per
+      student. Created/edited via a **"יצירת/עריכת מוקדים"** button opening the accordion (label →
+      sub-label → skill) where each skill is rated by **checking one of three rows** — top = green
+      (עצמאי → strength), middle = yellow (בהשגחה), bottom = red (בתלות) → area to strengthen.
+      **No solutions here** — the sub-tab shows only strengths and areas to strengthen, with no
+      solution text. (Uses program-only rating components — the meeting form of Tab 2 is unchanged.)
+    - **Sub-tab B — personal plan** (תוכנית אישית): a **dated, versioned series**. Shows the latest
+      plan or "אין תוכנית" + a **"יצירת תוכנית"** button. Creating a plan pulls the **latest foci's
+      areas to strengthen** and lets the manager pick the **solution paths** (sourced from Settings)
+      per area; it saves as a new version **stamped with its date**, pushing the previous plan into
+      **history** (a **"היסטוריה"** button reveals past versions). A plan snapshots **only the areas
+      to strengthen + their chosen solutions** (green strengths live only in sub-tab A). **PDF
+      export** per version and a **combined report across all dates** (server-side WeasyPrint).
+    (Changed 2026-09-09, ADR-021 — superseded the single dateless program document of ADR-019:
+    solutions moved out of the foci into versioned, dated plans with history and reports; team
+    meetings still do not feed Tab 1.)
   - Tab 2 — **Team meetings**: organized by months, an "Add monthly meeting" button → a long
     accordion form (label → sub-label → skill → choose red/yellow/green = dependent/supervised/
     independent; on red/yellow a "solutions" field opens, sourced from Settings). Save = summary
@@ -292,10 +301,12 @@ on purpose: it has no access to any of these.
       blocked** (decided).
 - [x] Social-worker status — **no separate role; all managers write Tab 3** (manager = social
       worker) (decided). Roles are exactly three.
-- [x] Tab 1 update rule — **authored manually; one stored program per student, created/edited by the
-      manager only** via the dateless meeting-style form (green → strengths; yellow/red → areas to
-      strengthen with their solution paths) (decided 2026-09-08, ADR-019). Superseded the earlier
-      auto-derived-from-meetings rule; team meetings no longer feed the program.
+- [x] Tab 1 update rule — **two sub-tabs / two documents (manager only)**: a **rating-only foci**
+      document (row-checkbox: green → strength, yellow/red → area to strengthen; no solutions) and a
+      **dated, versioned personal plan** built from the latest foci's areas + chosen solutions, with
+      **history** and **per-version + combined PDF reports** (decided 2026-09-09, ADR-021).
+      Superseded ADR-019's single dateless program (solutions moved from foci into versioned plans);
+      earlier still: superseded the auto-derived-from-meetings rule — team meetings do not feed Tab 1.
 - [x] Tab 5 — **manager-authored functional report ("Form 33")**; one stored report per student,
       updated in place; six free-text sections; identity + issuer auto-filled; instructors and
       professional teachers read only; server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).

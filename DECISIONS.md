@@ -291,6 +291,11 @@ layers are now the backstop the ADR always claimed.
 
 ## ADR-019 — Tab 1 (Program) is a manually authored document, not derived from meetings
 
+> _Superseded by [ADR-021](#adr-021--tab-1-program-splits-into-rating-only-foci--dated-versioned-plans):
+> the single dateless program document is replaced by a rating-only **foci** document plus a
+> **dated, versioned personal plan**. ADR-019's core point — Tab 1 is manually authored and not
+> derived from meetings — still holds._
+
 **Date:** 2026-09-08
 **Decision:** The promotion program (Tab 1) is a **stored, manually authored document** — **one
 program per student** — created and edited by the **manager only**, replacing the earlier
@@ -364,6 +369,58 @@ the client scoped authoring to the manager.
 shows even before a report exists. The six section headings are fixed constants (they are the official
 form's headings), not Settings-managed taxonomy. If the client later wants a manual issue date or a
 free-text issuer, both are additive.
+
+---
+
+## ADR-021 — Tab 1 (Program) splits into rating-only foci + dated, versioned plans
+
+**Date:** 2026-09-09
+**Decision:** Tab 1 becomes **two sub-tabs backed by two separate stored documents**, both
+**manager-write / everyone-else read-only**:
+
+1. **Foci** (מוקדי כוח ומוקדים לחיזוק) — one current **rating-only** document per student. Authored
+   through the accordion (label → sub-label → skill), but each skill is rated by **checking one of
+   three rows** (top = green/עצמאי → strength, middle = yellow/בהשגחה, bottom = red/בתלות → area to
+   strengthen). **No solutions are chosen here**, and the read view shows only strengths and areas —
+   no solution text.
+2. **Personal plan** (תוכנית אישית) — a **dated, versioned series**. Creating a plan reads the
+   **latest foci's areas to strengthen** and lets the manager pick the **solution paths** (from
+   Settings taxonomy) per area; it saves as a new version **stamped with its `created_at` date**.
+   Each new plan leaves the previous ones untouched as **history** (a "היסטוריה" button reveals
+   them). A plan snapshots **only the areas + chosen solutions** (green strengths stay in the foci
+   document). Export is a **per-version PDF** plus a **combined report across all dates**
+   (server-side WeasyPrint, ADR-015).
+
+This **supersedes ADR-019's** single dateless program: solutions move out of the foci and into the
+versioned plans, and the plan gains dates, history and reports. Team meetings still do **not** feed
+Tab 1 (ADR-019's other point stands).
+
+**Context:** The client asked that the foci tab only capture the strength/weakness picture (a simple
+one-of-three-rows mark, not the three labelled buttons), and that the "plan" be a living record over
+time — each revision kept, printable per date and as a full history — rather than a single editable
+card. Choosing solutions belongs to *planning*, not to marking foci, so the two were separated.
+
+**Data model:** `program_entry_solutions` is **dropped**; `programs` / `program_entries` stay as the
+**foci** store (rating only). New tenant-scoped tables `program_plans` / `program_plan_entries` /
+`program_plan_solutions` (migration `0024_program_plans`) hold the versioned plans — a plan row per
+version keyed by `student_id` with `created_at`, its entries snapshotting skill name + rating, and
+their chosen solutions snapshotting solution text. Foci resolve through a new rating-only
+`SkillFocusResolver` (the meetings' `SkillRatingResolver`/`SkillRatingRequest` are unchanged and
+still power Tab 2). Plans are audited under `entity_type="program_plan"` (create); foci stay
+`entity_type="program"`. Since the prototype holds demo data only, the migration rebuilds cleanly
+with no data conversion.
+
+**Alternatives:** Keep solutions on the foci and add a date to the one document — rejected; the
+client wanted history, not an editable single card. Version the foci too — rejected; only the plan
+needs history, the foci are the current picture. Reuse `SkillRatingResolver` for foci — rejected; it
+requires a solution on yellow/red, which foci must not carry, so a dedicated rating-only resolver is
+clearer.
+
+**Consequences:** A plan can only be built once foci with at least one area to strengthen exist
+(creating one otherwise returns a 422 `invalid_plan`). Plans are create-only and immutable — there is
+no plan edit or delete endpoint; a correction is a new version. A plan entry that references a skill
+which is no longer a current foci area, or a solution not belonging to its skill, is rejected at save.
+The combined report renders every version chronologically in one PDF.
 
 ---
 

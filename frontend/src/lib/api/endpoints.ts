@@ -22,6 +22,8 @@ import type {
   NamedTaxonomyUpdate,
   PasswordChangeRequest,
   PasswordChangeResponse,
+  PlanCreateRequest,
+  PlanResponse,
   ProgramResponse,
   ProgramUpsertRequest,
   SkillResponse,
@@ -121,6 +123,17 @@ export const programApi = {
     apiClient.get<ProgramResponse>(`/students/${studentId}/program`),
   upsert: (studentId: string, body: ProgramUpsertRequest): Promise<ProgramResponse> =>
     apiClient.put<ProgramResponse>(`/students/${studentId}/program`, body),
+};
+
+export const programPlansApi = {
+  list: (studentId: string): Promise<PlanResponse[]> =>
+    apiClient.get<PlanResponse[]>(`/students/${studentId}/program/plans`),
+  create: (studentId: string, body: PlanCreateRequest): Promise<PlanResponse> =>
+    apiClient.post<PlanResponse>(`/students/${studentId}/program/plans`, body),
+  pdfUrl: (studentId: string, planId: string): string =>
+    buildPdfUrl(`/students/${studentId}/program/plans/${planId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/program/plans/pdf`),
 };
 
 export const meetingsApi = {

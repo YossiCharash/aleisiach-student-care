@@ -49,7 +49,7 @@ def _seed_domain(session: Session, class_id: uuid.UUID) -> _Domain:
 
 
 def _green_body(skill_id: uuid.UUID) -> dict[str, object]:
-    return {"entries": [{"skill_id": str(skill_id), "rating": "green", "solution_ids": []}]}
+    return {"entries": [{"skill_id": str(skill_id), "rating": "green"}]}
 
 
 def test_manager_creates_program_and_get_reflects_it(

@@ -16,7 +16,7 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.program.program_service import ProgramService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
-from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
+from backend.app.service.taxonomy.skill_focus_resolver import SkillFocusResolver
 
 
 def get_program_service(
@@ -25,7 +25,7 @@ def get_program_service(
     return ProgramService(
         ProgramRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        SkillRatingResolver(TaxonomyRepository(session)),
+        SkillFocusResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
 

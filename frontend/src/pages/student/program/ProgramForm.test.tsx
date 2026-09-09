@@ -10,8 +10,8 @@ vi.mock("@/lib/api/endpoints", () => ({
   programApi: { upsert: vi.fn() },
 }));
 
-vi.mock("@/components/SkillRatingTree", () => ({
-  SkillRatingTree: () => <div>עץ טקסונומיה</div>,
+vi.mock("@/pages/student/program/FocusRatingTree", () => ({
+  FocusRatingTree: () => <div>עץ טקסונומיה</div>,
 }));
 
 const upsertMock = vi.mocked(programApi.upsert);
@@ -27,16 +27,9 @@ const emptyProgram: ProgramResponse = {
 const filledProgram: ProgramResponse = {
   student_id: "s1",
   exists: true,
-  entries: [
-    {
-      skill_id: "sk1",
-      skill_name_snapshot: "רחיצת ידיים",
-      rating: "yellow",
-      solutions: [{ solution_id: "sol1", solution_text_snapshot: "תרגול יומי" }],
-    },
-  ],
+  entries: [{ skill_id: "sk1", skill_name_snapshot: "רחיצת ידיים", rating: "yellow" }],
   strengths: [],
-  areas_to_strengthen: [],
+  areas_to_strengthen: [{ skill_id: "sk1", skill_name: "רחיצת ידיים", rating: "yellow" }],
 };
 
 describe("ProgramForm", () => {
@@ -45,34 +38,34 @@ describe("ProgramForm", () => {
     upsertMock.mockResolvedValue(filledProgram);
   });
 
-  it("prefills the draft count from the existing program", () => {
+  it("prefills the marked count from the existing foci", () => {
     renderWithClient(
       <ProgramForm studentId="s1" program={filledProgram} onDone={vi.fn()} />
     );
 
-    expect(screen.getByText("1 כישורים דורגו")).toBeInTheDocument();
+    expect(screen.getByText("1 כישורים סומנו")).toBeInTheDocument();
   });
 
-  it("submits the prefilled entries on save", async () => {
+  it("submits the prefilled ratings on save", async () => {
     renderWithClient(
       <ProgramForm studentId="s1" program={filledProgram} onDone={vi.fn()} />
     );
 
-    await userEvent.click(screen.getByText("שמירת תוכנית"));
+    await userEvent.click(screen.getByText("שמירת מוקדים"));
 
     expect(upsertMock).toHaveBeenCalledWith("s1", {
-      entries: [{ skill_id: "sk1", rating: "yellow", solution_ids: ["sol1"] }],
+      entries: [{ skill_id: "sk1", rating: "yellow" }],
     });
   });
 
-  it("blocks an empty program and does not call the API", async () => {
+  it("blocks empty foci and does not call the API", async () => {
     renderWithClient(
       <ProgramForm studentId="s1" program={emptyProgram} onDone={vi.fn()} />
     );
 
-    await userEvent.click(screen.getByText("שמירת תוכנית"));
+    await userEvent.click(screen.getByText("שמירת מוקדים"));
 
-    expect(screen.getByText("יש לדרג לפחות כישור אחד.")).toBeInTheDocument();
+    expect(screen.getByText("יש לסמן דירוג לפחות לכישור אחד.")).toBeInTheDocument();
     expect(upsertMock).not.toHaveBeenCalled();
   });
 });

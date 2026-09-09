@@ -14,7 +14,11 @@ vi.mock("@/lib/api/endpoints", () => ({
 }));
 
 vi.mock("@/pages/student/program/ProgramForm", () => ({
-  ProgramForm: () => <div>טופס תוכנית</div>,
+  ProgramForm: () => <div>טופס מוקדים</div>,
+}));
+
+vi.mock("@/pages/student/program/PersonalPlanTab", () => ({
+  PersonalPlanTab: () => <div>פאנל תוכנית אישית</div>,
 }));
 
 const getMock = vi.mocked(programApi.get);
@@ -38,12 +42,7 @@ const filledProgram: ProgramResponse = {
   entries: [],
   strengths: [{ skill_id: "sk1", skill_name: "רחיצת ידיים" }],
   areas_to_strengthen: [
-    {
-      skill_id: "sk2",
-      skill_name: "צחצוח שיניים",
-      rating: "yellow",
-      solutions: ["תרגול יומי"],
-    },
+    { skill_id: "sk2", skill_name: "צחצוח שיניים", rating: "yellow" },
   ],
 };
 
@@ -53,26 +52,24 @@ describe("ProgramTab", () => {
     getMock.mockReset();
   });
 
-  it("offers a manager the create button when no program exists", async () => {
+  it("offers a manager the create button when no foci exist", async () => {
     signedInAs("manager");
     getMock.mockResolvedValue(emptyProgram);
 
     renderWithClient(<ProgramTab studentId="s1" />);
 
-    expect(await screen.findByText("יצירת תוכנית")).toBeInTheDocument();
+    expect(await screen.findByText("יצירת מוקדים")).toBeInTheDocument();
   });
 
-  it("shows strengths, areas, and the personal plan when a program exists", async () => {
+  it("shows strengths and areas when foci exist", async () => {
     signedInAs("manager");
     getMock.mockResolvedValue(filledProgram);
 
     renderWithClient(<ProgramTab studentId="s1" />);
 
-    expect(await screen.findByText("עריכת תוכנית")).toBeInTheDocument();
+    expect(await screen.findByText("עריכת מוקדים")).toBeInTheDocument();
     expect(screen.getByText("רחיצת ידיים")).toBeInTheDocument();
-    expect(screen.getAllByText("צחצוח שיניים").length).toBeGreaterThan(0);
-    expect(screen.getByText("תוכנית אישית")).toBeInTheDocument();
-    expect(screen.getAllByText("תרגול יומי").length).toBeGreaterThan(0);
+    expect(screen.getByText("צחצוח שיניים")).toBeInTheDocument();
   });
 
   it("splits the content into a focus sub-tab and a personal-plan sub-tab", async () => {
@@ -88,7 +85,7 @@ describe("ProgramTab", () => {
 
     await userEvent.click(screen.getByRole("tab", { name: "תוכנית אישית" }));
 
-    expect(screen.getByText("צחצוח שיניים")).toBeInTheDocument();
+    expect(screen.getByText("פאנל תוכנית אישית")).toBeInTheDocument();
     expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
   });
 
@@ -99,7 +96,7 @@ describe("ProgramTab", () => {
     renderWithClient(<ProgramTab studentId="s1" />);
 
     expect(await screen.findByText("מוקדי כוח")).toBeInTheDocument();
-    expect(screen.queryByText("עריכת תוכנית")).not.toBeInTheDocument();
-    expect(screen.queryByText("יצירת תוכנית")).not.toBeInTheDocument();
+    expect(screen.queryByText("עריכת מוקדים")).not.toBeInTheDocument();
+    expect(screen.queryByText("יצירת מוקדים")).not.toBeInTheDocument();
   });
 });
