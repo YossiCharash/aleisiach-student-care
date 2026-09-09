@@ -19,16 +19,30 @@ import type {
 import { ratingLabels } from "@/lib/utils/hebrew";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { AddSettingInput, SettingsIconButton } from "@/pages/settings/SettingsList";
 
+const RATING_ROWS: MeetingRating[] = ["green", "yellow", "red"];
 const AREA_RATINGS: MeetingRating[] = ["yellow", "red"];
 
 const ratingDotClass: Record<MeetingRating, string> = {
   green: "bg-rating-green",
   yellow: "bg-rating-yellow",
   red: "bg-rating-red",
+};
+
+const ratingFieldLabel: Record<MeetingRating, string> = {
+  green: "תיאור דרגת ירוק",
+  yellow: "תיאור דרגת צהוב",
+  red: "תיאור דרגת אדום",
+};
+
+const ratingFieldHint: Record<MeetingRating, string> = {
+  green: "לדוגמה: מבצע באופן עצמאי",
+  yellow: "לדוגמה: מבצע בעזרת הכוונה",
+  red: "לדוגמה: זקוק לליווי מלא",
 };
 
 const ShowInactiveContext = createContext(false);
@@ -349,6 +363,18 @@ function AddSkillForm({
   );
 }
 
+function RatingFieldLabel({ rating }: { rating: MeetingRating }): ReactNode {
+  return (
+    <span className="mb-1 flex items-center gap-2 text-xs font-medium text-ink-muted">
+      <span
+        className={`flex h-2.5 w-2.5 shrink-0 rounded-full ${ratingDotClass[rating]}`}
+        aria-hidden
+      />
+      {ratingFieldLabel[rating]}
+    </span>
+  );
+}
+
 function RatingTextFields({
   ratings,
   onChange,
@@ -356,22 +382,19 @@ function RatingTextFields({
   ratings: SkillRatings;
   onChange: (next: SkillRatings) => void;
 }): ReactNode {
-  const rows: MeetingRating[] = ["green", "yellow", "red"];
   return (
-    <div className="space-y-1.5">
-      {rows.map((rating) => (
-        <div key={rating} className="flex items-center gap-2">
-          <span
-            className={`flex h-3 w-3 shrink-0 rounded-full ${ratingDotClass[rating]}`}
-            aria-hidden
-          />
-          <Input
-            placeholder={`תיאור דרגת ${ratingLabels[rating]}`}
+    <div className="space-y-3">
+      {RATING_ROWS.map((rating) => (
+        <label key={rating} className="block">
+          <RatingFieldLabel rating={rating} />
+          <Textarea
+            aria-label={ratingFieldLabel[rating]}
+            placeholder={ratingFieldHint[rating]}
             value={ratings[rating]}
             onChange={(event) => onChange({ ...ratings, [rating]: event.target.value })}
-            className="h-9"
+            className="min-h-16"
           />
-        </div>
+        </label>
       ))}
     </div>
   );
@@ -430,7 +453,6 @@ function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
     taxonomyApi.updateSkill(skill.id, { ratings })
   );
 
-  const rows: MeetingRating[] = ["green", "yellow", "red"];
   const current = ratingsFromSkill(skill);
   const complete =
     draft.green.trim() !== "" && draft.yellow.trim() !== "" && draft.red.trim() !== "";
@@ -450,17 +472,20 @@ function SkillRatingsEditor({ skill }: { skill: SkillTreeNode }): ReactNode {
             <Pencil className="h-4 w-4" />
           </SettingsIconButton>
         </div>
-        <ul className="space-y-1.5">
-          {rows.map((rating) => (
-            <li key={rating} className="flex items-center gap-2 text-sm text-ink">
-              <span
-                className={`flex h-3 w-3 shrink-0 rounded-full ${ratingDotClass[rating]}`}
-                aria-hidden
-              />
-              <span>{current[rating]}</span>
-            </li>
+        <div className="space-y-3">
+          {RATING_ROWS.map((rating) => (
+            <div key={rating}>
+              <RatingFieldLabel rating={rating} />
+              <div className="min-h-9 whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-ink">
+                {current[rating].trim() === "" ? (
+                  <span className="text-slate-400">—</span>
+                ) : (
+                  current[rating]
+                )}
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
   }

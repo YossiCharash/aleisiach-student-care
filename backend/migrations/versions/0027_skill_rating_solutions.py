@@ -28,7 +28,7 @@ def upgrade() -> None:
 
     op.add_column(
         "solutions",
-        sa.Column("rating", sa.String(length=16), nullable=False, server_default="yellow"),
+        sa.Column("rating", sa.String(length=16), nullable=False, server_default="YELLOW"),
     )
     op.alter_column("solutions", "rating", server_default=None)
 

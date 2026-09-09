@@ -156,9 +156,9 @@ describe("TaxonomyArea — rating-scoped skills", () => {
     const save = screen.getByRole("button", { name: "שמירת כישור" });
     expect(save).toBeDisabled();
 
-    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת עצמאי"), "ג");
-    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת בהשגחה"), "צ");
-    await userEvent.type(screen.getByPlaceholderText("תיאור דרגת בתלות"), "א");
+    await userEvent.type(screen.getByLabelText("תיאור דרגת ירוק"), "ג");
+    await userEvent.type(screen.getByLabelText("תיאור דרגת צהוב"), "צ");
+    await userEvent.type(screen.getByLabelText("תיאור דרגת אדום"), "א");
 
     expect(save).toBeEnabled();
     await userEvent.click(save);
