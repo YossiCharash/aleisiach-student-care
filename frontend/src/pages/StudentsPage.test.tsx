@@ -70,7 +70,7 @@ describe("StudentsPage", () => {
     releaseClasses(classes);
 
     expect(await screen.findByText("איתי")).toBeInTheDocument();
-    expect(screen.getByText(/סדנה א׳/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /סדנה א׳/ })).toBeInTheDocument();
     expect(screen.queryByText(UNKNOWN_WORKSHOP_LABEL)).not.toBeInTheDocument();
   });
 
