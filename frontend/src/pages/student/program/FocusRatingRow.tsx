@@ -33,15 +33,21 @@ export function FocusRatingRow({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-      <div className="mb-2 text-sm font-medium text-ink">{skill.name}</div>
-      <div className="space-y-1.5">
+      <div className="mb-2 text-sm font-medium text-ink" id={`focus-${skill.id}`}>
+        {skill.name}
+      </div>
+      <div
+        className="space-y-1.5"
+        role="radiogroup"
+        aria-labelledby={`focus-${skill.id}`}
+      >
         {ratingOrder.map((value) => {
           const active = rating === value;
           return (
             <button
               key={value}
               type="button"
-              role="checkbox"
+              role="radio"
               aria-checked={active}
               onClick={() => select(value)}
               className={cn(

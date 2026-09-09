@@ -26,7 +26,7 @@ class PlanDocument:
         if not plans:
             body = '<p class="empty">אין תוכניות להצגה.</p>'
         else:
-            body = "".join(self._plan_section(plan) for plan in plans)
+            body = "".join(self._plan_section(plan) for plan in reversed(plans))
         return self._shell.render(
             self._css(), institution_name, "תוכניות אישיות — כל התאריכים", body
         )
