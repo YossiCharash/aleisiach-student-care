@@ -258,10 +258,13 @@ on purpose: it has no access to any of these.
     (Changed 2026-09-09, ADR-021 — superseded the single dateless program document of ADR-019:
     solutions moved out of the foci into versioned, dated plans with history and reports; team
     meetings still do not feed Tab 1.)
-  - Tab 2 — **Team meetings**: organized by months, an "Add monthly meeting" button → a long
-    accordion form (label → sub-label → skill → choose red/yellow/green = dependent/supervised/
-    independent; on red/yellow a "solutions" field opens, sourced from Settings). Save = summary
-    + print / PDF export. (No longer updates Tab 1.)
+  - Tab 2 — **Team meetings** (organized **by date**): a **"ישיבת צוות חדשה"** button opens a form
+    that shows the student's **current foci and personal plan read-only** (a frozen snapshot taken at
+    that moment) and a large **summary** (סיכום) free-text field, plus a **date picker** (defaults to
+    today). Saving stores the meeting with its dated snapshot; the history lists meetings newest
+    first, each showing its snapshot + summary, an **edit-summary** action (the snapshot stays
+    frozen), and a **per-meeting PDF** export. (Changed 2026-09-09, ADR-022 — replaced the earlier
+    accordion rating form + solutions; team meetings still do not feed Tab 1, they read from it.)
   - Tab 3 — **Social worker note**: written by managers (manager = social worker), read-only for
     instructors, blocked for professional teachers.
   - Tab 4 — **Student details**: basic identity · emergency contacts & guardianship · official
@@ -307,6 +310,10 @@ on purpose: it has no access to any of these.
       **history** and **per-version + combined PDF reports** (decided 2026-09-09, ADR-021).
       Superseded ADR-019's single dateless program (solutions moved from foci into versioned plans);
       earlier still: superseded the auto-derived-from-meetings rule — team meetings do not feed Tab 1.
+- [x] Tab 2 update rule — a team meeting is a **dated, read-only snapshot** of the current foci +
+      latest personal plan plus an **editable free-text summary**; keyed by date (not month);
+      per-meeting PDF; the old accordion rating form is removed (decided 2026-09-09, ADR-022). Team
+      meetings read from Tab 1 and still do not feed it.
 - [x] Tab 5 — **manager-authored functional report ("Form 33")**; one stored report per student,
       updated in place; six free-text sections; identity + issuer auto-filled; instructors and
       professional teachers read only; server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).

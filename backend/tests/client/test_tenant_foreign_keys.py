@@ -1,7 +1,7 @@
 import sqlite3
 import uuid
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 from sqlalchemy import create_engine, event
@@ -15,8 +15,9 @@ from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
-from backend.app.models.client.meeting_entry import MeetingEntry
-from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
+from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
+from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
+from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.social_note import SocialNote
@@ -79,8 +80,8 @@ class Tenant:
     def meeting(self) -> TeamMeeting:
         meeting = TeamMeeting(
             student_id=self.student.id,
-            year=2026,
-            month=6,
+            meeting_date=date(2026, 6, 1),
+            summary="",
             author_id=self.author.id,
             institution_id=self.institution_id,
         )
@@ -88,8 +89,8 @@ class Tenant:
         self._session.flush()
         return meeting
 
-    def entry(self, meeting: TeamMeeting) -> MeetingEntry:
-        entry = MeetingEntry(
+    def plan_entry(self, meeting: TeamMeeting) -> MeetingPlanEntry:
+        entry = MeetingPlanEntry(
             meeting_id=meeting.id,
             skill_id=self.skill.id,
             skill_name_snapshot=self.skill.name,
@@ -147,8 +148,8 @@ def test_the_pragma_is_active(session: Session, home: Tenant) -> None:
     session.add(
         TeamMeeting(
             student_id=uuid.uuid4(),
-            year=2026,
-            month=6,
+            meeting_date=date(2026, 6, 1),
+            summary="",
             author_id=home.author.id,
             institution_id=HOME,
         )
@@ -189,8 +190,8 @@ def test_meeting_cannot_hang_off_a_foreign_student(
     session.add(
         TeamMeeting(
             student_id=away.student.id,
-            year=2026,
-            month=6,
+            meeting_date=date(2026, 6, 1),
+            summary="",
             author_id=home.author.id,
             institution_id=HOME,
         )
@@ -200,12 +201,12 @@ def test_meeting_cannot_hang_off_a_foreign_student(
         session.flush()
 
 
-def test_meeting_entry_cannot_reference_a_foreign_skill(
+def test_foci_entry_cannot_reference_a_foreign_skill(
     session: Session, home: Tenant, away: Tenant
 ) -> None:
     meeting = home.meeting()
     session.add(
-        MeetingEntry(
+        MeetingFociEntry(
             meeting_id=meeting.id,
             skill_id=away.skill.id,
             skill_name_snapshot="נחטף",
@@ -219,12 +220,12 @@ def test_meeting_entry_cannot_reference_a_foreign_skill(
         session.flush()
 
 
-def test_meeting_entry_cannot_hang_off_a_foreign_meeting(
+def test_plan_entry_cannot_hang_off_a_foreign_meeting(
     session: Session, home: Tenant, away: Tenant
 ) -> None:
     foreign_meeting = away.meeting()
     session.add(
-        MeetingEntry(
+        MeetingPlanEntry(
             meeting_id=foreign_meeting.id,
             skill_id=home.skill.id,
             skill_name_snapshot="נחטף",
@@ -238,13 +239,13 @@ def test_meeting_entry_cannot_hang_off_a_foreign_meeting(
         session.flush()
 
 
-def test_entry_solution_cannot_reference_a_foreign_solution(
+def test_plan_solution_cannot_reference_a_foreign_solution(
     session: Session, home: Tenant, away: Tenant
 ) -> None:
-    entry = home.entry(home.meeting())
+    entry = home.plan_entry(home.meeting())
     session.add(
-        MeetingEntrySolution(
-            meeting_entry_id=entry.id,
+        MeetingPlanSolution(
+            plan_entry_id=entry.id,
             solution_id=away.solution.id,
             solution_text_snapshot="נחטף",
             position=0,
@@ -273,10 +274,10 @@ def test_extra_section_cannot_reference_a_foreign_section_type(
 
 
 def test_a_meeting_within_one_institution_is_accepted(session: Session, home: Tenant) -> None:
-    entry = home.entry(home.meeting())
+    entry = home.plan_entry(home.meeting())
     session.add(
-        MeetingEntrySolution(
-            meeting_entry_id=entry.id,
+        MeetingPlanSolution(
+            plan_entry_id=entry.id,
             solution_id=home.solution.id,
             solution_text_snapshot=home.solution.text,
             position=0,

@@ -1,9 +1,7 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { meetingsApi } from "@/lib/api/endpoints";
+import { useState, type ReactNode } from "react";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { meetingsApi, programApi, programPlansApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import { draftsToEntries, type EntryDraft } from "@/lib/meetings/buildEntries";
-import { monthName } from "@/lib/utils/hebrew";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +12,11 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Alert } from "@/components/ui/Alert";
-import { errorMessage } from "@/components/ui/ErrorState";
-import { SkillRatingTree } from "@/components/SkillRatingTree";
+import { LoadingState } from "@/components/ui/Spinner";
+import { ErrorState, errorMessage } from "@/components/ui/ErrorState";
+import { MeetingSnapshot } from "@/pages/student/meetings/MeetingSnapshot";
 
 interface Props {
   studentId: string;
@@ -24,14 +24,19 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): ReactNode {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>ישיבה חודשית חדשה</DialogTitle>
+          <DialogTitle>ישיבת צוות חדשה</DialogTitle>
           <DialogDescription>
-            בחרו חודש, ולכל כישור קבעו דירוג. באדום/צהוב ניתן לבחור פתרונות.
+            מוקדי הכוח והמוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת.
+            מלאו את הסיכום.
           </DialogDescription>
         </DialogHeader>
         {open && (
@@ -50,88 +55,82 @@ function AddMeetingForm({
   onDone: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
-  const [drafts, setDrafts] = useState<Record<string, EntryDraft>>({});
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [meetingDate, setMeetingDate] = useState(today);
+  const [summary, setSummary] = useState("");
 
-  const entries = useMemo(() => draftsToEntries(drafts), [drafts]);
+  const [programQuery, plansQuery] = useQueries({
+    queries: [
+      {
+        queryKey: queryKeys.program(studentId),
+        queryFn: () => programApi.get(studentId),
+      },
+      {
+        queryKey: queryKeys.programPlans(studentId),
+        queryFn: () => programPlansApi.list(studentId),
+      },
+    ],
+  });
 
   const mutation = useMutation({
-    mutationFn: () => meetingsApi.create(studentId, { year, month, entries }),
+    mutationFn: () => meetingsApi.create(studentId, { meeting_date: meetingDate, summary }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
       onDone();
     },
   });
 
-  function setDraft(skillId: string, next: EntryDraft | null): void {
-    setValidationError(null);
-    setDrafts((current) => {
-      const updated = { ...current };
-      if (next === null) {
-        delete updated[skillId];
-      } else {
-        updated[skillId] = next;
-      }
-      return updated;
-    });
+  if (programQuery.isLoading || plansQuery.isLoading) {
+    return <LoadingState />;
+  }
+  if (programQuery.isError) {
+    return <ErrorState error={programQuery.error} />;
+  }
+  if (plansQuery.isError) {
+    return <ErrorState error={plansQuery.error} />;
   }
 
-  function handleSubmit(): void {
-    if (entries.length === 0) {
-      setValidationError("יש לדרג לפחות כישור אחד.");
-      return;
-    }
-    mutation.mutate();
-  }
+  const program = programQuery.data;
+  const latestPlan = plansQuery.data?.[0];
+  const snapshot = {
+    strengths: program?.strengths ?? [],
+    areas_to_strengthen: program?.areas_to_strengthen ?? [],
+    plan_entries: latestPlan?.entries ?? [],
+  };
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="meeting-month">חודש</Label>
-          <select
-            id="meeting-month"
-            value={month}
-            onChange={(event) => setMonth(Number(event.target.value))}
-            className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
-          >
-            {Array.from({ length: 12 }, (_, index) => index + 1).map((value) => (
-              <option key={value} value={value}>
-                {monthName(value)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <Label htmlFor="meeting-year">שנה</Label>
-          <Input
-            id="meeting-year"
-            type="number"
-            min={2000}
-            max={2100}
-            value={year}
-            onChange={(event) => setYear(Number(event.target.value))}
-          />
-        </div>
+      <div className="max-w-xs">
+        <Label htmlFor="meeting-date">תאריך הישיבה</Label>
+        <Input
+          id="meeting-date"
+          type="date"
+          value={meetingDate}
+          onChange={(event) => setMeetingDate(event.target.value)}
+        />
       </div>
 
-      {validationError && <Alert tone="error">{validationError}</Alert>}
+      <MeetingSnapshot data={snapshot} />
+
+      <div>
+        <Label htmlFor="meeting-summary">סיכום</Label>
+        <Textarea
+          id="meeting-summary"
+          className="min-h-40"
+          value={summary}
+          onChange={(event) => setSummary(event.target.value)}
+          placeholder="סיכום הישיבה…"
+        />
+      </div>
+
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
-      <SkillRatingTree drafts={drafts} setDraft={setDraft} />
-
-      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-        <span className="text-sm text-ink-muted">{entries.length} כישורים דורגו</span>
-        <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
-            {mutation.isPending ? "שומר…" : "שמירת ישיבה"}
-          </Button>
-          <Button variant="ghost" onClick={onDone}>
-            ביטול
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+        <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+          {mutation.isPending ? "שומר…" : "שמירת ישיבה"}
+        </Button>
+        <Button variant="ghost" onClick={onDone}>
+          ביטול
+        </Button>
       </div>
     </div>
   );

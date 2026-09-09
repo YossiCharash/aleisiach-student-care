@@ -50,29 +50,6 @@ export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
 
 export const IDD_DIAGNOSIS_NAME = "מגבלה שכלית התפתחותית";
 
-const monthNames = [
-  "ינואר",
-  "פברואר",
-  "מרץ",
-  "אפריל",
-  "מאי",
-  "יוני",
-  "יולי",
-  "אוגוסט",
-  "ספטמבר",
-  "אוקטובר",
-  "נובמבר",
-  "דצמבר",
-];
-
-export function monthName(month: number): string {
-  return monthNames[month - 1] ?? String(month);
-}
-
-export function formatMonthYear(year: number, month: number): string {
-  return `${monthName(month)} ${year}`;
-}
-
 export function formatDate(iso: string | null): string {
   if (!iso) {
     return "—";

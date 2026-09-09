@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDate,
-  formatMonthYear,
   legalStatusLabels,
-  monthName,
   ratingLabels,
   roleLabels,
   userStatusLabels,
@@ -28,20 +26,7 @@ describe("hebrew labels", () => {
   });
 });
 
-describe("date and month formatting", () => {
-  it("returns the Hebrew month name", () => {
-    expect(monthName(1)).toBe("ינואר");
-    expect(monthName(12)).toBe("דצמבר");
-  });
-
-  it("falls back to the number for an out-of-range month", () => {
-    expect(monthName(13)).toBe("13");
-  });
-
-  it("combines month and year", () => {
-    expect(formatMonthYear(2026, 3)).toBe("מרץ 2026");
-  });
-
+describe("date formatting", () => {
   it("renders a dash for a missing date", () => {
     expect(formatDate(null)).toBe("—");
   });

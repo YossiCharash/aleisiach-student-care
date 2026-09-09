@@ -5,8 +5,9 @@ from backend.app.client.database.tenant_binding import TenantBinding
 from backend.app.models.client.class_entity import ClassEntity
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
-from backend.app.models.client.meeting_entry import MeetingEntry
-from backend.app.models.client.meeting_entry_solution import MeetingEntrySolution
+from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
+from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
+from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.social_note import SocialNote
@@ -79,19 +80,22 @@ def test_seeds_classes_students_and_taxonomy(db_session: Session) -> None:
     assert _count(db_session, Solution) == 4
 
 
-def test_seeds_meeting_with_rated_entries_and_solutions(db_session: Session) -> None:
+def test_seeds_meeting_snapshotting_foci_plan_and_summary(db_session: Session) -> None:
     _seed(db_session)
 
     meeting = db_session.scalars(select(TeamMeeting)).one()
-    entries = db_session.scalars(
-        select(MeetingEntry).where(MeetingEntry.meeting_id == meeting.id)
+    foci = db_session.scalars(
+        select(MeetingFociEntry).where(MeetingFociEntry.meeting_id == meeting.id)
     ).all()
-    assert {entry.rating for entry in entries} == {
+    assert {entry.rating for entry in foci} == {
         MeetingRating.GREEN,
         MeetingRating.YELLOW,
         MeetingRating.RED,
     }
-    assert _count(db_session, MeetingEntrySolution) == 2
+    assert _count(db_session, MeetingPlanEntry) == 2
+    assert _count(db_session, MeetingPlanSolution) == 2
+    assert meeting.summary != ""
+    assert meeting.meeting_date is not None
 
 
 def test_seeds_details_and_social_note(db_session: Session) -> None:

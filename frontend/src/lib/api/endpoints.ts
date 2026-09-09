@@ -19,6 +19,7 @@ import type {
   LoginResponse,
   MeetingCreateRequest,
   MeetingResponse,
+  MeetingUpdateRequest,
   NamedTaxonomyUpdate,
   PasswordChangeRequest,
   PasswordChangeResponse,
@@ -143,6 +144,12 @@ export const meetingsApi = {
     apiClient.get<MeetingResponse>(`/students/${studentId}/meetings/${meetingId}`),
   create: (studentId: string, body: MeetingCreateRequest): Promise<MeetingResponse> =>
     apiClient.post<MeetingResponse>(`/students/${studentId}/meetings`, body),
+  updateSummary: (
+    studentId: string,
+    meetingId: string,
+    body: MeetingUpdateRequest
+  ): Promise<MeetingResponse> =>
+    apiClient.patch<MeetingResponse>(`/students/${studentId}/meetings/${meetingId}`, body),
   pdfUrl: (studentId: string, meetingId: string): string =>
     buildPdfUrl(`/students/${studentId}/meetings/${meetingId}/pdf`),
 };

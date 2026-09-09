@@ -7,18 +7,19 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.meetings.meeting_repository import MeetingRepository
+from backend.app.client.program.program_plan_repository import ProgramPlanRepository
+from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.routes.pdf import BrandDep, RendererDep
 from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
+from backend.app.schema.routes.meeting_update_request import MeetingUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.meetings.meeting_summary_document import MeetingSummaryDocument
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
-from backend.app.service.taxonomy.skill_rating_resolver import SkillRatingResolver
 
 
 def get_meeting_service(
@@ -26,8 +27,9 @@ def get_meeting_service(
 ) -> MeetingService:
     return MeetingService(
         MeetingRepository(session),
+        ProgramRepository(session),
+        ProgramPlanRepository(session),
         StudentAccessGuard(StudentRepository(session)),
-        SkillRatingResolver(TaxonomyRepository(session)),
         AuditLogger(AuditLogRepository(session)),
     )
 
@@ -67,6 +69,18 @@ def get_meeting(
     user: CurrentUser,
 ) -> MeetingResponse:
     return service.get(student_id, meeting_id, StudentAccessPolicy.scope_for(user))
+
+
+@router.patch("/{meeting_id}", response_model=MeetingResponse)
+def update_meeting_summary(
+    student_id: uuid.UUID,
+    meeting_id: uuid.UUID,
+    request: MeetingUpdateRequest,
+    service: ServiceDep,
+    writer: ManagerOrInstructor,
+) -> MeetingResponse:
+    scope = StudentAccessPolicy.scope_for(writer)
+    return service.update_summary(student_id, meeting_id, request, scope, writer.id)
 
 
 @router.get("/{meeting_id}/pdf")

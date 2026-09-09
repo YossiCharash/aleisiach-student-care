@@ -1,19 +1,21 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus } from "lucide-react";
 import { meetingsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { MeetingResponse } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
-import { formatMonthYear } from "@/lib/utils/hebrew";
+import { formatDate } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
+import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/Spinner";
-import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
-import { RatingPill } from "@/components/RatingPill";
+import { EmptyState, ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { PdfButton } from "@/components/PdfButton";
 import { AddMeetingDialog } from "@/pages/student/meetings/AddMeetingDialog";
+import { MeetingSnapshot } from "@/pages/student/meetings/MeetingSnapshot";
 
 interface MeetingsTabProps {
   studentId: string;
@@ -49,21 +51,19 @@ export function MeetingsTab({
         {canWrite && (
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4" />
-            ישיבה חודשית חדשה
+            ישיבת צוות חדשה
           </Button>
         )}
       </div>
 
       {query.isLoading && <LoadingState />}
       {query.isError && <ErrorState error={query.error} />}
-      {query.data && <MeetingList studentId={studentId} meetings={query.data} />}
+      {query.data && (
+        <MeetingList studentId={studentId} meetings={query.data} canWrite={canWrite} />
+      )}
 
       {canWrite && (
-        <AddMeetingDialog
-          studentId={studentId}
-          open={addOpen}
-          onOpenChange={setAddOpen}
-        />
+        <AddMeetingDialog studentId={studentId} open={addOpen} onOpenChange={setAddOpen} />
       )}
     </div>
   );
@@ -72,58 +72,104 @@ export function MeetingsTab({
 function MeetingList({
   studentId,
   meetings,
+  canWrite,
 }: {
   studentId: string;
   meetings: MeetingResponse[];
+  canWrite: boolean;
 }): ReactNode {
   if (meetings.length === 0) {
     return <EmptyState>אין ישיבות מתועדות עדיין.</EmptyState>;
   }
 
-  const sorted = [...meetings].sort((first, second) => {
-    if (first.year !== second.year) {
-      return second.year - first.year;
-    }
-    return second.month - first.month;
-  });
+  const sorted = [...meetings].sort((first, second) =>
+    second.meeting_date.localeCompare(first.meeting_date)
+  );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {sorted.map((meeting) => (
         <Card key={meeting.id}>
           <CardHeader className="flex items-center justify-between">
-            <CardTitle>{formatMonthYear(meeting.year, meeting.month)}</CardTitle>
+            <CardTitle>{formatDate(meeting.meeting_date)}</CardTitle>
             <PdfButton
               url={meetingsApi.pdfUrl(studentId, meeting.id)}
               label="ייצוא PDF"
             />
           </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {meeting.entries.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="rounded-lg border border-slate-100 px-3 py-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-ink">
-                      {entry.skill_name_snapshot}
-                    </span>
-                    <RatingPill rating={entry.rating} />
-                  </div>
-                  {entry.solutions.length > 0 && (
-                    <ul className="mt-1.5 list-disc space-y-0.5 pe-5 text-sm text-ink-muted">
-                      {entry.solutions.map((solution) => (
-                        <li key={solution.id}>{solution.solution_text_snapshot}</li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
+          <CardContent className="space-y-4">
+            <MeetingSnapshot data={meeting} />
+            <SummarySection studentId={studentId} meeting={meeting} canWrite={canWrite} />
           </CardContent>
         </Card>
       ))}
+    </div>
+  );
+}
+
+function SummarySection({
+  studentId,
+  meeting,
+  canWrite,
+}: {
+  studentId: string;
+  meeting: MeetingResponse;
+  canWrite: boolean;
+}): ReactNode {
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(meeting.summary);
+
+  const mutation = useMutation({
+    mutationFn: () => meetingsApi.updateSummary(studentId, meeting.id, { summary: draft }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
+      setEditing(false);
+    },
+  });
+
+  return (
+    <div className="space-y-2 border-t border-slate-100 pt-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-ink">סיכום</h3>
+        {canWrite && !editing && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setDraft(meeting.summary);
+              setEditing(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+            עריכת סיכום
+          </Button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="space-y-2">
+          <Textarea
+            className="min-h-40"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="סיכום הישיבה…"
+          />
+          {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+              {mutation.isPending ? "שומר…" : "שמירה"}
+            </Button>
+            <Button variant="ghost" onClick={() => setEditing(false)}>
+              ביטול
+            </Button>
+          </div>
+        </div>
+      ) : meeting.summary.trim() ? (
+        <p className="whitespace-pre-wrap text-sm text-ink">{meeting.summary}</p>
+      ) : (
+        <EmptyState>לא נכתב סיכום.</EmptyState>
+      )}
     </div>
   );
 }
