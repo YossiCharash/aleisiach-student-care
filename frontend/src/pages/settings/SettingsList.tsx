@@ -155,7 +155,7 @@ export function EditableSettingRow({
   }
 
   return (
-    <li className="flex flex-col gap-1 rounded-lg border border-slate-200 border-s-2 border-s-brand-300 bg-white py-1 pe-1 ps-2.5 shadow-sm">
+    <li className="flex flex-col gap-1 rounded-xl border border-slate-200 border-s-2 border-s-brand-300 bg-white py-1 pe-1 ps-2.5 shadow-sm">
       <div className="flex items-center gap-1.5">
         {editing ? (
           <>

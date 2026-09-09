@@ -40,15 +40,11 @@ export function FocusRatingRow({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-      <div className="mb-2 text-sm font-medium text-ink" id={`focus-${skill.id}`}>
+    <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-3">
+      <div className="mb-2.5 text-sm font-semibold text-ink" id={`focus-${skill.id}`}>
         {skill.name}
       </div>
-      <div
-        className="space-y-1.5"
-        role="radiogroup"
-        aria-labelledby={`focus-${skill.id}`}
-      >
+      <div className="space-y-2" role="radiogroup" aria-labelledby={`focus-${skill.id}`}>
         {ratingOrder.map((value) => {
           const active = rating === value;
           return (
@@ -59,15 +55,15 @@ export function FocusRatingRow({
               aria-checked={active}
               onClick={() => select(value)}
               className={cn(
-                "flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors",
+                "flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-start text-sm transition-colors",
                 active
                   ? activeRowClass[value]
-                  : "border-slate-200 text-ink-muted hover:bg-slate-50"
+                  : "border-slate-200 text-ink-muted hover:border-slate-300 hover:bg-slate-50"
               )}
             >
               <span
                 className={cn(
-                  "flex h-5 w-5 items-center justify-center rounded border",
+                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border",
                   active ? activeBoxClass[value] : "border-slate-300 bg-white"
                 )}
               >

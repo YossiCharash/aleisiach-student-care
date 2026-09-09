@@ -104,7 +104,7 @@ export function EditUserDialog({ user, isSelf, open, onOpenChange }: Props): Rea
               value={role}
               disabled={isSelf}
               onChange={(event) => setRole(event.target.value as UserRole)}
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
+              className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
             >
               {roles.map((value) => (
                 <option key={value} value={value}>

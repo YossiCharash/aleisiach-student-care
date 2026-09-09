@@ -38,7 +38,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           <CardTitle>אבחונים</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="rounded-lg border border-slate-100 px-3 py-2">
+          <div className="rounded-xl border border-slate-200 px-3.5 py-2.5">
             <div className="font-medium text-ink">{IDD_DIAGNOSIS_NAME}</div>
             <div className="mt-0.5 text-sm text-ink-muted">
               דרגה: {details.idd_severity || "—"}
@@ -63,7 +63,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
               {details.additional_diagnoses.map((name) => (
                 <li
                   key={name}
-                  className="rounded-lg border border-slate-100 px-3 py-2 text-sm text-ink"
+                  className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-ink"
                 >
                   {name}
                 </li>
@@ -191,7 +191,7 @@ function ListBlock({
           {items.map((item) => (
             <li
               key={item}
-              className="rounded-lg border border-slate-100 px-3 py-1.5 text-ink"
+              className="rounded-xl border border-slate-200 px-3.5 py-2 text-ink"
             >
               {item}
             </li>
@@ -218,7 +218,10 @@ function ContactList({ contacts }: { contacts: ContactInfo[] }): ReactNode {
   return (
     <ul className="space-y-2">
       {contacts.map((contact, index) => (
-        <li key={index} className="rounded-lg border border-slate-100 px-3 py-2 text-sm">
+        <li
+          key={index}
+          className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm"
+        >
           <div className="font-medium text-ink">{contact.full_name}</div>
           <div className="text-ink-muted">
             {[contact.relationship, contact.phone].filter(Boolean).join(" · ") || "—"}

@@ -4,6 +4,7 @@ import { programApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { MeetingRating, ProgramResponse } from "@/lib/api/types";
 import { focusDraftsToEntries, type FocusDraft } from "@/lib/program/buildFoci";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
@@ -62,28 +63,33 @@ export function ProgramForm({
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-ink-muted">
-        לכל כישור סמנו שורה אחת: ירוק = מוקד כוח, צהוב/אדום = מוקד לחיזוק. דרכי הפתרון
-        נבחרות בהמשך בעת בניית התוכנית האישית.
-      </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>עריכת מוקדים</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          לכל כישור סמנו שורה אחת: ירוק = מוקד כוח, צהוב/אדום = מוקד לחיזוק. דרכי הפתרון
+          נבחרות בהמשך בעת בניית התוכנית האישית.
+        </p>
 
-      {validationError && <Alert tone="error">{validationError}</Alert>}
-      {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+        {validationError && <Alert tone="error">{validationError}</Alert>}
+        {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
-      <FocusRatingTree drafts={drafts} setDraft={setDraft} />
+        <FocusRatingTree drafts={drafts} setDraft={setDraft} />
 
-      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-        <span className="text-sm text-ink-muted">{entries.length} כישורים סומנו</span>
-        <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={mutation.isPending}>
-            {mutation.isPending ? "שומר…" : "שמירת מוקדים"}
-          </Button>
-          <Button variant="ghost" onClick={onDone}>
-            ביטול
-          </Button>
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+          <span className="text-sm text-ink-muted">{entries.length} כישורים סומנו</span>
+          <div className="flex gap-2">
+            <Button onClick={handleSubmit} disabled={mutation.isPending}>
+              {mutation.isPending ? "שומר…" : "שמירת מוקדים"}
+            </Button>
+            <Button variant="ghost" onClick={onDone}>
+              ביטול
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

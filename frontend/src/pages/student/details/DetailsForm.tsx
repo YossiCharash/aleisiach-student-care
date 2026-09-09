@@ -69,7 +69,7 @@ interface FormValues {
 type OptionsFor = (field: DetailOptionField) => string[];
 
 const selectClass =
-  "h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400";
+  "h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400";
 
 function mergeMissing(options: string[], extra: string[]): string[] {
   const merged = [...options];

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 import { taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, MeetingRating } from "@/lib/api/types";
@@ -36,7 +37,7 @@ export function FocusRatingTree({
   }
 
   return (
-    <div className="max-h-[45vh] space-y-2 overflow-y-auto pe-1">
+    <div className="max-h-[45vh] space-y-2.5 overflow-y-auto pe-1">
       {tree.map((label) => (
         <LabelAccordion
           key={label.id}
@@ -59,19 +60,24 @@ function LabelAccordion({
   setDraft: SetDraft;
 }): ReactNode {
   return (
-    <details className="rounded-lg border border-slate-200 bg-white">
-      <summary className="cursor-pointer px-4 py-2.5 font-medium text-ink">
+    <details className="group overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <summary className="flex cursor-pointer list-none items-center justify-between bg-slate-50 px-4 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
         {label.name}
+        <ChevronDown className="h-5 w-5 text-ink-muted transition-transform group-open:rotate-180" />
       </summary>
-      <div className="space-y-2 border-t border-slate-100 p-3">
-        {label.skills.map((skill) => (
-          <FocusRatingRow
-            key={skill.id}
-            skill={skill}
-            rating={drafts[skill.id] ?? null}
-            onChange={(next) => setDraft(skill.id, next)}
-          />
-        ))}
+      <div className="space-y-2.5 border-t border-slate-100 p-3.5">
+        {label.skills.length === 0 ? (
+          <p className="text-sm text-ink-muted">אין כישורים בתווית זו.</p>
+        ) : (
+          label.skills.map((skill) => (
+            <FocusRatingRow
+              key={skill.id}
+              skill={skill}
+              rating={drafts[skill.id] ?? null}
+              onChange={(next) => setDraft(skill.id, next)}
+            />
+          ))
+        )}
       </div>
     </details>
   );

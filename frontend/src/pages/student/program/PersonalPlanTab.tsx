@@ -102,9 +102,13 @@ function PlanCard({
   return (
     <Card>
       <CardHeader className="flex items-center justify-between">
-        <CardTitle>
+        <CardTitle className="flex items-center gap-2.5">
           {formatDate(plan.created_at)}
-          {isLatest && <span className="ms-2 text-xs text-brand-700">(עדכנית)</span>}
+          {isLatest && (
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">
+              עדכנית
+            </span>
+          )}
         </CardTitle>
         <PdfButton url={programPlansApi.pdfUrl(studentId, plan.id)} label="ייצוא PDF" />
       </CardHeader>
@@ -113,14 +117,16 @@ function PlanCard({
           {plan.entries.map((entry) => (
             <li
               key={entry.skill_id}
-              className="rounded-lg border border-slate-100 px-3 py-2"
+              className="rounded-xl border border-slate-200 px-3.5 py-3"
             >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-ink">{entry.skill_name_snapshot}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-semibold text-ink">
+                  {entry.skill_name_snapshot}
+                </span>
                 <RatingPill rating={entry.rating} />
               </div>
               {entry.solutions.length > 0 && (
-                <ul className="mt-1.5 list-disc space-y-0.5 pe-5 text-sm text-ink-muted">
+                <ul className="mt-2 list-disc space-y-1 pe-5 text-sm text-ink-muted">
                   {entry.solutions.map((solution) => (
                     <li key={solution.solution_id}>{solution.solution_text_snapshot}</li>
                   ))}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { programApi, programPlansApi, taxonomyApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { LabelTreeNode, ProgramArea, SolutionTreeNode } from "@/lib/api/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/Spinner";
@@ -104,38 +105,43 @@ export function PlanForm({
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-ink-muted">
-        בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
-        הקודמת תיכנס להיסטוריה.
-      </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>יצירת תוכנית אישית</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm leading-relaxed text-ink-muted">
+          בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
+          הקודמת תיכנס להיסטוריה.
+        </p>
 
-      {validationError && <Alert tone="error">{validationError}</Alert>}
-      {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
+        {validationError && <Alert tone="error">{validationError}</Alert>}
+        {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
 
-      <div className="space-y-3">
-        {areas.map((area) => (
-          <AreaSolutions
-            key={area.skill_id}
-            area={area}
-            solutions={(solutionsMap[area.skill_id] ?? []).filter(
-              (solution) => solution.rating === area.rating
-            )}
-            selected={selections[area.skill_id] ?? []}
-            onToggle={(solutionId) => toggle(area.skill_id, solutionId)}
-          />
-        ))}
-      </div>
+        <div className="space-y-2.5">
+          {areas.map((area) => (
+            <AreaSolutions
+              key={area.skill_id}
+              area={area}
+              solutions={(solutionsMap[area.skill_id] ?? []).filter(
+                (solution) => solution.rating === area.rating
+              )}
+              selected={selections[area.skill_id] ?? []}
+              onToggle={(solutionId) => toggle(area.skill_id, solutionId)}
+            />
+          ))}
+        </div>
 
-      <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
-        <Button onClick={handleSubmit} disabled={mutation.isPending}>
-          {mutation.isPending ? "שומר…" : "שמירת תוכנית"}
-        </Button>
-        <Button variant="ghost" onClick={onDone}>
-          ביטול
-        </Button>
-      </div>
-    </div>
+        <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+          <Button onClick={handleSubmit} disabled={mutation.isPending}>
+            {mutation.isPending ? "שומר…" : "שמירת תוכנית"}
+          </Button>
+          <Button variant="ghost" onClick={onDone}>
+            ביטול
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -151,8 +157,8 @@ function AreaSolutions({
   onToggle: (solutionId: string) => void;
 }): ReactNode {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="rounded-xl border border-slate-200 bg-white p-3.5">
+      <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="font-semibold text-ink">{area.skill_name}</span>
         <RatingPill rating={area.rating} />
       </div>
@@ -161,12 +167,15 @@ function AreaSolutions({
       ) : (
         <div className="space-y-1">
           {solutions.map((solution) => (
-            <label key={solution.id} className="flex items-center gap-2 text-sm text-ink">
+            <label
+              key={solution.id}
+              className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-ink transition-colors hover:bg-slate-50"
+            >
               <input
                 type="checkbox"
                 checked={selected.includes(solution.id)}
                 onChange={() => onToggle(solution.id)}
-                className="h-4 w-4 accent-brand"
+                className="h-4 w-4 shrink-0 accent-brand"
               />
               {solution.text}
             </label>
