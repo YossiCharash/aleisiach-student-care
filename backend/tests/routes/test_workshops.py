@@ -94,6 +94,36 @@ def test_instructor_lists_only_its_own_workshop(
     assert [row["name"] for row in listing.json()] == ["שלי"]
 
 
+def test_professional_teacher_lists_all_workshops(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    boss_headers = auth_headers(api, "boss")
+    api.post("/workshops", json={"name": "שלי", "color": _COLOR}, headers=boss_headers)
+    api.post("/workshops", json={"name": "בדיקה", "color": _COLOR}, headers=boss_headers)
+    seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
+
+    listing = api.get("/workshops", headers=auth_headers(api, "prof"))
+
+    assert listing.status_code == 200
+    assert sorted(row["name"] for row in listing.json()) == ["בדיקה", "שלי"]
+
+
+def test_unassigned_instructor_lists_no_workshops(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    api.post(
+        "/workshops", json={"name": "בדיקה", "color": _COLOR}, headers=auth_headers(api, "boss")
+    )
+    seed_user("teacher", UserRole.INSTRUCTOR)
+
+    listing = api.get("/workshops", headers=auth_headers(api, "teacher"))
+
+    assert listing.status_code == 200
+    assert listing.json() == []
+
+
 def test_update_unknown_workshop_returns_404(
     api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
