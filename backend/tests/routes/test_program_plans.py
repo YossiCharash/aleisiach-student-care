@@ -121,13 +121,31 @@ def test_plan_without_foci_is_rejected(
     assert response.status_code == 422
 
 
-def test_instructor_cannot_create_plan(
+def test_instructor_can_create_own_workshop_plan(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
     workshop_id = _seed_workshop(db_session, "Aleph")
     domain = _seed_domain(db_session, workshop_id)
-    seed_user("boss", UserRole.MANAGER)
     seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
+    headers = auth_headers(api, "teacher")
+    _seed_area_foci(api, domain, headers)
+
+    response = api.post(
+        f"/students/{domain.student_id}/program/plans",
+        headers=headers,
+        json=_plan_body(domain),
+    )
+    assert response.status_code == 201
+
+
+def test_instructor_cannot_create_other_workshop_plan(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_a = _seed_workshop(db_session, "Aleph")
+    class_b = _seed_workshop(db_session, "Bet")
+    domain = _seed_domain(db_session, class_b)
+    seed_user("boss", UserRole.MANAGER)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
     _seed_area_foci(api, domain, auth_headers(api, "boss"))
 
     response = api.post(
@@ -135,7 +153,7 @@ def test_instructor_cannot_create_plan(
         headers=auth_headers(api, "teacher"),
         json=_plan_body(domain),
     )
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 def test_professional_teacher_can_read_plans(

@@ -79,6 +79,21 @@ def test_instructor_can_list_but_not_create(
     )
 
 
+def test_instructor_lists_only_its_own_workshop(
+    api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    seed_user("boss", UserRole.MANAGER)
+    boss_headers = auth_headers(api, "boss")
+    own = api.post("/workshops", json={"name": "שלי", "color": _COLOR}, headers=boss_headers).json()
+    api.post("/workshops", json={"name": "בדיקה", "color": _COLOR}, headers=boss_headers)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=uuid.UUID(own["id"]))
+
+    listing = api.get("/workshops", headers=auth_headers(api, "teacher"))
+
+    assert listing.status_code == 200
+    assert [row["name"] for row in listing.json()] == ["שלי"]
+
+
 def test_update_unknown_workshop_returns_404(
     api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:

@@ -16,11 +16,13 @@ from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.workshop_create_request import WorkshopCreateRequest
 from backend.app.schema.routes.workshop_update_request import WorkshopUpdateRequest
+from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.workshops.workshop_service import WorkshopService
 from backend.tests.conftest import DEFAULT_INSTITUTION_ID
 
 _ACTOR = uuid.uuid4()
+_ALL = StudentAccessScope(all_workshops=True)
 _COLOR = "#3F8420"
 _OTHER_COLOR = "#85C441"
 
@@ -73,7 +75,16 @@ def test_list_active_sorted_by_name(db_session: Session) -> None:
     _create(service, "Bet")
     _create(service, "Aleph")
 
-    assert [entity.name for entity in service.list_active()] == ["Aleph", "Bet"]
+    assert [entity.name for entity in service.list_active(_ALL)] == ["Aleph", "Bet"]
+
+
+def test_instructor_scope_lists_only_its_own_workshop(db_session: Session) -> None:
+    service = _service(db_session)
+    own = _create(service, "Aleph")
+    _create(service, "Bet")
+
+    scope = StudentAccessScope(all_workshops=False, workshop_id=own)
+    assert [entity.id for entity in service.list_active(scope)] == [own]
 
 
 def test_update_changes_name_and_color(db_session: Session) -> None:
@@ -108,7 +119,7 @@ def test_create_assigns_the_chosen_instructor(db_session: Session) -> None:
 
     db_session.refresh(instructor)
     assert instructor.workshop_id == result
-    listed = service.list_active()
+    listed = service.list_active(_ALL)
     assert listed[0].instructor_id == instructor.id
     assert listed[0].instructor_name == "Dana"
 
@@ -172,7 +183,7 @@ def test_archive_hides_workshop_from_the_active_list(db_session: Session) -> Non
 
     service.archive(retired, _ACTOR)
 
-    assert [entity.id for entity in service.list_active()] == [kept]
+    assert [entity.id for entity in service.list_active(_ALL)] == [kept]
     assert [entity.id for entity in service.list_archived()] == [retired]
 
 
@@ -183,7 +194,7 @@ def test_restore_returns_workshop_to_the_active_list(db_session: Session) -> Non
 
     service.restore(workshop_id, _ACTOR)
 
-    assert [row.id for row in service.list_active()] == [workshop_id]
+    assert [row.id for row in service.list_active(_ALL)] == [workshop_id]
     assert service.list_archived() == []
 
 

@@ -2,7 +2,8 @@ import type { UserResponse } from "@/lib/api/types";
 
 export const permissions = {
   canManage: (user: UserResponse): boolean => user.role === "manager",
-  canWriteProgram: (user: UserResponse): boolean => user.role === "manager",
+  canWriteProgram: (user: UserResponse): boolean =>
+    user.role === "manager" || user.role === "instructor",
   canWriteMeetings: (user: UserResponse): boolean =>
     user.role === "manager" || user.role === "instructor",
   canReadSocialNote: (user: UserResponse): boolean =>

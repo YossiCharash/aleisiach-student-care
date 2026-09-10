@@ -26,6 +26,12 @@ describe("permissions matrix", () => {
     expect(permissions.canCreateStudents(teacher)).toBe(false);
   });
 
+  it("manager and instructor may write the program; teacher may not", () => {
+    expect(permissions.canWriteProgram(manager)).toBe(true);
+    expect(permissions.canWriteProgram(instructor)).toBe(true);
+    expect(permissions.canWriteProgram(teacher)).toBe(false);
+  });
+
   it("manager and instructor may write meetings; teacher may not", () => {
     expect(permissions.canWriteMeetings(manager)).toBe(true);
     expect(permissions.canWriteMeetings(instructor)).toBe(true);
