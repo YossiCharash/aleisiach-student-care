@@ -17,10 +17,6 @@ export interface SidebarNavItem {
 
 const ARCHIVED_STUDENTS_PATH = "/students/archived";
 
-function settingsTab(search: string): string | null {
-  return new URLSearchParams(search).get("tab");
-}
-
 const students: SidebarNavItem = {
   to: "/students",
   label: "תלמידים",
@@ -38,11 +34,10 @@ const archivedStudents: SidebarNavItem = {
 };
 
 const users: SidebarNavItem = {
-  to: "/settings?tab=users",
+  to: "/users",
   label: "משתמשים",
   icon: UserCog,
-  isActive: (pathname, search) =>
-    pathname.startsWith("/settings") && settingsTab(search) === "users",
+  isActive: (pathname) => pathname.startsWith("/users"),
 };
 
 const institutions: SidebarNavItem = {
@@ -56,8 +51,7 @@ const settings: SidebarNavItem = {
   to: "/settings",
   label: "הגדרות",
   icon: Settings,
-  isActive: (pathname, search) =>
-    pathname.startsWith("/settings") && settingsTab(search) !== "users",
+  isActive: (pathname) => pathname.startsWith("/settings"),
 };
 
 export function sidebarNavItems(user: UserResponse): SidebarNavItem[] {

@@ -15,6 +15,7 @@ import { StudentsPage } from "@/pages/StudentsPage";
 import { ArchivedStudentsPage } from "@/pages/ArchivedStudentsPage";
 import { StudentPage } from "@/pages/StudentPage";
 import { SettingsPage } from "@/pages/SettingsPage";
+import { UsersPage } from "@/pages/UsersPage";
 import { InstitutionsPage } from "@/pages/InstitutionsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
@@ -42,6 +43,7 @@ export function AppRoutes(): ReactNode {
             <Route path="/students/:studentId" element={<StudentPage />} />
             <Route element={<ManagerRoute />}>
               <Route path="/students/archived" element={<ArchivedStudentsPage />} />
+              <Route path="/users" element={<UsersPage />} />
             </Route>
           </Route>
         </Route>

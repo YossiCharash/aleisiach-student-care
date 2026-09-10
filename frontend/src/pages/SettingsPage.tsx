@@ -5,7 +5,6 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
 import { homePath } from "@/lib/auth/homePath";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { UsersArea } from "@/pages/settings/UsersArea";
 import { WorkshopsArea } from "@/pages/settings/WorkshopsArea";
 import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
 import { DiagnosesArea } from "@/pages/settings/DiagnosesArea";
@@ -13,7 +12,6 @@ import { DetailOptionsArea } from "@/pages/settings/DetailOptionsArea";
 import { AccountArea } from "@/pages/settings/AccountArea";
 
 const allTabs = [
-  "users",
   "workshops",
   "taxonomy",
   "diagnoses",
@@ -38,7 +36,7 @@ export function SettingsPage(): ReactNode {
 
   const canManage = user ? permissions.canManage(user) : false;
   const availableTabs: readonly SettingsTab[] = canManage ? allTabs : ["account"];
-  const defaultTab: SettingsTab = canManage ? "users" : "account";
+  const defaultTab: SettingsTab = canManage ? "workshops" : "account";
 
   const tabParam = searchParams.get("tab");
   const isValidTab =
@@ -84,7 +82,6 @@ export function SettingsPage(): ReactNode {
         <TabsList>
           {canManage && (
             <>
-              <TabsTrigger value="users">משתמשים</TabsTrigger>
               <TabsTrigger value="workshops">סדנאות</TabsTrigger>
               <TabsTrigger value="taxonomy">כישורים-מיומנויות</TabsTrigger>
               <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
@@ -95,9 +92,6 @@ export function SettingsPage(): ReactNode {
         </TabsList>
         {canManage && (
           <>
-            <TabsContent value="users">
-              <UsersArea />
-            </TabsContent>
             <TabsContent value="workshops">
               <WorkshopsArea />
             </TabsContent>

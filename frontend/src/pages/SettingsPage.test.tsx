@@ -8,8 +8,8 @@ import { SettingsPage } from "@/pages/SettingsPage";
 const useAuth = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 
-vi.mock("@/pages/settings/UsersArea", () => ({
-  UsersArea: () => <div>אזור משתמשים</div>,
+vi.mock("@/pages/settings/WorkshopsArea", () => ({
+  WorkshopsArea: () => <div>אזור סדנאות</div>,
 }));
 vi.mock("@/pages/settings/TaxonomyArea", () => ({
   TaxonomyArea: () => <div>אזור כישורים</div>,
@@ -37,7 +37,7 @@ function renderSettings(path = "/settings"): void {
   );
 }
 
-const managerTabs = ["משתמשים", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי תלמיד"];
+const managerTabs = ["סדנאות", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי תלמיד"];
 
 describe("SettingsPage", () => {
   beforeEach(() => useAuth.mockReset());
@@ -49,7 +49,14 @@ describe("SettingsPage", () => {
     for (const name of [...managerTabs, "החשבון שלי"]) {
       expect(screen.getByRole("tab", { name })).toBeInTheDocument();
     }
-    expect(screen.getByText("אזור משתמשים")).toBeInTheDocument();
+    expect(screen.getByText("אזור סדנאות")).toBeInTheDocument();
+  });
+
+  it("does not render the users management as a tab", () => {
+    signedInAs("manager");
+    renderSettings();
+
+    expect(screen.queryByRole("tab", { name: "משתמשים" })).not.toBeInTheDocument();
   });
 
   it("shows only the account tab for a non-manager", () => {
@@ -65,9 +72,9 @@ describe("SettingsPage", () => {
 
   it("falls back to the account tab when a non-manager requests a management tab", () => {
     signedInAs("instructor");
-    renderSettings("/settings?tab=users");
+    renderSettings("/settings?tab=workshops");
 
     expect(screen.getByText("אזור החשבון")).toBeInTheDocument();
-    expect(screen.queryByText("אזור משתמשים")).not.toBeInTheDocument();
+    expect(screen.queryByText("אזור סדנאות")).not.toBeInTheDocument();
   });
 });

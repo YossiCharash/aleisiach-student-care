@@ -21,7 +21,7 @@ export function UsersArea(): ReactNode {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-ink">משתמשים</h2>
+        <h1 className="text-2xl font-extrabold text-ink">משתמשים</h1>
         <Button onClick={() => setInviteOpen(true)}>
           <UserPlus className="h-4 w-4" />
           הזמנת משתמש
