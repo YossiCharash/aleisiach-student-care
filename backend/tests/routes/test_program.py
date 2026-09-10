@@ -84,7 +84,7 @@ def test_empty_program_is_rejected(
     assert response.status_code == 422
 
 
-def test_instructor_cannot_write_program(
+def test_instructor_can_write_own_workshop_program(
     api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
     workshop_id = _seed_workshop(db_session, "Aleph")
@@ -95,7 +95,22 @@ def test_instructor_cannot_write_program(
     response = api.put(
         f"/students/{domain.student_id}/program", headers=headers, json=_green_body(domain.skill_id)
     )
-    assert response.status_code == 403
+    assert response.status_code == 200
+
+
+def test_instructor_cannot_write_other_workshop_program(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    class_a = _seed_workshop(db_session, "Aleph")
+    class_b = _seed_workshop(db_session, "Bet")
+    domain = _seed_domain(db_session, class_b)
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
+    headers = auth_headers(api, "teacher")
+
+    response = api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json=_green_body(domain.skill_id)
+    )
+    assert response.status_code == 404
 
 
 def test_instructor_cannot_read_other_workshop_program(

@@ -11,7 +11,7 @@ from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
 from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import CurrentUser, Manager, Tenant, require_tenant
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
 from backend.app.schema.routes.plan_create_request import PlanCreateRequest
 from backend.app.schema.routes.plan_response import PlanResponse
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -52,7 +52,7 @@ def create_plan(
     student_id: uuid.UUID,
     request: PlanCreateRequest,
     service: ServiceDep,
-    writer: Manager,
+    writer: ManagerOrInstructor,
 ) -> PlanResponse:
     scope = StudentAccessPolicy.scope_for(writer)
     return service.create(student_id, request, scope, writer.id)

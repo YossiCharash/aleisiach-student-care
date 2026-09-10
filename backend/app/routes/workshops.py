@@ -12,6 +12,7 @@ from backend.app.schema.routes.workshop_create_request import WorkshopCreateRequ
 from backend.app.schema.routes.workshop_response import WorkshopResponse
 from backend.app.schema.routes.workshop_update_request import WorkshopUpdateRequest
 from backend.app.service.audit.audit_logger import AuditLogger
+from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.workshops.workshop_service import WorkshopService
 
 
@@ -27,8 +28,8 @@ router = APIRouter(prefix="/workshops", tags=["workshops"], dependencies=[Depend
 
 
 @router.get("", response_model=list[WorkshopResponse])
-def list_workshops(service: ServiceDep, _: CurrentUser) -> list[WorkshopResponse]:
-    return service.list_active()
+def list_workshops(service: ServiceDep, user: CurrentUser) -> list[WorkshopResponse]:
+    return service.list_active(StudentAccessPolicy.scope_for(user))
 
 
 @router.get("/archived", response_model=list[WorkshopResponse])

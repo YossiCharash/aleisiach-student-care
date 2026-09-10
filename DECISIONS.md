@@ -556,6 +556,51 @@ free-text box (`PUT /social-note`, `SocialNoteUpsertRequest`) is gone, replaced 
 
 ---
 
+## ADR-025 — Instructors write Tab 1 for their own workshop; the workshop list is scoped per role
+
+**Decision:** An **instructor** may now **create and edit Tab 1** (both the foci document and the
+personal plans) for **students in their own workshop**. Managers still write any student's Tab 1;
+professional teachers stay read-only. This **relaxes the "manager only" write of ADR-021** — foci
+(`PUT /students/{id}/program`) and plans (`POST /students/{id}/program/plans`) now accept
+`ManagerOrInstructor` instead of `Manager`.
+
+Separately, **`GET /workshops` is now scoped by role**: an instructor receives **only their own
+workshop**, while managers and professional teachers (who see every student) receive the full list.
+
+**Context:** The client asked that an instructor be able to build the promotion plans for the
+students in her workshop, not only read them. Because a personal plan is derived from the latest
+foci's areas to strengthen (a plan without foci is rejected, ADR-021), enabling plan creation
+requires enabling foci creation too — so both sub-tabs of Tab 1 are opened together.
+
+**Scope enforcement (server-side, the security boundary):** write access rides the existing
+`StudentAccessScope` already used for reads. `StudentAccessPolicy.scope_for` returns the
+instructor's single `workshop_id`, and `StudentAccessGuard.require` answers **404** (not 403) when a
+student is outside the caller's scope — so an instructor writing a plan for another workshop's
+student is indistinguishable from that student not existing, consistent with the tenant-isolation
+rule (ADR-018) and rule 7. No change was needed in the program/plan services; only the route
+dependency changed, because the scope was already threaded through `service.upsert` / `service.create`.
+
+**Workshop-list leak fix:** `GET /workshops` previously returned every active workshop in the
+institution to any authenticated user, so the frontend rendered a filter chip per workshop and an
+instructor saw the *names* of workshops that were not hers even though her student list was empty of
+them. `WorkshopService.list_active` now takes a `StudentAccessScope` and drops workshops the scope
+does not permit; the route derives the scope from the caller. The frontend needs no change — the
+chips simply reduce to the instructor's own workshop.
+
+**Frontend:** `permissions.canWriteProgram` becomes `manager || instructor` to match the backend, so
+the "יצירת/עריכת מוקדים" and "יצירת תוכנית" buttons appear for an instructor on her own students.
+
+**Alternatives:** Open only the personal plan and keep foci manager-authored — rejected; the plan
+cannot be created without foci, so the instructor would still depend on a manager and could not
+"create plans" autonomously. Filter the workshop chips on the frontend only — rejected; the names
+would still cross the wire, violating server-side enforcement (rule 7).
+
+**Consequences:** Instructors gain autonomous Tab 1 authoring for their workshop; the audit log now
+records instructor actors on program/plan changes. Professional-teacher and cross-workshop access are
+unchanged (still read-only / 404).
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

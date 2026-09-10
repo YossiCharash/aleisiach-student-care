@@ -10,6 +10,7 @@ from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.workshop_create_request import WorkshopCreateRequest
 from backend.app.schema.routes.workshop_response import WorkshopResponse
 from backend.app.schema.routes.workshop_update_request import WorkshopUpdateRequest
+from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 
@@ -23,8 +24,11 @@ class WorkshopService:
         self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
         self._permissions_audit = EntityAuditRecorder(audit_logger, _PERMISSION_ENTITY_TYPE)
 
-    def list_active(self) -> list[WorkshopResponse]:
-        return self._to_responses(self._workshops.list_active())
+    def list_active(self, scope: StudentAccessScope) -> list[WorkshopResponse]:
+        visible = [
+            workshop for workshop in self._workshops.list_active() if scope.permits(workshop.id)
+        ]
+        return self._to_responses(visible)
 
     def list_archived(self) -> list[WorkshopResponse]:
         return self._to_responses(self._workshops.list_archived())

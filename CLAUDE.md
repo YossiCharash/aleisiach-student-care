@@ -129,7 +129,7 @@ on purpose: it has no access to any of these.
 | Capability | Manager | Instructor | Professional teacher |
 |---|---|---|---|
 | Student list | All in the institution | Own class only | All in the institution |
-| Tab 1 — Program | Read/Write | Read | Read |
+| Tab 1 — Program | Read/Write | Read/Write (own class) | Read |
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
@@ -241,7 +241,10 @@ on purpose: it has no access to any of these.
   §3 permission matrix). The UI display order (decided 2026-09-08) is: **details · program · team
   meetings · social-worker note · functional-report summary**, and **details is the default tab**.
   - Tab 1 — **Program** (תוכנית קידום): split into **two sub-tabs** with **two separate stored
-    documents** (**manager only** to write; instructors and professional teachers read only).
+    documents** (**managers write any student; instructors write students in their own workshop**;
+    professional teachers read only). (Changed 2026-09-10, ADR-025 — Tab 1 write opened to
+    instructors, scoped to their workshop; the workshop scope is enforced server-side, so an
+    instructor writing another workshop's student answers 404.)
     - **Sub-tab A — foci** (מוקדי כוח ומוקדים לחיזוק): one current **rating-only** document per
       student. Created/edited via a **"יצירת/עריכת מוקדים"** button opening the accordion (label →
       sub-label → skill) where each skill is rated by **checking one of three rows** — top = green
@@ -314,7 +317,10 @@ on purpose: it has no access to any of these.
       blocked** (decided).
 - [x] Social-worker status — **no separate role; all managers write Tab 3** (manager = social
       worker) (decided). Roles are exactly three.
-- [x] Tab 1 update rule — **two sub-tabs / two documents (manager only)**: a **rating-only foci**
+- [x] Tab 1 write access — **managers write any student; instructors write students in their own
+      workshop** (scoped server-side, cross-workshop = 404); professional teachers read only
+      (decided 2026-09-10, ADR-025). Relaxed the "manager only" write of ADR-021.
+- [x] Tab 1 update rule — **two sub-tabs / two documents**: a **rating-only foci**
       document (row-checkbox: green → strength, yellow/red → area to strengthen; no solutions) and a
       **dated, versioned personal plan** built from the latest foci's areas + chosen solutions, with
       **history** and **per-version + combined PDF reports** (decided 2026-09-09, ADR-021).

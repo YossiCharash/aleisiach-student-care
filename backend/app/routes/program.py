@@ -9,7 +9,7 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.routes.security import CurrentUser, Manager, require_tenant
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.program_response import ProgramResponse
 from backend.app.schema.routes.program_upsert_request import ProgramUpsertRequest
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -49,7 +49,7 @@ def upsert_program(
     student_id: uuid.UUID,
     request: ProgramUpsertRequest,
     service: ServiceDep,
-    writer: Manager,
+    writer: ManagerOrInstructor,
 ) -> ProgramResponse:
     scope = StudentAccessPolicy.scope_for(writer)
     return service.upsert(student_id, request, scope, writer.id)
