@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 
 export function Sidebar(): ReactNode {
   const { user, institutionName, logout } = useAuth();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
 
   async function handleLogout(): Promise<void> {
@@ -35,7 +35,7 @@ export function Sidebar(): ReactNode {
         to={homePath(user)}
         className="mb-6 flex flex-col gap-2.5 rounded-card border border-slate-200/70 bg-white px-3.5 py-3 shadow-soft"
       >
-        <img src="/logo.png" alt="עלי שיח" className="h-9 w-auto" />
+        <img src="/logo.png" alt="עלי שיח" className="h-9 w-auto self-start" />
         <span className="flex items-center gap-1.5 border-t border-slate-100 pt-2 text-xs font-medium text-ink-soft">
           <span className="leaf-tick !h-3 !w-1" aria-hidden />
           {subtitle}
@@ -44,7 +44,7 @@ export function Sidebar(): ReactNode {
 
       <nav className="flex flex-col gap-1">
         {sidebarNavItems(user).map((item) => {
-          const active = item.isActive(pathname);
+          const active = item.isActive(pathname, search);
           const Icon = item.icon;
           return (
             <Link

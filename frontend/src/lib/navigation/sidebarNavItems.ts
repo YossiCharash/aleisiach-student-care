@@ -1,14 +1,25 @@
-import { Archive, Building2, Settings, Users, type LucideIcon } from "lucide-react";
+import {
+  Archive,
+  Building2,
+  Settings,
+  UserCog,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import type { UserResponse } from "@/lib/api/types";
 
 export interface SidebarNavItem {
   to: string;
   label: string;
   icon: LucideIcon;
-  isActive: (pathname: string) => boolean;
+  isActive: (pathname: string, search: string) => boolean;
 }
 
 const ARCHIVED_STUDENTS_PATH = "/students/archived";
+
+function settingsTab(search: string): string | null {
+  return new URLSearchParams(search).get("tab");
+}
 
 const students: SidebarNavItem = {
   to: "/students",
@@ -26,6 +37,14 @@ const archivedStudents: SidebarNavItem = {
   isActive: (pathname) => pathname.startsWith(ARCHIVED_STUDENTS_PATH),
 };
 
+const users: SidebarNavItem = {
+  to: "/settings?tab=users",
+  label: "משתמשים",
+  icon: UserCog,
+  isActive: (pathname, search) =>
+    pathname.startsWith("/settings") && settingsTab(search) === "users",
+};
+
 const institutions: SidebarNavItem = {
   to: "/institutions",
   label: "מוסדות",
@@ -37,7 +56,8 @@ const settings: SidebarNavItem = {
   to: "/settings",
   label: "הגדרות",
   icon: Settings,
-  isActive: (pathname) => pathname.startsWith("/settings"),
+  isActive: (pathname, search) =>
+    pathname.startsWith("/settings") && settingsTab(search) !== "users",
 };
 
 export function sidebarNavItems(user: UserResponse): SidebarNavItem[] {
@@ -45,7 +65,7 @@ export function sidebarNavItems(user: UserResponse): SidebarNavItem[] {
     return [institutions, settings];
   }
   if (user.role === "manager") {
-    return [students, archivedStudents, settings];
+    return [students, archivedStudents, users, settings];
   }
   return [students, settings];
 }

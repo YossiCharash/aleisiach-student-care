@@ -1,14 +1,26 @@
 import type { ReactNode } from "react";
-import type { PlanEntryResponse, ProgramArea, ProgramStrength } from "@/lib/api/types";
+import type {
+  MeetingRating,
+  PlanEntryResponse,
+  ProgramArea,
+  ProgramStrength,
+} from "@/lib/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
+import { cn } from "@/lib/utils/cn";
 
 export interface MeetingSnapshotData {
   strengths: ProgramStrength[];
   areas_to_strengthen: ProgramArea[];
   plan_entries: PlanEntryResponse[];
 }
+
+const areaToneClass: Record<MeetingRating, string> = {
+  green: "border-rating-green bg-accent-50 text-brand-700",
+  yellow: "border-rating-yellow bg-amber-50 text-amber-800",
+  red: "border-rating-red bg-red-50 text-red-800",
+};
 
 export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactNode {
   return (
@@ -48,9 +60,12 @@ export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactN
                 {data.areas_to_strengthen.map((area) => (
                   <li
                     key={area.skill_id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5"
+                    className={cn(
+                      "flex items-center justify-between gap-3 rounded-xl border-s-4 px-3.5 py-2.5",
+                      areaToneClass[area.rating]
+                    )}
                   >
-                    <span className="font-medium text-ink">{area.skill_name}</span>
+                    <span className="font-medium">{area.skill_name}</span>
                     <RatingPill rating={area.rating} />
                   </li>
                 ))}
