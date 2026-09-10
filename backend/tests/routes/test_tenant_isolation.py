@@ -267,7 +267,7 @@ def test_manager_cannot_promote_a_user_to_super_admin(
         ("put", "/details"),
         ("get", "/details/pdf"),
         ("post", "/meetings"),
-        ("put", "/social-note"),
+        ("post", "/social-note"),
         ("put", "/functional-report"),
         ("get", "/functional-report/pdf"),
     ],
@@ -282,7 +282,7 @@ def test_foreign_student_write_paths_are_not_found(
     body = {
         "": {"full_name": "נחטף", "workshop_id": str(foreign.workshop_id)},
         "/details": {},
-        "/social-note": {"content": "נחטף"},
+        "/social-note": {"note_date": "2026-06-01", "content": "נחטף"},
         "/functional-report": {"general_background": "נחטף"},
         "/meetings": {"meeting_date": "2026-06-01", "summary": "נחטף"},
     }.get(suffix)

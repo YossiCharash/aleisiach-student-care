@@ -1,29 +1,37 @@
 import uuid
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.models.client.social_note import SocialNote
+from backend.app.models.client.social_note_entry import SocialNoteEntry
 
 
 class SocialNoteRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def get(self, student_id: uuid.UUID) -> SocialNote | None:
-        return self._session.get(SocialNote, student_id)
-
-    def create(self, note: SocialNote) -> tuple[SocialNote, bool]:
-        try:
-            with self._session.begin_nested():
-                self._session.add(note)
-                self._session.flush()
-        except IntegrityError:
-            existing = self.get(note.student_id)
-            if existing is None:
-                raise
-            return existing, False
-        return note, True
+    def add(self, entry: SocialNoteEntry) -> SocialNoteEntry:
+        self._session.add(entry)
+        self._session.flush()
+        return entry
 
     def flush(self) -> None:
         self._session.flush()
+
+    def get(self, entry_id: uuid.UUID) -> SocialNoteEntry | None:
+        return self._session.get(SocialNoteEntry, entry_id)
+
+    def list_for_student(self, student_id: uuid.UUID) -> list[SocialNoteEntry]:
+        statement = (
+            select(SocialNoteEntry)
+            .where(
+                SocialNoteEntry.student_id == student_id,
+                SocialNoteEntry.is_archived.is_(False),
+            )
+            .order_by(
+                SocialNoteEntry.note_date.desc(),
+                SocialNoteEntry.created_at.desc(),
+                SocialNoteEntry.id.desc(),
+            )
+        )
+        return list(self._session.scalars(statement).all())

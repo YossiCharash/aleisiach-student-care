@@ -510,6 +510,52 @@ plan's **solution sourcing** changed. Green never carries solutions.
 
 ---
 
+## ADR-024 — Tab 3 (Social-worker note) becomes a dated, archivable series with a report
+
+**Date:** 2026-09-09
+**Decision:** The social-worker note is no longer a single note per student edited in place. Each
+save now records a **new dated entry** (the manager picks `note_date`, defaulting to today) that is
+**appended to a history**; the tab lists all entries newest-first. A manager may **edit an entry's
+text** (the date and authorship stay) and **delete** an entry — deletion is **archive-only**
+(soft-delete, ADR-013): the entry is hidden from the list and the reports but retained in the
+database and audit log. Every entry exports to a **per-entry PDF**, and the tab offers a **combined
+report** of all the student's social-worker summaries (both server-side WeasyPrint, ADR-015), each
+entry showing its date and author with the student's name in the header. Access is unchanged
+(manager writes; instructor reads; professional teacher blocked — ADR-008/ADR-009).
+
+This **supersedes the single-note shape of Tab 3** (one `social_notes` row per student, upserted in
+place).
+
+**Context:** The client asked that the social worker add a note each time, that the date be kept,
+that the full history be preserved, and that a report of all the social-worker summaries can be
+produced — the same dated-history + PDF pattern already used by Tab 2 (ADR-022) and the Tab 1 plan
+(ADR-021).
+
+**Data model:** the old `social_notes` table (PK `student_id`) is **dropped** and replaced by
+`social_note_entries` (migration `0030_social_note_entries`): `id`, `student_id`, `note_date`
+(Date), `content` (Text), `author_id`, `created_at`, `updated_at`, and soft-delete columns
+`is_archived` / `archived_at` / `archived_by`. It is `TenantScoped` with the composite
+`(student_id, institution_id)` foreign key and `(id, institution_id)` uniqueness, matching the
+`program_plans` / `team_meetings` precedent. `SocialNoteService` exposes `report` (student name +
+non-archived entries), `create`, `update` (content only), `archive`, and `entry_report` (single
+entry for its PDF); author names resolve through `UserRepository`. Entries are audited under
+`entity_type="social_note"` (create + update + archive). Since the prototype holds demo data only,
+the migration rebuilds cleanly with no data conversion and the demo seeder now writes two dated
+entries.
+
+**Alternatives:** Version the note in place like the Tab 1 plan (keep one "current" note, push prior
+versions to history) — rejected; the client described adding a note *each time*, i.e. an append-only
+log of distinct dated entries, not successive versions of one document. Hard-delete an entry —
+rejected; ADR-013 makes deletion archive-only across the app so history and the audit trail survive.
+Omit the student name from the report to match the plan/meeting PDFs — rejected; the client asked the
+report to carry the student and the author of each note.
+
+**Consequences:** Tab 3 gains create/edit/delete-per-entry and two PDF exports; the old single
+free-text box (`PUT /social-note`, `SocialNoteUpsertRequest`) is gone, replaced by
+`POST` / `PATCH /{id}` / `POST /{id}/archive` / `GET` (report) / `GET /pdf` / `GET /{id}/pdf`.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

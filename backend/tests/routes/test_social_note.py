@@ -11,10 +11,10 @@ AuthHeaders = Callable[..., dict[str, str]]
 SeedWorkshop = Callable[..., uuid.UUID]
 SeedStudent = Callable[..., uuid.UUID]
 
-_BODY = {"content": "שיחה עם ההורים"}
+_BODY = {"note_date": "2026-09-01", "content": "שיחה עם ההורים"}
 
 
-def test_manager_writes_and_reads_note(
+def test_manager_creates_reads_updates_and_archives(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -26,16 +26,35 @@ def test_manager_writes_and_reads_note(
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
-    put = api.put(f"/students/{student_id}/social-note", headers=headers, json=_BODY)
-    assert put.status_code == 200
-    assert put.json()["content"] == "שיחה עם ההורים"
+    created = api.post(f"/students/{student_id}/social-note", headers=headers, json=_BODY)
+    assert created.status_code == 201
+    entry = created.json()
+    assert entry["content"] == "שיחה עם ההורים"
+    assert entry["note_date"] == "2026-09-01"
+    assert entry["author_name"] == "User"
 
-    got = api.get(f"/students/{student_id}/social-note", headers=headers)
-    assert got.status_code == 200
-    assert got.json()["content"] == "שיחה עם ההורים"
+    report = api.get(f"/students/{student_id}/social-note", headers=headers)
+    assert report.status_code == 200
+    assert [item["id"] for item in report.json()["entries"]] == [entry["id"]]
+
+    updated = api.patch(
+        f"/students/{student_id}/social-note/{entry['id']}",
+        headers=headers,
+        json={"content": "מעודכן"},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["content"] == "מעודכן"
+
+    archived = api.post(
+        f"/students/{student_id}/social-note/{entry['id']}/archive", headers=headers
+    )
+    assert archived.status_code == 200
+
+    after = api.get(f"/students/{student_id}/social-note", headers=headers)
+    assert after.json()["entries"] == []
 
 
-def test_instructor_reads_own_workshop_but_cannot_write(
+def test_instructor_reads_own_workshop_but_cannot_create(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -46,7 +65,7 @@ def test_instructor_reads_own_workshop_but_cannot_write(
     student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
-    api.put(
+    api.post(
         f"/students/{student_id}/social-note",
         headers=auth_headers(api, "boss"),
         json=_BODY,
@@ -55,9 +74,9 @@ def test_instructor_reads_own_workshop_but_cannot_write(
 
     got = api.get(f"/students/{student_id}/social-note", headers=teacher_headers)
     assert got.status_code == 200
-    assert got.json()["content"] == "שיחה עם ההורים"
+    assert got.json()["entries"][0]["content"] == "שיחה עם ההורים"
 
-    write = api.put(f"/students/{student_id}/social-note", headers=teacher_headers, json=_BODY)
+    write = api.post(f"/students/{student_id}/social-note", headers=teacher_headers, json=_BODY)
     assert write.status_code == 403
 
 
@@ -91,9 +110,33 @@ def test_professional_teacher_is_blocked(
 
     assert api.get(f"/students/{student_id}/social-note", headers=headers).status_code == 403
     assert (
-        api.put(f"/students/{student_id}/social-note", headers=headers, json=_BODY).status_code
+        api.post(f"/students/{student_id}/social-note", headers=headers, json=_BODY).status_code
         == 403
     )
+
+
+def test_pdf_export_for_combined_and_single_entry(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    entry_id = api.post(f"/students/{student_id}/social-note", headers=headers, json=_BODY).json()[
+        "id"
+    ]
+
+    combined = api.get(f"/students/{student_id}/social-note/pdf", headers=headers)
+    assert combined.status_code == 200
+    assert combined.headers["content-type"] == "application/pdf"
+
+    single = api.get(f"/students/{student_id}/social-note/{entry_id}/pdf", headers=headers)
+    assert single.status_code == 200
+    assert single.headers["content-type"] == "application/pdf"
 
 
 def test_note_requires_authentication(

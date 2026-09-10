@@ -268,8 +268,15 @@ on purpose: it has no access to any of these.
     first, each showing its snapshot + summary, an **edit-summary** action (the snapshot stays
     frozen), and a **per-meeting PDF** export. (Changed 2026-09-09, ADR-022 — replaced the earlier
     accordion rating form + solutions; team meetings still do not feed Tab 1, they read from it.)
-  - Tab 3 — **Social worker note**: written by managers (manager = social worker), read-only for
-    instructors, blocked for professional teachers.
+  - Tab 3 — **Social worker note** (organized **by date**): a **dated, append-only series of
+    notes** (not a single editable note). A **"הערה חדשה"** button opens a form with a **date
+    picker** (defaults to today) and a free-text note; saving appends a new dated entry, and the
+    history lists entries newest first, each showing its date + author. A manager may **edit an
+    entry's text** (date/author stay) and **delete** an entry — **archive-only** (soft-delete,
+    retained in the audit log). **PDF export** per entry and a **combined report** of all the
+    student's social-worker summaries (server-side WeasyPrint). Written by managers (manager =
+    social worker), read-only for instructors, blocked for professional teachers. (Changed
+    2026-09-09, ADR-024 — superseded the single-note-per-student shape.)
   - Tab 4 — **Student details**: basic identity · emergency contacts & guardianship · official
     medical/functional diagnoses · + additional headings (5+) stored in **normalized tables**
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
