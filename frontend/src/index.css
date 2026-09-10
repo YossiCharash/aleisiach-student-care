@@ -13,6 +13,9 @@
 
   body {
     @apply bg-surface text-ink antialiased;
+    background-image: theme("backgroundImage.canvas");
+    background-attachment: fixed;
+    font-feature-settings: "cv11", "ss01";
   }
 
   h1,
@@ -20,5 +23,33 @@
   h3,
   h4 {
     @apply font-semibold text-ink;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: theme("colors.brand.200");
+    color: theme("colors.brand.900");
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply uppercase text-brand-600;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1rem;
+    letter-spacing: 0.14em;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .leaf-tick {
+    @apply inline-block h-4 w-1.5 shrink-0 rounded-full bg-brand;
   }
 }

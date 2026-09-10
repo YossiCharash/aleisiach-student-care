@@ -14,10 +14,22 @@ function ratingText(skill: SkillTreeNode, rating: MeetingRating): string {
   return text.trim() === "" ? "—" : text;
 }
 
+const rowToneClass: Record<MeetingRating, string> = {
+  green: "border-rating-green/50 bg-accent-50 text-brand-700",
+  yellow: "border-rating-yellow/50 bg-amber-50 text-amber-800",
+  red: "border-rating-red/50 bg-red-50 text-red-800",
+};
+
 const activeRowClass: Record<MeetingRating, string> = {
-  green: "border-rating-green bg-accent-50 text-brand-700",
-  yellow: "border-rating-yellow bg-amber-50 text-amber-800",
-  red: "border-rating-red bg-red-50 text-red-800",
+  green: "border-rating-green ring-2 ring-rating-green",
+  yellow: "border-rating-yellow ring-2 ring-rating-yellow",
+  red: "border-rating-red ring-2 ring-rating-red",
+};
+
+const restBoxClass: Record<MeetingRating, string> = {
+  green: "border-rating-green bg-white",
+  yellow: "border-rating-yellow bg-white",
+  red: "border-rating-red bg-white",
 };
 
 const activeBoxClass: Record<MeetingRating, string> = {
@@ -55,16 +67,15 @@ export function FocusRatingRow({
               aria-checked={active}
               onClick={() => select(value)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-start text-sm transition-colors",
-                active
-                  ? activeRowClass[value]
-                  : "border-slate-200 text-ink-muted hover:border-slate-300 hover:bg-slate-50"
+                "flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-start text-sm font-medium transition-all",
+                rowToneClass[value],
+                active ? activeRowClass[value] : "hover:brightness-95"
               )}
             >
               <span
                 className={cn(
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border",
-                  active ? activeBoxClass[value] : "border-slate-300 bg-white"
+                  active ? activeBoxClass[value] : restBoxClass[value]
                 )}
               >
                 {active && <Check className="h-3.5 w-3.5" />}

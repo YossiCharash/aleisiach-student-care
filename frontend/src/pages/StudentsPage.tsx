@@ -41,12 +41,13 @@ export function StudentsPage(): ReactNode {
 
   return (
     <div>
-      <div className="mb-5 flex items-start justify-between gap-4">
+      <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-extrabold text-ink">תלמידים</h1>
+          <p className="eyebrow">התיקים שלי</p>
+          <div className="mt-2 flex items-center gap-2.5">
+            <h1 className="text-3xl font-light tracking-tight text-ink">תלמידים</h1>
             {isReady && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-sm font-semibold text-ink-muted">
+              <span className="tnum rounded-full bg-brand-soft px-2.5 py-0.5 text-sm font-bold text-brand-700">
                 {visibleStudents.length}
               </span>
             )}

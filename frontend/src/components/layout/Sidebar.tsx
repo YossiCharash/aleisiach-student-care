@@ -30,10 +30,16 @@ export function Sidebar(): ReactNode {
       : (institutionName ?? "מערכת ניהול תלמידים");
 
   return (
-    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col self-start overflow-y-auto border-e border-slate-200 bg-white px-5 py-6">
-      <Link to={homePath(user)} className="flex items-center gap-3 px-1 pb-6">
-        <img src="/logo.png" alt="עלי שיח" className="h-10 w-auto" />
-        <span className="text-sm text-ink-muted">{subtitle}</span>
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col self-start overflow-y-auto border-e border-slate-200/80 bg-surface-raised/85 px-4 py-6 backdrop-blur-sm">
+      <Link
+        to={homePath(user)}
+        className="mb-6 flex flex-col gap-2.5 rounded-card border border-slate-200/70 bg-white px-3.5 py-3 shadow-soft"
+      >
+        <img src="/logo.png" alt="עלי שיח" className="h-9 w-auto" />
+        <span className="flex items-center gap-1.5 border-t border-slate-100 pt-2 text-xs font-medium text-ink-soft">
+          <span className="leaf-tick !h-3 !w-1" aria-hidden />
+          {subtitle}
+        </span>
       </Link>
 
       <nav className="flex flex-col gap-1">
@@ -46,35 +52,42 @@ export function Sidebar(): ReactNode {
               to={item.to}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors",
+                "group relative flex items-center gap-3 rounded-control px-3.5 py-2.5 text-sm transition-all duration-150",
                 active
-                  ? "bg-brand-50 font-semibold text-brand-700"
-                  : "font-medium text-ink-muted hover:bg-slate-50 hover:text-ink"
+                  ? "bg-brand-soft font-semibold text-brand-700 shadow-soft"
+                  : "font-medium text-ink-muted hover:bg-slate-100/70 hover:text-ink"
               )}
             >
               {active && (
                 <span
-                  className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-brand"
+                  className="absolute inset-y-2.5 start-0 w-1 rounded-full bg-brand"
                   aria-hidden
                 />
               )}
-              <Icon className="h-5 w-5" />
+              <Icon
+                className={cn(
+                  "h-5 w-5 shrink-0 transition-colors",
+                  active ? "text-brand-600" : "text-ink-soft group-hover:text-ink-muted"
+                )}
+              />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto flex items-center gap-3 border-t border-slate-100 pt-4">
+      <div className="mt-auto flex items-center gap-3 rounded-card border border-slate-200/70 bg-white/60 p-2.5 shadow-soft">
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white shadow-brand-sm"
           aria-hidden
         >
           {initials(user.full_name)}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-ink">{displayName(user)}</div>
-          <div className="text-xs text-ink-muted">{roleLabels[user.role]}</div>
+          <div className="truncate text-sm font-semibold text-ink">
+            {displayName(user)}
+          </div>
+          <div className="text-xs text-ink-soft">{roleLabels[user.role]}</div>
         </div>
         <Button variant="ghost" size="icon" title="יציאה" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />

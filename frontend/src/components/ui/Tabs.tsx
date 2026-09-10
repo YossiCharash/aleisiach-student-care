@@ -13,14 +13,14 @@ export type TabsVariant = "underline" | "pill";
 const TabsVariantContext = createContext<TabsVariant>("underline");
 
 const listVariants: Record<TabsVariant, string> = {
-  underline: "flex gap-1 border-b border-slate-200",
-  pill: "inline-flex gap-1 rounded-xl bg-slate-100 p-1",
+  underline: "flex gap-1.5 border-b border-slate-200",
+  pill: "inline-flex gap-1 rounded-control bg-slate-100 p-1 shadow-[inset_0_1px_2px_rgba(38,52,20,0.06)]",
 };
 
 const triggerVariants: Record<TabsVariant, string> = {
   underline:
-    "-mb-px border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink data-[state=active]:border-brand data-[state=active]:text-brand",
-  pill: "rounded-lg px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:text-ink data-[state=active]:bg-white data-[state=active]:font-semibold data-[state=active]:text-brand-700 data-[state=active]:shadow-sm",
+    "relative -mb-px border-b-2 border-transparent px-4 py-3 text-sm font-medium text-ink-muted transition-colors hover:text-ink data-[state=active]:border-brand data-[state=active]:font-semibold data-[state=active]:text-brand-700",
+  pill: "rounded-[0.55rem] px-4 py-2 text-sm font-medium text-ink-muted transition-all hover:text-ink data-[state=active]:bg-white data-[state=active]:font-semibold data-[state=active]:text-brand-700 data-[state=active]:shadow-soft",
 };
 
 export const Tabs = forwardRef<

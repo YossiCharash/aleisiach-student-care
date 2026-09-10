@@ -3,9 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { programApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { ProgramArea, ProgramResponse, ProgramStrength } from "@/lib/api/types";
+import type {
+  MeetingRating,
+  ProgramArea,
+  ProgramResponse,
+  ProgramStrength,
+} from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { permissions } from "@/lib/auth/permissions";
+import { cn } from "@/lib/utils/cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
@@ -147,10 +153,21 @@ function StrengthRow({ strength }: { strength: ProgramStrength }): ReactNode {
   );
 }
 
+const areaRowClass: Record<MeetingRating, string> = {
+  green: "border-s-4 border-rating-green bg-accent-50 text-brand-700",
+  yellow: "border-s-4 border-rating-yellow bg-amber-50 text-amber-800",
+  red: "border-s-4 border-rating-red bg-red-50 text-red-800",
+};
+
 function AreaRow({ area }: { area: ProgramArea }): ReactNode {
   return (
-    <li className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-2.5">
-      <span className="font-medium text-ink">{area.skill_name}</span>
+    <li
+      className={cn(
+        "flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 font-medium",
+        areaRowClass[area.rating]
+      )}
+    >
+      <span>{area.skill_name}</span>
       <RatingPill rating={area.rating} />
     </li>
   );

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
-const alertVariants = cva("rounded-xl border px-4 py-3 text-sm", {
+const alertVariants = cva("rounded-control border px-4 py-3 text-sm shadow-soft", {
   variants: {
     tone: {
       error: "border-red-200 bg-red-50 text-red-700",
