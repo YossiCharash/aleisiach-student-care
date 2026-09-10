@@ -27,9 +27,9 @@ export function DetailOptionsArea(): ReactNode {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-ink">עריכת פרטי תלמיד</h2>
+          <h2 className="text-lg font-semibold text-ink">עריכת פרטי חניך</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            ניהול האפשרויות של רשימות הבחירה בפרטי תלמיד. שינויים משתקפים מיד בטופס.
+            ניהול האפשרויות של רשימות הבחירה בפרטי חניך. שינויים משתקפים מיד בטופס.
           </p>
         </div>
         <Button

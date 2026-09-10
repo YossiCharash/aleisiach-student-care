@@ -84,8 +84,8 @@ function FocusPanel({
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-muted">
           {program.exists
-            ? "מוקדי הכוח והמוקדים לחיזוק של התלמיד."
-            : "עדיין לא סומנו מוקדים לתלמיד."}
+            ? "מוקדי הכוח והמוקדים לחיזוק של החניך."
+            : "עדיין לא סומנו מוקדים לחניך."}
         </p>
         {canWrite && (
           <Button onClick={() => setEditing(true)}>

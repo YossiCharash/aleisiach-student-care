@@ -110,7 +110,7 @@ export function PlanForm({
   function handleSubmit(): void {
     const chosen = Object.values(selections).filter((ids) => ids.length > 0);
     if (chosen.length === 0) {
-      setValidationError("יש לבחור דרך פתרון אחת לפחות עבור מוקד אחד.");
+      setValidationError("יש לבחור דרך עבודה אחת לפחות עבור מוקד אחד.");
       return;
     }
     mutation.mutate();
@@ -119,7 +119,7 @@ export function PlanForm({
   return (
     <PlanFormShell>
       <p className="text-sm leading-relaxed text-ink-muted">
-        בחרו את דרכי הפתרון לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
+        בחרו את דרכי העבודה לכל מוקד לחיזוק. התוכנית תישמר עם התאריך הנוכחי, והתוכנית
         הקודמת תיכנס להיסטוריה.
       </p>
 
@@ -181,7 +181,7 @@ function AreaSolutions({
         <RatingPill rating={area.rating} />
       </div>
       {solutions.length === 0 ? (
-        <p className="text-xs text-ink-muted">אין דרכי פתרון מוגדרות לכישור זה.</p>
+        <p className="text-xs text-ink-muted">אין דרכי עבודה מוגדרות לכישור זה.</p>
       ) : (
         <div className="space-y-1">
           {solutions.map((solution) => (

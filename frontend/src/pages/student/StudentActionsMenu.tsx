@@ -83,9 +83,9 @@ function ArchiveStudentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>העברת תלמיד לארכיון</DialogTitle>
+          <DialogTitle>העברת חניך לארכיון</DialogTitle>
           <DialogDescription>
-            התלמיד יוסתר מהרשימה אך לא יימחק. ניתן לשחזר מול מנהל המערכת.
+            החניך יוסתר מהרשימה אך לא יימחק. ניתן לשחזר מול מנהל המערכת.
           </DialogDescription>
         </DialogHeader>
         {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}

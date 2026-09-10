@@ -57,9 +57,9 @@ export function EditStudentDialog({ student, open, onOpenChange }: Props): React
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>עריכת פרטי תלמיד</DialogTitle>
+          <DialogTitle>עריכת פרטי חניך</DialogTitle>
           <DialogDescription>
-            שם התלמיד והסדנה שאליה הוא משויך. שאר הפרטים נערכים בלשונית "פרטי תלמיד".
+            שם החניך והסדנה שאליה הוא משויך. שאר הפרטים נערכים בלשונית "פרטי חניך".
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

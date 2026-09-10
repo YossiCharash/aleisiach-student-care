@@ -16,5 +16,5 @@ class SolutionCreateRequest(BaseModel):
     @classmethod
     def _only_area_ratings(cls, value: MeetingRating) -> MeetingRating:
         if value not in _ALLOWED_RATINGS:
-            raise ValueError("פתרון ניתן להוסיף רק לדירוג צהוב או אדום.")
+            raise ValueError("דרך עבודה ניתן להוסיף רק לדירוג צהוב או אדום.")
         return value

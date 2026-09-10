@@ -55,7 +55,7 @@ export function StudentPage(): ReactNode {
         className="mb-3 inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink"
       >
         <ChevronRight className="h-4 w-4" />
-        חזרה לרשימת התלמידים
+        חזרה לרשימת החניכים
       </Link>
 
       <div className="mb-5 flex items-center justify-between gap-4">

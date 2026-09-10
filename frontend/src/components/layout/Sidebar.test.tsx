@@ -62,11 +62,11 @@ describe("Sidebar", () => {
     signedInAs("manager");
     renderSidebar("/students/archived");
 
-    expect(screen.getByRole("link", { name: "ארכיון תלמידים" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "ארכיון חניכים" })).toHaveAttribute(
       "aria-current",
       "page"
     );
-    expect(screen.getByRole("link", { name: "תלמידים" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: "חניכים" })).not.toHaveAttribute(
       "aria-current"
     );
   });
@@ -76,7 +76,7 @@ describe("Sidebar", () => {
     renderSidebar("/institutions");
 
     expect(screen.getByRole("link", { name: "מוסדות" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "תלמידים" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "חניכים" })).not.toBeInTheDocument();
     expect(screen.getByText("ניהול מוסדות")).toBeInTheDocument();
   });
 

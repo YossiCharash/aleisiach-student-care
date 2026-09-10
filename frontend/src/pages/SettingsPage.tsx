@@ -85,7 +85,7 @@ export function SettingsPage(): ReactNode {
               <TabsTrigger value="workshops">סדנאות</TabsTrigger>
               <TabsTrigger value="taxonomy">כישורים-מיומנויות</TabsTrigger>
               <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
-              <TabsTrigger value="detail-options">עריכת פרטי תלמיד</TabsTrigger>
+              <TabsTrigger value="detail-options">עריכת פרטי חניך</TabsTrigger>
             </>
           )}
           <TabsTrigger value="account">החשבון שלי</TabsTrigger>

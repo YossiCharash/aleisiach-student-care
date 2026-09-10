@@ -36,7 +36,7 @@ class PlanDocument:
         return (
             f'<h2 class="plan-date">{self._format_date(plan)}</h2>'
             "<table><thead><tr><th>מוקד לחיזוק</th><th>דירוג</th>"
-            "<th>דרכי פתרון</th></tr></thead>"
+            "<th>דרכי עבודה</th></tr></thead>"
             f"<tbody>{rows}</tbody></table>"
         )
 
