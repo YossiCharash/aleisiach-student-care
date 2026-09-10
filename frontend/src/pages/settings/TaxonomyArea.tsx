@@ -72,7 +72,7 @@ export function TaxonomyArea(): ReactNode {
             <h2 className="text-lg font-semibold text-ink">כישורים</h2>
             <p className="mt-1 text-sm text-ink-muted">
               תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום), ופתרונות מוגדרים
-              תחת צהוב ואדום. שינויים משתקפים מיד בטופסי התלמיד.
+              תחת צהוב ואדום. שינויים משתקפים מיד בטופסי החניך.
             </p>
           </div>
           <Button

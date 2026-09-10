@@ -12,7 +12,7 @@ const ARCHIVED_STUDENTS_PATH = "/students/archived";
 
 const students: SidebarNavItem = {
   to: "/students",
-  label: "תלמידים",
+  label: "חניכים",
   icon: Users,
   isActive: (pathname) =>
     pathname === "/" ||
@@ -21,7 +21,7 @@ const students: SidebarNavItem = {
 
 const archivedStudents: SidebarNavItem = {
   to: ARCHIVED_STUDENTS_PATH,
-  label: "ארכיון תלמידים",
+  label: "ארכיון חניכים",
   icon: Archive,
   isActive: (pathname) => pathname.startsWith(ARCHIVED_STUDENTS_PATH),
 };

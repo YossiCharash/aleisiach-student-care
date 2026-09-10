@@ -24,31 +24,31 @@ describe("sidebarNavItems", () => {
   });
 
   it("gives the manager the archive link", () => {
-    expect(labelsFor("manager")).toEqual(["תלמידים", "ארכיון תלמידים", "הגדרות"]);
+    expect(labelsFor("manager")).toEqual(["חניכים", "ארכיון חניכים", "הגדרות"]);
   });
 
   it("withholds the archive link from an instructor", () => {
-    expect(labelsFor("instructor")).toEqual(["תלמידים", "הגדרות"]);
+    expect(labelsFor("instructor")).toEqual(["חניכים", "הגדרות"]);
   });
 
   it("withholds the archive link from a professional teacher", () => {
-    expect(labelsFor("professional_teacher")).toEqual(["תלמידים", "הגדרות"]);
+    expect(labelsFor("professional_teacher")).toEqual(["חניכים", "הגדרות"]);
   });
 
   it("keeps the students link active while viewing one student", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/abc")).toBe(true);
+    expect(itemFor("manager", "חניכים").isActive("/students/abc")).toBe(true);
   });
 
   it("does not activate the students link on the archive route", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/archived")).toBe(false);
-    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived")).toBe(
+    expect(itemFor("manager", "חניכים").isActive("/students/archived")).toBe(false);
+    expect(itemFor("manager", "ארכיון חניכים").isActive("/students/archived")).toBe(
       true
     );
   });
 
   it("keeps the archive link active on an archive sub-route", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/archived/s1")).toBe(false);
-    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived/s1")).toBe(
+    expect(itemFor("manager", "חניכים").isActive("/students/archived/s1")).toBe(false);
+    expect(itemFor("manager", "ארכיון חניכים").isActive("/students/archived/s1")).toBe(
       true
     );
   });

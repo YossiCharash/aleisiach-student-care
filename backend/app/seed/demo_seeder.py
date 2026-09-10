@@ -270,7 +270,7 @@ class DemoSeeder:
         manager = self._find_user(MANAGER.email)
         assert manager is not None
         entries = (
-            (date(2026, 6, 12), "שיחה ראשונית עם ההורים — התלמידה משתלבת יפה ומראה התקדמות."),
+            (date(2026, 6, 12), "שיחה ראשונית עם ההורים — החניכה משתלבת יפה ומראה התקדמות."),
             (date(2026, 8, 30), "מעקב — נצפתה עלייה בביטחון העצמי ובשיתוף הפעולה בסדנה."),
         )
         for note_date, content in entries:

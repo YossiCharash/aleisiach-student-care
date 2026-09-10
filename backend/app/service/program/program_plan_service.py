@@ -83,7 +83,7 @@ class ProgramPlanService:
     def _current_areas(self, student_id: uuid.UUID) -> dict[uuid.UUID, ProgramEntry]:
         program = self._programs.get_for_student(student_id)
         if program is None:
-            raise InvalidPlanError("אין מוקדים לתלמיד — יש ליצור מוקדים לפני בניית תוכנית.")
+            raise InvalidPlanError("אין מוקדים לחניך — יש ליצור מוקדים לפני בניית תוכנית.")
         areas = {
             entry.skill_id: entry for entry in program.entries if entry.rating in _AREA_RATINGS
         }

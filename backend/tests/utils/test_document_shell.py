@@ -7,12 +7,12 @@ def _shell(**overrides: str) -> DocumentShell:
 
 
 def test_shell_wraps_the_body_in_an_rtl_hebrew_page() -> None:
-    html = _shell().render("", "מוסד בדיקה", "פרטי תלמיד", "<p>גוף</p>")
+    html = _shell().render("", "מוסד בדיקה", "פרטי חניך", "<p>גוף</p>")
 
     assert html.startswith("<!doctype html>")
     assert 'dir="rtl"' in html
     assert 'lang="he"' in html
-    assert "<h1>פרטי תלמיד</h1>" in html
+    assert "<h1>פרטי חניך</h1>" in html
     assert "<p>גוף</p>" in html
 
 

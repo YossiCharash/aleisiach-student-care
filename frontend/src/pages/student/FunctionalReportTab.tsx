@@ -103,7 +103,7 @@ export function FunctionalReportTab({ studentId }: { studentId: string }): React
           <FooterLine report={report} />
         </div>
       ) : (
-        <EmptyState>עדיין לא מולא דוח תפקודי לתלמיד.</EmptyState>
+        <EmptyState>עדיין לא מולא דוח תפקודי לחניך.</EmptyState>
       )}
     </div>
   );

@@ -14,7 +14,7 @@ function setup(): {
   wrapper: (p: { children: ReactNode }) => ReactNode;
 } {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  client.setQueryData(["students"], [{ id: "s1", full_name: "תלמיד של המשתמש הקודם" }]);
+  client.setQueryData(["students"], [{ id: "s1", full_name: "חניך של המשתמש הקודם" }]);
   function wrapper({ children }: { children: ReactNode }): ReactNode {
     return (
       <QueryClientProvider client={client}>

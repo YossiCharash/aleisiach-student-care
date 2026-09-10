@@ -20,15 +20,15 @@ export function ArchivedStudentsPage(): ReactNode {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-ink">תלמידים בארכיון</h1>
+          <h1 className="text-2xl font-extrabold text-ink">חניכים בארכיון</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            תלמידים שהועברו לארכיון. ניתן לשחזר אותם לרשימה הפעילה.
+            חניכים שהועברו לארכיון. ניתן לשחזר אותם לרשימה הפעילה.
           </p>
         </div>
         <Button asChild variant="ghost" size="sm">
           <Link to="/students">
             <ArrowRight className="h-4 w-4" />
-            חזרה לתלמידים
+            חזרה לחניכים
           </Link>
         </Button>
       </div>
@@ -37,7 +37,7 @@ export function ArchivedStudentsPage(): ReactNode {
       {query.isError && <ErrorState error={query.error} />}
       {query.data &&
         (query.data.length === 0 ? (
-          <EmptyState>אין תלמידים בארכיון.</EmptyState>
+          <EmptyState>אין חניכים בארכיון.</EmptyState>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {query.data.map((student) => (

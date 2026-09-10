@@ -47,7 +47,7 @@ describe("PersonalPlanTab", () => {
 
     renderWithClient(<PersonalPlanTab studentId="s1" canWrite />);
 
-    expect(await screen.findByText("אין עדיין תוכנית אישית לתלמיד.")).toBeInTheDocument();
+    expect(await screen.findByText("אין עדיין תוכנית אישית לחניך.")).toBeInTheDocument();
     expect(screen.getByText("יצירת תוכנית")).toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe("PersonalPlanTab", () => {
 
     renderWithClient(<PersonalPlanTab studentId="s1" canWrite={false} />);
 
-    expect(await screen.findByText("אין עדיין תוכנית אישית לתלמיד.")).toBeInTheDocument();
+    expect(await screen.findByText("אין עדיין תוכנית אישית לחניך.")).toBeInTheDocument();
     expect(screen.queryByText("יצירת תוכנית")).not.toBeInTheDocument();
   });
 

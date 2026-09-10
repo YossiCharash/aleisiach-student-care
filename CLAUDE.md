@@ -167,7 +167,7 @@ on purpose: it has no access to any of these.
    permission) — actor + what changed + when; reads are not logged, and raw sensitive values are
    never written to the log.
 8. **Demo data only** during the prototype phase; do not enter real student data.
-9. **Consistent terminology** — the end-user term is **"student" (תלמיד)** (not ward/patient).
+9. **Consistent terminology** — the end-user term is **"student" (חניך)** (not ward/patient).
 10. **Ask before irreversible actions** (deletion, destructive migrations, permission changes).
 
 ### Engineering & workflow rules (backend)

@@ -67,7 +67,7 @@ def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignDa
     db_session.add_all(entities)
     db_session.flush()
     foreign_workshop, label, diagnosis, section_type, manager = entities
-    student = Student(full_name="תלמיד זר", workshop_id=foreign_workshop.id, institution_id=owner)
+    student = Student(full_name="חניך זר", workshop_id=foreign_workshop.id, institution_id=owner)
     option = DetailOption(
         field=DetailOptionField.ASSISTIVE_DEVICE, name="אביזר זר", order=0, institution_id=owner
     )

@@ -106,7 +106,7 @@ def test_refusal_message_reads_correctly_for_a_single_student(
     response = api.post(f"/workshops/{workshop_id}/archive", headers=headers)
 
     assert response.json()["message"] == (
-        "לא ניתן להעביר את הסדנה לארכיון. משויכים אליה כעת — תלמידים פעילים: 1, משתמשים: 0."
+        "לא ניתן להעביר את הסדנה לארכיון. משויכים אליה כעת — חניכים פעילים: 1, משתמשים: 0."
     )
 
 

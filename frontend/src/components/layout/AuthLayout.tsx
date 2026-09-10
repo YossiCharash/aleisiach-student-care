@@ -38,7 +38,7 @@ export function AuthLayout({
           <h2 className="mt-4 text-4xl font-light leading-[1.15] tracking-tight text-white">
             מערכת ניהול
             <br />
-            <span className="font-semibold">הטיפול בתלמיד</span>
+            <span className="font-semibold">הטיפול בחניך</span>
           </h2>
           <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-brand-100">
             תוכניות קידום, ישיבות צוות ודוחות תפקודיים — במקום אחד, מאובטח ומסודר.
@@ -47,7 +47,7 @@ export function AuthLayout({
 
         <div className="relative flex items-center gap-2.5 text-xs text-brand-200">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-          עלי שיח · ליווי וקידום תלמידים
+          עלי שיח · ליווי וקידום חניכים
         </div>
       </aside>
 

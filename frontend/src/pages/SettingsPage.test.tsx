@@ -18,7 +18,7 @@ vi.mock("@/pages/settings/DiagnosesArea", () => ({
   DiagnosesArea: () => <div>אזור אבחונים</div>,
 }));
 vi.mock("@/pages/settings/DetailOptionsArea", () => ({
-  DetailOptionsArea: () => <div>אזור פרטי תלמיד</div>,
+  DetailOptionsArea: () => <div>אזור פרטי חניך</div>,
 }));
 vi.mock("@/pages/settings/AccountArea", () => ({
   AccountArea: () => <div>אזור החשבון</div>,
@@ -37,7 +37,7 @@ function renderSettings(path = "/settings"): void {
   );
 }
 
-const managerTabs = ["משתמשים", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי תלמיד"];
+const managerTabs = ["משתמשים", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי חניך"];
 
 describe("SettingsPage", () => {
   beforeEach(() => useAuth.mockReset());
