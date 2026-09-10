@@ -4,10 +4,10 @@ import { Sidebar } from "@/components/layout/Sidebar";
 
 export function AppShell(): ReactNode {
   return (
-    <div className="flex min-h-screen bg-surface">
+    <div className="flex min-h-screen">
       <Sidebar />
-      <main className="min-w-0 flex-1 px-10 py-8">
-        <div className="mx-auto w-full max-w-7xl">
+      <main className="min-w-0 flex-1 px-10 py-9">
+        <div className="mx-auto w-full max-w-7xl animate-fade-up">
           <Outlet />
         </div>
       </main>
