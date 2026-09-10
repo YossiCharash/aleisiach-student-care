@@ -23,8 +23,17 @@ describe("sidebarNavItems", () => {
     expect(labelsFor("super_admin")).toEqual(["מוסדות", "הגדרות"]);
   });
 
-  it("gives the manager the archive link", () => {
-    expect(labelsFor("manager")).toEqual(["תלמידים", "ארכיון תלמידים", "הגדרות"]);
+  it("gives the manager the archive and users links", () => {
+    expect(labelsFor("manager")).toEqual([
+      "תלמידים",
+      "ארכיון תלמידים",
+      "משתמשים",
+      "הגדרות",
+    ]);
+  });
+
+  it("withholds the users link from an instructor", () => {
+    expect(labelsFor("instructor")).not.toContain("משתמשים");
   });
 
   it("withholds the archive link from an instructor", () => {
@@ -36,25 +45,42 @@ describe("sidebarNavItems", () => {
   });
 
   it("keeps the students link active while viewing one student", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/abc")).toBe(true);
+    expect(itemFor("manager", "תלמידים").isActive("/students/abc", "")).toBe(true);
   });
 
   it("does not activate the students link on the archive route", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/archived")).toBe(false);
-    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived")).toBe(
+    expect(itemFor("manager", "תלמידים").isActive("/students/archived", "")).toBe(false);
+    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived", "")).toBe(
       true
     );
   });
 
   it("keeps the archive link active on an archive sub-route", () => {
-    expect(itemFor("manager", "תלמידים").isActive("/students/archived/s1")).toBe(false);
-    expect(itemFor("manager", "ארכיון תלמידים").isActive("/students/archived/s1")).toBe(
-      true
+    expect(itemFor("manager", "תלמידים").isActive("/students/archived/s1", "")).toBe(
+      false
     );
+    expect(
+      itemFor("manager", "ארכיון תלמידים").isActive("/students/archived/s1", "")
+    ).toBe(true);
   });
 
   it("activates settings on the settings route and its sub-routes", () => {
-    expect(itemFor("manager", "הגדרות").isActive("/settings")).toBe(true);
-    expect(itemFor("manager", "הגדרות").isActive("/settings/personal")).toBe(true);
+    expect(itemFor("manager", "הגדרות").isActive("/settings", "")).toBe(true);
+    expect(itemFor("manager", "הגדרות").isActive("/settings/personal", "")).toBe(true);
+  });
+
+  it("splits the active state between the users and settings links by tab", () => {
+    const usersItem = itemFor("manager", "משתמשים");
+    const settingsItem = itemFor("manager", "הגדרות");
+
+    expect(usersItem.isActive("/settings", "?tab=users")).toBe(true);
+    expect(settingsItem.isActive("/settings", "?tab=users")).toBe(false);
+
+    expect(usersItem.isActive("/settings", "?tab=workshops")).toBe(false);
+    expect(settingsItem.isActive("/settings", "?tab=workshops")).toBe(true);
+
+    expect(usersItem.isActive("/settings", "")).toBe(false);
+    expect(settingsItem.isActive("/settings", "")).toBe(true);
+    expect(usersItem.isActive("/students", "")).toBe(false);
   });
 });

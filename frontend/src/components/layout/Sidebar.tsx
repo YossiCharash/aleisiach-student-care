@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 
 export function Sidebar(): ReactNode {
   const { user, institutionName, logout } = useAuth();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
 
   async function handleLogout(): Promise<void> {
@@ -44,7 +44,7 @@ export function Sidebar(): ReactNode {
 
       <nav className="flex flex-col gap-1">
         {sidebarNavItems(user).map((item) => {
-          const active = item.isActive(pathname);
+          const active = item.isActive(pathname, search);
           const Icon = item.icon;
           return (
             <Link
