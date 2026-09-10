@@ -69,18 +69,15 @@ describe("sidebarNavItems", () => {
     expect(itemFor("manager", "הגדרות").isActive("/settings/personal", "")).toBe(true);
   });
 
-  it("splits the active state between the users and settings links by tab", () => {
+  it("points the users link at its own page and activates it there", () => {
     const usersItem = itemFor("manager", "משתמשים");
     const settingsItem = itemFor("manager", "הגדרות");
 
-    expect(usersItem.isActive("/settings", "?tab=users")).toBe(true);
-    expect(settingsItem.isActive("/settings", "?tab=users")).toBe(false);
-
-    expect(usersItem.isActive("/settings", "?tab=workshops")).toBe(false);
-    expect(settingsItem.isActive("/settings", "?tab=workshops")).toBe(true);
+    expect(usersItem.to).toBe("/users");
+    expect(usersItem.isActive("/users", "")).toBe(true);
+    expect(settingsItem.isActive("/users", "")).toBe(false);
 
     expect(usersItem.isActive("/settings", "")).toBe(false);
-    expect(settingsItem.isActive("/settings", "")).toBe(true);
     expect(usersItem.isActive("/students", "")).toBe(false);
   });
 });

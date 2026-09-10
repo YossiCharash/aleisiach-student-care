@@ -25,15 +25,24 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("tab", { name: "דוח תפקודי" })).toBeVisible();
   });
 
-  test("reaches settings with users and taxonomy areas", async ({ page }) => {
+  test("reaches settings with the management areas", async ({ page }) => {
     await login(page, "mor");
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "הגדרות" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "משתמשים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "משתמשים" })).toHaveCount(0);
     await expect(page.getByRole("tab", { name: "כישורים-מיומנויות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "אבחונים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "עריכת פרטי תלמיד" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "סדנאות" })).toBeVisible();
+  });
+
+  test("opens the users list on its own page from the sidebar", async ({ page }) => {
+    await login(page, "mor");
+    await page.getByRole("link", { name: "משתמשים" }).click();
+    await expect(page).toHaveURL(/\/users$/);
+    await expect(page.getByRole("heading", { name: "משתמשים" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "הזמנת משתמש" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "כישורים-מיומנויות" })).toHaveCount(0);
   });
 
   test("reaches the archived-students view", async ({ page }) => {
