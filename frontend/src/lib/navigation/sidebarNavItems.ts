@@ -1,4 +1,11 @@
-import { Archive, Building2, Settings, UserCog, Users, type LucideIcon } from "lucide-react";
+import {
+  Archive,
+  Building2,
+  Settings,
+  UserCog,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import type { UserResponse } from "@/lib/api/types";
 
 export interface SidebarNavItem {
