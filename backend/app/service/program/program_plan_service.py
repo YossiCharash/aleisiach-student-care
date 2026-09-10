@@ -83,7 +83,7 @@ class ProgramPlanService:
     def _current_areas(self, student_id: uuid.UUID) -> dict[uuid.UUID, ProgramEntry]:
         program = self._programs.get_for_student(student_id)
         if program is None:
-            raise InvalidPlanError("אין מוקדים לתלמיד — יש ליצור מוקדים לפני בניית תוכנית.")
+            raise InvalidPlanError("אין מוקדים לחניך — יש ליצור מוקדים לפני בניית תוכנית.")
         areas = {
             entry.skill_id: entry for entry in program.entries if entry.rating in _AREA_RATINGS
         }
@@ -119,9 +119,9 @@ class ProgramPlanService:
         if solution is None:
             raise NotFoundError("solution")
         if solution.skill_id != area.skill_id:
-            raise InvalidPlanError("פתרון שנבחר אינו שייך לכישור שלו.")
+            raise InvalidPlanError("דרך העבודה שנבחרה אינה שייכת לכישור שלה.")
         if solution.rating != area.rating:
-            raise InvalidPlanError("פתרון שנבחר אינו תואם לדירוג הכישור.")
+            raise InvalidPlanError("דרך העבודה שנבחרה אינה תואמת לדירוג הכישור.")
         return ResolvedSolution(solution_id=solution.id, solution_text=solution.text)
 
     def _reject_duplicate_skills(self, entries: list[PlanEntryRequest]) -> None:
@@ -131,7 +131,7 @@ class ProgramPlanService:
 
     def _reject_duplicate_solutions(self, entry: PlanEntryRequest) -> None:
         if len(set(entry.solution_ids)) != len(entry.solution_ids):
-            raise InvalidPlanError("פתרון נבחר יותר מפעם אחת.")
+            raise InvalidPlanError("דרך עבודה נבחרה יותר מפעם אחת.")
 
     def _build_entry(self, position: int, resolved: ResolvedPlanEntry) -> ProgramPlanEntry:
         entry = ProgramPlanEntry(

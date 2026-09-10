@@ -55,8 +55,8 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>תלמיד חדש</DialogTitle>
-          <DialogDescription>הוספת תלמיד לסדנה.</DialogDescription>
+          <DialogTitle>חניך חדש</DialogTitle>
+          <DialogDescription>הוספת חניך לסדנה.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
@@ -97,7 +97,7 @@ export function CreateStudentDialog({ open, onOpenChange }: Props): ReactNode {
             </div>
           </div>
           <p className="text-sm text-ink-muted">
-            שאר הפרטים יושלמו בהמשך בלשונית "פרטי תלמיד".
+            שאר הפרטים יושלמו בהמשך בלשונית "פרטי חניך".
           </p>
           <div className="flex justify-start gap-2">
             <Button type="submit" disabled={mutation.isPending}>

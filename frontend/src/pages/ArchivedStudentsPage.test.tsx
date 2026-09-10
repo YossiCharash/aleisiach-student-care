@@ -45,7 +45,7 @@ describe("ArchivedStudentsPage", () => {
 
     renderPage(<ArchivedStudentsPage />);
 
-    expect(await screen.findByText("אין תלמידים בארכיון.")).toBeInTheDocument();
+    expect(await screen.findByText("אין חניכים בארכיון.")).toBeInTheDocument();
   });
 
   it("restores a student via POST /students/{id}/restore", async () => {

@@ -65,7 +65,7 @@ describe("FunctionalReportTab", () => {
 
     expect(await screen.findByText("נועה")).toBeInTheDocument();
     expect(screen.getByText("123456782")).toBeInTheDocument();
-    expect(screen.getByText("עדיין לא מולא דוח תפקודי לתלמיד.")).toBeInTheDocument();
+    expect(screen.getByText("עדיין לא מולא דוח תפקודי לחניך.")).toBeInTheDocument();
     expect(screen.getByText("מילוי הדוח")).toBeInTheDocument();
   });
 

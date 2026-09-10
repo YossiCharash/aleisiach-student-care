@@ -57,7 +57,7 @@ class MeetingSummaryDocument:
         return (
             "<h2>תוכנית אישית</h2>"
             "<table><thead><tr><th>מוקד לחיזוק</th><th>דירוג</th>"
-            "<th>דרכי פתרון</th></tr></thead>"
+            "<th>דרכי עבודה</th></tr></thead>"
             f"<tbody>{rows}</tbody></table>"
         )
 

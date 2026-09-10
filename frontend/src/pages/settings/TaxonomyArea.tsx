@@ -71,8 +71,8 @@ export function TaxonomyArea(): ReactNode {
           <div>
             <h2 className="text-lg font-semibold text-ink">כישורים</h2>
             <p className="mt-1 text-sm text-ink-muted">
-              תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום), ופתרונות מוגדרים
-              תחת צהוב ואדום. שינויים משתקפים מיד בטופסי התלמיד.
+              תוויות ← כישורים. לכל כישור שלוש דרגות (ירוק/צהוב/אדום), ודרכי עבודה מוגדרות
+              תחת צהוב ואדום. שינויים משתקפים מיד בטופסי החניך.
             </p>
           </div>
           <Button
@@ -366,7 +366,7 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
           onRename={(name) => rename(name)}
           onDeactivate={() => deactivate(undefined)}
           confirmLabel="להשבית את הכישור?"
-          extra={<Chip>{skill.solutions.length} פתרונות</Chip>}
+          extra={<Chip>{skill.solutions.length} דרכי עבודה</Chip>}
         />
         <CollapseToggle open={open} onClick={() => setOpen((value) => !value)} />
       </div>
@@ -377,8 +377,8 @@ function SkillNode({ skill }: { skill: SkillTreeNode }): ReactNode {
             <RatingSolutions key={rating} skill={skill} rating={rating} />
           ))}
           <InactiveNodeList
-            heading="פתרונות מושבתים"
-            emptyLabel="אין פתרונות מושבתים."
+            heading="דרכי עבודה מושבתות"
+            emptyLabel="אין דרכי עבודה מושבתות."
             queryKey={queryKeys.taxonomySolutions(skill.id)}
             queryFn={() => taxonomyApi.listSolutions(skill.id, true)}
             getLabel={(solution) => solution.text}
@@ -487,12 +487,12 @@ function RatingSolutions({
           aria-hidden
         />
         <span className="text-xs font-medium text-ink-muted">
-          פתרונות לדרגת {ratingLabels[rating]}
+          דרכי עבודה לדרגת {ratingLabels[rating]}
         </span>
       </div>
       <AddSettingInput
-        placeholder="טקסט פתרון"
-        buttonLabel="הוספת פתרון"
+        placeholder="טקסט דרך עבודה"
+        buttonLabel="הוספת דרך עבודה"
         onSubmit={createSolution}
       />
       {solutions.length > 0 && (
@@ -521,7 +521,7 @@ function SolutionRow({ id, text }: { id: string; text: string }): ReactNode {
         className="text-sm text-ink-muted"
         onRename={(next) => rename(next)}
         onDeactivate={() => deactivate(undefined)}
-        confirmLabel="להשבית את הפתרון?"
+        confirmLabel="להשבית את דרך העבודה?"
       />
     </li>
   );

@@ -27,7 +27,7 @@ export function Sidebar(): ReactNode {
   const subtitle =
     user.role === "super_admin"
       ? "ניהול מוסדות"
-      : (institutionName ?? "מערכת ניהול תלמידים");
+      : (institutionName ?? "מערכת ניהול חניכים");
 
   return (
     <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col self-start overflow-y-auto border-e border-slate-200/80 bg-surface-raised/85 px-4 py-6 backdrop-blur-sm">

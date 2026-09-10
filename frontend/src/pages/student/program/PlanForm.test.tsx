@@ -84,7 +84,7 @@ describe("PlanForm", () => {
     await userEvent.click(await screen.findByText("שמירת תוכנית"));
 
     expect(
-      screen.getByText("יש לבחור דרך פתרון אחת לפחות עבור מוקד אחד.")
+      screen.getByText("יש לבחור דרך עבודה אחת לפחות עבור מוקד אחד.")
     ).toBeInTheDocument();
     expect(createMock).not.toHaveBeenCalled();
   });

@@ -39,7 +39,7 @@ class StudentDetailsDocument:
         sections.append(self._background(details))
         sections.append(self._emotional_id(details))
         body = "".join(sections)
-        return self._shell.render(self._css(), institution_name, "פרטי תלמיד", body)
+        return self._shell.render(self._css(), institution_name, "פרטי חניך", body)
 
     def _identity(self, details: StudentDetailsResponse) -> str:
         age = str(details.age) if details.age is not None else "—"

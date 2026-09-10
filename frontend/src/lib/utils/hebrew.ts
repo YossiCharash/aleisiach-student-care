@@ -67,7 +67,7 @@ export function formatDate(iso: string | null): string {
 
 export function studentCountLabel(count: number): string {
   if (count === 1) {
-    return "תלמיד אחד";
+    return "חניך אחד";
   }
-  return `${count} תלמידים`;
+  return `${count} חניכים`;
 }

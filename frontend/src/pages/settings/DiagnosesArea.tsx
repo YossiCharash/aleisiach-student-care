@@ -31,7 +31,7 @@ export function DiagnosesArea(): ReactNode {
         <div>
           <h2 className="text-lg font-semibold text-ink">אבחונים</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            קטלוג האבחנות המשותף. אבחנה חדשה שמוקלדת בפרטי תלמיד נוספת לכאן אוטומטית.
+            קטלוג האבחנות המשותף. אבחנה חדשה שמוקלדת בפרטי חניך נוספת לכאן אוטומטית.
           </p>
         </div>
         <Button

@@ -71,7 +71,7 @@ export function PersonalPlanTab({
       </div>
 
       {plans.length === 0 ? (
-        <EmptyState>אין עדיין תוכנית אישית לתלמיד.</EmptyState>
+        <EmptyState>אין עדיין תוכנית אישית לחניך.</EmptyState>
       ) : (
         <div className="space-y-4">
           <PlanCard studentId={studentId} plan={latest} isLatest />

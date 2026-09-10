@@ -45,7 +45,7 @@ export function StudentsPage(): ReactNode {
         <div>
           <p className="eyebrow">התיקים שלי</p>
           <div className="mt-2 flex items-center gap-2.5">
-            <h1 className="text-3xl font-light tracking-tight text-ink">תלמידים</h1>
+            <h1 className="text-3xl font-light tracking-tight text-ink">חניכים</h1>
             {isReady && (
               <span className="tnum rounded-full bg-brand-soft px-2.5 py-0.5 text-sm font-bold text-brand-700">
                 {visibleStudents.length}
@@ -53,13 +53,13 @@ export function StudentsPage(): ReactNode {
             )}
           </div>
           <p className="mt-2 text-sm text-ink-muted">
-            התלמידים מסודרים לפי סדנאות. לחצו על תלמיד לצפייה בתיק.
+            החניכים מסודרים לפי סדנאות. לחצו על חניך לצפייה בתיק.
           </p>
         </div>
         {canCreate && (
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="h-4 w-4" />
-            תלמיד חדש
+            חניך חדש
           </Button>
         )}
       </div>
@@ -140,7 +140,7 @@ function FilterChip({
 
 function StudentGroups({ groups }: { groups: WorkshopGroup[] }): ReactNode {
   if (groups.length === 0) {
-    return <EmptyState>אין תלמידים להצגה עדיין.</EmptyState>;
+    return <EmptyState>אין חניכים להצגה עדיין.</EmptyState>;
   }
 
   return (

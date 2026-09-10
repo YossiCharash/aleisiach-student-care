@@ -41,8 +41,8 @@ export function WorkshopsArea(): ReactNode {
         <div>
           <h2 className="text-lg font-semibold text-ink">סדנאות</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            ניהול הסדנאות במוסד — שם, צבע מזהה ומדריך אחראי. תלמידים משויכים לסדנה בכרטיס
-            התלמיד.
+            ניהול הסדנאות במוסד — שם, צבע מזהה ומדריך אחראי. חניכים משויכים לסדנה בכרטיס
+            החניך.
           </p>
         </div>
         <div className="flex gap-2">

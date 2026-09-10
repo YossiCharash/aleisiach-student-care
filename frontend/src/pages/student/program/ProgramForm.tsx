@@ -69,7 +69,7 @@ export function ProgramForm({
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm leading-relaxed text-ink-muted">
-          לכל כישור סמנו שורה אחת: ירוק = מוקד כוח, צהוב/אדום = מוקד לחיזוק. דרכי הפתרון
+          לכל כישור סמנו שורה אחת: ירוק = מוקד כוח, צהוב/אדום = מוקד לחיזוק. דרכי העבודה
           נבחרות בהמשך בעת בניית התוכנית האישית.
         </p>
 

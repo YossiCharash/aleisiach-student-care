@@ -8,5 +8,5 @@ class WorkshopNotEmptyError(AppError):
     def __init__(self, students: int, users: int) -> None:
         super().__init__(
             "לא ניתן להעביר את הסדנה לארכיון. "
-            f"משויכים אליה כעת — תלמידים פעילים: {students}, משתמשים: {users}."
+            f"משויכים אליה כעת — חניכים פעילים: {students}, משתמשים: {users}."
         )

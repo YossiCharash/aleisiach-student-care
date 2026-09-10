@@ -24,7 +24,7 @@ export function InstitutionsPage(): ReactNode {
         <div>
           <h1 className="text-2xl font-extrabold text-ink">ניהול מוסדות</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            כל מוסד מנהל את התלמידים, הצוות וההגדרות שלו בנפרד.
+            כל מוסד מנהל את החניכים, הצוות וההגדרות שלו בנפרד.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
@@ -60,7 +60,7 @@ function InstitutionsTable({
               <th className="px-5 py-3 text-start font-semibold">שם המוסד</th>
               <th className="px-5 py-3 text-start font-semibold">איש קשר</th>
               <th className="px-5 py-3 text-center font-semibold">משתמשים</th>
-              <th className="px-5 py-3 text-center font-semibold">תלמידים</th>
+              <th className="px-5 py-3 text-center font-semibold">חניכים</th>
               <th className="px-5 py-3 text-start font-semibold">סטטוס</th>
               <th className="px-5 py-3 text-start font-semibold">פעולות</th>
             </tr>

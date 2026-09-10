@@ -43,8 +43,8 @@ const treeWithSkill: LabelTreeNode[] = [
         yellow_text: "בהשגחה",
         red_text: "בתלות",
         solutions: [
-          { id: "so-y", text: "פתרון צהוב", rating: "yellow" },
-          { id: "so-r", text: "פתרון אדום", rating: "red" },
+          { id: "so-y", text: "דרך עבודה צהוב", rating: "yellow" },
+          { id: "so-r", text: "דרך עבודה אדום", rating: "red" },
         ],
       },
     ],
@@ -185,14 +185,14 @@ describe("TaxonomyArea — rating-scoped skills", () => {
     await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
     await userEvent.click(await screen.findByRole("button", { name: "הרחב" }));
 
-    expect(await screen.findByText("פתרונות לדרגת בהשגחה")).toBeInTheDocument();
-    expect(screen.getByText("פתרונות לדרגת בתלות")).toBeInTheDocument();
-    expect(screen.getByText("פתרון צהוב")).toBeInTheDocument();
-    expect(screen.getByText("פתרון אדום")).toBeInTheDocument();
+    expect(await screen.findByText("דרכי עבודה לדרגת בהשגחה")).toBeInTheDocument();
+    expect(screen.getByText("דרכי עבודה לדרגת בתלות")).toBeInTheDocument();
+    expect(screen.getByText("דרך עבודה צהוב")).toBeInTheDocument();
+    expect(screen.getByText("דרך עבודה אדום")).toBeInTheDocument();
 
-    const addButtons = screen.getAllByRole("button", { name: "הוספת פתרון" });
+    const addButtons = screen.getAllByRole("button", { name: "הוספת דרך עבודה" });
     await userEvent.click(addButtons[0]);
-    await userEvent.type(screen.getByPlaceholderText("טקסט פתרון"), "פתרון חדש");
+    await userEvent.type(screen.getByPlaceholderText("טקסט דרך עבודה"), "פתרון חדש");
     await userEvent.click(screen.getByRole("button", { name: "שמירה" }));
 
     await waitFor(() =>
