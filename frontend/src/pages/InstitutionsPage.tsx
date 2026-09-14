@@ -10,6 +10,7 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { CreateInstitutionDialog } from "@/pages/institutions/CreateInstitutionDialog";
 import { InstitutionRow } from "@/pages/institutions/InstitutionRow";
+import { HelpButton } from "@/components/help/HelpButton";
 
 export function InstitutionsPage(): ReactNode {
   const [createOpen, setCreateOpen] = useState(false);
@@ -27,10 +28,13 @@ export function InstitutionsPage(): ReactNode {
             כל מוסד מנהל את החניכים, הצוות וההגדרות שלו בנפרד.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Building2 className="h-4 w-4" />
-          מוסד חדש
-        </Button>
+        <div className="flex items-center gap-2">
+          <HelpButton topic="institutions" />
+          <Button onClick={() => setCreateOpen(true)}>
+            <Building2 className="h-4 w-4" />
+            מוסד חדש
+          </Button>
+        </div>
       </div>
 
       {query.isLoading && <LoadingState />}

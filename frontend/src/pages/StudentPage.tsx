@@ -16,6 +16,7 @@ import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
 import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
+import { HelpButton } from "@/components/help/HelpButton";
 
 export function StudentPage(): ReactNode {
   const { studentId = "" } = useParams();
@@ -68,9 +69,12 @@ export function StudentPage(): ReactNode {
           </span>
           <h1 className="text-2xl font-extrabold text-ink">{student.full_name}</h1>
         </div>
-        {permissions.canManage(user) && !student.is_archived && (
-          <StudentActionsMenu student={student} />
-        )}
+        <div className="flex items-center gap-2">
+          <HelpButton topic="student" />
+          {permissions.canManage(user) && !student.is_archived && (
+            <StudentActionsMenu student={student} />
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue={initialTab}>

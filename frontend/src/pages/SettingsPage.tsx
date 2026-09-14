@@ -10,6 +10,7 @@ import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
 import { DiagnosesArea } from "@/pages/settings/DiagnosesArea";
 import { DetailOptionsArea } from "@/pages/settings/DetailOptionsArea";
 import { AccountArea } from "@/pages/settings/AccountArea";
+import { HelpButton } from "@/components/help/HelpButton";
 
 const allTabs = [
   "workshops",
@@ -77,7 +78,10 @@ export function SettingsPage(): ReactNode {
         <ChevronRight className="h-4 w-4" />
         חזרה לעמוד הקודם
       </button>
-      <h1 className="mb-6 text-2xl font-extrabold text-ink">הגדרות</h1>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-extrabold text-ink">הגדרות</h1>
+        <HelpButton topic="settings" />
+      </div>
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
           {canManage && (

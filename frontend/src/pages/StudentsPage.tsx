@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { StudentLinkCard } from "@/components/StudentLinkCard";
+import { HelpButton } from "@/components/help/HelpButton";
 import { CreateStudentDialog } from "@/pages/students/CreateStudentDialog";
 
 export function StudentsPage(): ReactNode {
@@ -56,12 +57,15 @@ export function StudentsPage(): ReactNode {
             החניכים מסודרים לפי סדנאות. לחצו על חניך לצפייה בתיק.
           </p>
         </div>
-        {canCreate && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
-            חניך חדש
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <HelpButton topic="students" />
+          {canCreate && (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+              חניך חדש
+            </Button>
+          )}
+        </div>
       </div>
 
       {isReady && workshopsQuery.data.length > 0 && (
