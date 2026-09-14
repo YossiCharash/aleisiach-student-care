@@ -29,6 +29,7 @@ export function PersonalPlanTab({
 
   useEffect(() => {
     if (autoCreate) {
+      setCreating(true);
       onAutoCreateHandled?.();
     }
   }, [autoCreate, onAutoCreateHandled]);
