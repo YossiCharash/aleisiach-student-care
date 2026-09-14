@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { History, Plus } from "lucide-react";
 import { programPlansApi } from "@/lib/api/endpoints";
@@ -16,12 +16,22 @@ import { PlanForm } from "@/pages/student/program/PlanForm";
 export function PersonalPlanTab({
   studentId,
   canWrite,
+  autoCreate = false,
+  onAutoCreateHandled,
 }: {
   studentId: string;
   canWrite: boolean;
+  autoCreate?: boolean;
+  onAutoCreateHandled?: () => void;
 }): ReactNode {
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(autoCreate);
   const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    if (autoCreate) {
+      onAutoCreateHandled?.();
+    }
+  }, [autoCreate, onAutoCreateHandled]);
 
   const query = useQuery({
     queryKey: queryKeys.programPlans(studentId),

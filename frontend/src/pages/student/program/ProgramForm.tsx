@@ -21,11 +21,13 @@ function draftsFromProgram(program: ProgramResponse): FocusDraft {
 export function ProgramForm({
   studentId,
   program,
-  onDone,
+  onCancel,
+  onSaved,
 }: {
   studentId: string;
   program: ProgramResponse;
-  onDone: () => void;
+  onCancel: () => void;
+  onSaved: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<FocusDraft>(() => draftsFromProgram(program));
@@ -37,7 +39,7 @@ export function ProgramForm({
     mutationFn: () => programApi.upsert(studentId, { entries }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.program(studentId) });
-      onDone();
+      onSaved();
     },
   });
 
@@ -84,7 +86,7 @@ export function ProgramForm({
             <Button onClick={handleSubmit} disabled={mutation.isPending}>
               {mutation.isPending ? "שומר…" : "שמירת מוקדים"}
             </Button>
-            <Button variant="ghost" onClick={onDone}>
+            <Button variant="ghost" onClick={onCancel}>
               ביטול
             </Button>
           </div>
