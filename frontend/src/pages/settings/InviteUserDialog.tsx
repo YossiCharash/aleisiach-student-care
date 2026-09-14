@@ -115,13 +115,10 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
     onOpenChange(next);
   }
 
-  const submitLabel = sendEmail
-    ? rows.length > 1
-      ? "שליחת הזמנות"
-      : "שליחת הזמנה"
-    : rows.length > 1
-      ? "הוספת משתמשים"
-      : "הוספת משתמש";
+  const [singularLabel, pluralLabel] = sendEmail
+    ? ["שליחת הזמנה", "שליחת הזמנות"]
+    : ["הוספת משתמש", "הוספת משתמשים"];
+  const submitLabel = rows.length > 1 ? pluralLabel : singularLabel;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
