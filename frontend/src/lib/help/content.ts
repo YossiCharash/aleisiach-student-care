@@ -231,6 +231,7 @@ const student: HelpTopic = {
 
 const archived: HelpTopic = {
   title: "חניכים בארכיון",
+  intro: "חניכים שהוצאו מהרשימה הפעילה. המידע שלהם נשמר וניתן לשחזור.",
   sections: [
     {
       id: "what",
@@ -330,6 +331,7 @@ const settings: HelpTopic = {
 
 const users: HelpTopic = {
   title: "משתמשים",
+  intro: "הוספה וניהול של אנשי הצוות במוסד.",
   sections: [
     {
       id: "invite",

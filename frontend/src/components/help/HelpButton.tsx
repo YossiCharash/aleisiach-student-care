@@ -116,7 +116,9 @@ function HelpBlockView({ block }: { block: HelpBlock }): ReactNode {
     );
   }
   return (
-    <div className={cn("rounded-control border-s-4 px-3.5 py-2.5", calloutTone[block.tone])}>
+    <div
+      className={cn("rounded-control border-s-4 px-3.5 py-2.5", calloutTone[block.tone])}
+    >
       {block.title && <p className="text-sm font-bold">{block.title}</p>}
       <p className="text-sm leading-relaxed text-ink-muted">{block.text}</p>
     </div>

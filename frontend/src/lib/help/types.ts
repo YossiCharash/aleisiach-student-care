@@ -20,9 +20,4 @@ export interface HelpTopic {
 }
 
 export type HelpTopicId =
-  | "students"
-  | "student"
-  | "archived"
-  | "settings"
-  | "users"
-  | "institutions";
+  "students" | "student" | "archived" | "settings" | "users" | "institutions";
