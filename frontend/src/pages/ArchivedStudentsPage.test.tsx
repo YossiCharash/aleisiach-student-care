@@ -11,6 +11,9 @@ import { studentsApi } from "@/lib/api/endpoints";
 vi.mock("@/lib/api/endpoints", () => ({
   studentsApi: { listArchived: vi.fn(), restore: vi.fn() },
 }));
+vi.mock("@/lib/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1", full_name: "מנהל", role: "manager" } }),
+}));
 
 const listArchivedMock = vi.mocked(studentsApi.listArchived);
 const restoreMock = vi.mocked(studentsApi.restore);

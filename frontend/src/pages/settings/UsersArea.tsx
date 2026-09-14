@@ -13,6 +13,7 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { InviteUserDialog } from "@/pages/settings/InviteUserDialog";
 import { EditUserDialog } from "@/pages/settings/EditUserDialog";
+import { HelpButton } from "@/components/help/HelpButton";
 
 export function UsersArea(): ReactNode {
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -22,10 +23,13 @@ export function UsersArea(): ReactNode {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-ink">משתמשים</h1>
-        <Button onClick={() => setInviteOpen(true)}>
-          <UserPlus className="h-4 w-4" />
-          הזמנת משתמש
-        </Button>
+        <div className="flex items-center gap-2">
+          <HelpButton topic="users" />
+          <Button onClick={() => setInviteOpen(true)}>
+            <UserPlus className="h-4 w-4" />
+            הזמנת משתמש
+          </Button>
+        </div>
       </div>
 
       {query.isLoading && <LoadingState />}

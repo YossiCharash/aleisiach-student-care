@@ -19,6 +19,9 @@ vi.mock("@/lib/api/endpoints", () => ({
     activate: vi.fn(),
   },
 }));
+vi.mock("@/lib/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1", full_name: "מנהל מערכת", role: "super_admin" } }),
+}));
 
 const listMock = vi.mocked(institutionsApi.list);
 const createMock = vi.mocked(institutionsApi.create);

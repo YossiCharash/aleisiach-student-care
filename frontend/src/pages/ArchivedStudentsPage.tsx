@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
+import { HelpButton } from "@/components/help/HelpButton";
 
 export function ArchivedStudentsPage(): ReactNode {
   const query = useQuery({
@@ -25,12 +26,15 @@ export function ArchivedStudentsPage(): ReactNode {
             חניכים שהועברו לארכיון. ניתן לשחזר אותם לרשימה הפעילה.
           </p>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/students">
-            <ArrowRight className="h-4 w-4" />
-            חזרה לחניכים
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <HelpButton topic="archived" />
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/students">
+              <ArrowRight className="h-4 w-4" />
+              חזרה לחניכים
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {query.isLoading && <LoadingState />}
