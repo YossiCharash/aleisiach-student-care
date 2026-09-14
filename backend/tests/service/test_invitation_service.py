@@ -13,6 +13,7 @@ from backend.app.errors.service.email_already_used_error import EmailAlreadyUsed
 from backend.app.errors.service.invalid_token_error import InvalidTokenError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
+from backend.app.models.client.auth_token import AuthToken
 from backend.app.models.client.user_role import UserRole
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.service.invitation_command import InvitationCommand
@@ -62,6 +63,27 @@ def test_invite_then_accept_activates_user(db_session: Session) -> None:
 
     assert activated.status == UserStatus.ACTIVE
     assert activated.username == "manager1"
+
+
+def test_invite_without_email_creates_invited_user_and_skips_dispatch(
+    db_session: Session,
+) -> None:
+    sender = CapturingEmailSender()
+    service = _service(db_session, sender)
+
+    invited = service.invite(
+        InvitationCommand(
+            full_name="Teacher",
+            email="t@example.com",
+            role=UserRole.INSTRUCTOR,
+            send_email=False,
+        ),
+        _ACTOR,
+    )
+
+    assert invited.status == UserStatus.INVITED
+    assert sender.invitation_link is None
+    assert db_session.scalars(select(AuthToken)).first() is None
 
 
 def test_invite_records_permission_audit(db_session: Session) -> None:

@@ -51,11 +51,13 @@ function newRow(): InviteRow {
 export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<InviteRow[]>([newRow()]);
+  const [sendEmail, setSendEmail] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failures, setFailures] = useState<RowFailure[]>([]);
 
   function reset(): void {
     setRows([newRow()]);
+    setSendEmail(true);
     setFailures([]);
   }
 
@@ -86,6 +88,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
           full_name: row.fullName,
           email: row.email,
           role: row.role,
+          send_email: sendEmail,
         });
       } catch (error) {
         collected.push({ key: row.key, email: row.email, message: errorMessage(error) });
@@ -112,7 +115,13 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
     onOpenChange(next);
   }
 
-  const submitLabel = rows.length > 1 ? "שליחת הזמנות" : "שליחת הזמנה";
+  const submitLabel = sendEmail
+    ? rows.length > 1
+      ? "שליחת הזמנות"
+      : "שליחת הזמנה"
+    : rows.length > 1
+      ? "הוספת משתמשים"
+      : "הוספת משתמש";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -120,7 +129,9 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
         <DialogHeader>
           <DialogTitle>הזמנת משתמשים</DialogTitle>
           <DialogDescription>
-            ניתן להוסיף מספר משתמשים בבת אחת. יישלח קישור הזמנה לכל כתובת דוא״ל.
+            {sendEmail
+              ? "ניתן להוסיף מספר משתמשים בבת אחת. יישלח קישור הזמנה לכל כתובת דוא״ל."
+              : "ניתן להוסיף מספר משתמשים בבת אחת. לא יישלח מייל — תוכל לשלוח קישור התחברות מאוחר יותר מרשימת המשתמשים."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -211,6 +222,22 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
             <Plus className="h-4 w-4" />
             הוספת משתמש נוסף
           </Button>
+
+          <label className="flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={sendEmail}
+              onChange={(event) => setSendEmail(event.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-brand"
+            />
+            <span>
+              שליחת קישור הזמנה במייל עכשיו
+              <span className="mt-0.5 block text-xs text-ink-muted">
+                ללא סימון, המשתמשים ייווצרו בסטטוס ״הוזמן״ ותוכל לשלוח להם קישור התחברות
+                מאוחר יותר מרשימת המשתמשים.
+              </span>
+            </span>
+          </label>
 
           <div className="flex justify-start gap-2 border-t border-slate-100 pt-4">
             <Button type="submit" disabled={isSubmitting}>

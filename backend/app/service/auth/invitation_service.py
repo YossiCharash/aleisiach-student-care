@@ -50,7 +50,8 @@ class InvitationService:
                 status=UserStatus.INVITED,
             )
         )
-        self._dispatcher.dispatch(user.id, user.email)
+        if command.send_email:
+            self._dispatcher.dispatch(user.id, user.email)
         self._audit.record(
             AuditEntry(
                 actor_id=actor_id,

@@ -7,3 +7,4 @@ class InvitationCommand(BaseModel):
     full_name: str
     email: EmailStr
     role: UserRole
+    send_email: bool = True
