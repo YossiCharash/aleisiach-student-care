@@ -34,7 +34,7 @@ export function AuthLayout({
         </span>
 
         <div className="relative">
-          <p className="eyebrow text-accent-200">מרכז יום שיקומי</p>
+          <p className="eyebrow text-accent-200">מפעל עבודה שיקומי</p>
           <h2 className="mt-4 text-4xl font-light leading-[1.15] tracking-tight text-white">
             מערכת ניהול
             <br />
