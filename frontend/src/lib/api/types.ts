@@ -75,6 +75,7 @@ export interface InvitationCommand {
   full_name: string;
   email: string;
   role: InvitableRole;
+  send_email?: boolean;
 }
 
 export interface PasswordChangeRequest {
