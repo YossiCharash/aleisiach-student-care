@@ -14,11 +14,15 @@ vi.mock("@/lib/api/endpoints", () => ({
 }));
 
 vi.mock("@/pages/student/program/ProgramForm", () => ({
-  ProgramForm: () => <div>טופס מוקדים</div>,
+  ProgramForm: ({ onSaved }: { onSaved: () => void }) => (
+    <button onClick={onSaved}>שמירת מוקדים</button>
+  ),
 }));
 
 vi.mock("@/pages/student/program/PersonalPlanTab", () => ({
-  PersonalPlanTab: () => <div>פאנל תוכנית אישית</div>,
+  PersonalPlanTab: ({ autoCreate }: { autoCreate?: boolean }) => (
+    <div>{autoCreate ? "יצירת תוכנית אוטומטית" : "פאנל תוכנית אישית"}</div>
+  ),
 }));
 
 const getMock = vi.mocked(programApi.get);
@@ -86,6 +90,19 @@ describe("ProgramTab", () => {
     await userEvent.click(screen.getByRole("tab", { name: "תוכנית אישית" }));
 
     expect(screen.getByText("פאנל תוכנית אישית")).toBeInTheDocument();
+    expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
+  });
+
+  it("jumps to the personal-plan tab in create mode after saving foci", async () => {
+    signedInAs("manager");
+    getMock.mockResolvedValue(filledProgram);
+
+    renderWithClient(<ProgramTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("עריכת מוקדים"));
+    await userEvent.click(screen.getByText("שמירת מוקדים"));
+
+    expect(screen.getByText("יצירת תוכנית אוטומטית")).toBeInTheDocument();
     expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
   });
 

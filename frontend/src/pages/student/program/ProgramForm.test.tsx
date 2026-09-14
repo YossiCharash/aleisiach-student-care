@@ -40,7 +40,12 @@ describe("ProgramForm", () => {
 
   it("prefills the marked count from the existing foci", () => {
     renderWithClient(
-      <ProgramForm studentId="s1" program={filledProgram} onDone={vi.fn()} />
+      <ProgramForm
+        studentId="s1"
+        program={filledProgram}
+        onCancel={vi.fn()}
+        onSaved={vi.fn()}
+      />
     );
 
     expect(screen.getByText("1 כישורים סומנו")).toBeInTheDocument();
@@ -48,7 +53,12 @@ describe("ProgramForm", () => {
 
   it("submits the prefilled ratings on save", async () => {
     renderWithClient(
-      <ProgramForm studentId="s1" program={filledProgram} onDone={vi.fn()} />
+      <ProgramForm
+        studentId="s1"
+        program={filledProgram}
+        onCancel={vi.fn()}
+        onSaved={vi.fn()}
+      />
     );
 
     await userEvent.click(screen.getByText("שמירת מוקדים"));
@@ -58,9 +68,50 @@ describe("ProgramForm", () => {
     });
   });
 
+  it("calls onSaved after a successful save, not onCancel", async () => {
+    const onCancel = vi.fn();
+    const onSaved = vi.fn();
+    renderWithClient(
+      <ProgramForm
+        studentId="s1"
+        program={filledProgram}
+        onCancel={onCancel}
+        onSaved={onSaved}
+      />
+    );
+
+    await userEvent.click(screen.getByText("שמירת מוקדים"));
+
+    await vi.waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it("calls onCancel from the cancel button", async () => {
+    const onCancel = vi.fn();
+    const onSaved = vi.fn();
+    renderWithClient(
+      <ProgramForm
+        studentId="s1"
+        program={filledProgram}
+        onCancel={onCancel}
+        onSaved={onSaved}
+      />
+    );
+
+    await userEvent.click(screen.getByText("ביטול"));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it("blocks empty foci and does not call the API", async () => {
     renderWithClient(
-      <ProgramForm studentId="s1" program={emptyProgram} onDone={vi.fn()} />
+      <ProgramForm
+        studentId="s1"
+        program={emptyProgram}
+        onCancel={vi.fn()}
+        onSaved={vi.fn()}
+      />
     );
 
     await userEvent.click(screen.getByText("שמירת מוקדים"));

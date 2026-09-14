@@ -51,6 +51,23 @@ describe("PersonalPlanTab", () => {
     expect(screen.getByText("יצירת תוכנית")).toBeInTheDocument();
   });
 
+  it("opens the create form immediately when autoCreate is set", async () => {
+    listMock.mockResolvedValue([]);
+    const onAutoCreateHandled = vi.fn();
+
+    renderWithClient(
+      <PersonalPlanTab
+        studentId="s1"
+        canWrite
+        autoCreate
+        onAutoCreateHandled={onAutoCreateHandled}
+      />
+    );
+
+    expect(screen.getByText("טופס תוכנית")).toBeInTheDocument();
+    expect(onAutoCreateHandled).toHaveBeenCalledTimes(1);
+  });
+
   it("hides the create button from a read-only user", async () => {
     listMock.mockResolvedValue([]);
 

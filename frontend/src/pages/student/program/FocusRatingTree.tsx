@@ -60,7 +60,10 @@ function LabelAccordion({
   setDraft: SetDraft;
 }): ReactNode {
   return (
-    <details className="group overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <details
+      open
+      className="group overflow-hidden rounded-xl border border-slate-200 bg-white"
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between bg-slate-50 px-4 py-3 font-semibold text-ink [&::-webkit-details-marker]:hidden">
         {label.name}
         <ChevronDown className="h-5 w-5 text-ink-muted transition-transform group-open:rotate-180" />

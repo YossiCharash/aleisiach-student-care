@@ -40,19 +40,49 @@ export function ProgramTab({ studentId }: { studentId: string }): ReactNode {
     return null;
   }
 
+  return <ProgramTabs studentId={studentId} program={query.data} canWrite={canWrite} />;
+}
+
+function ProgramTabs({
+  studentId,
+  program,
+  canWrite,
+}: {
+  studentId: string;
+  program: ProgramResponse;
+  canWrite: boolean;
+}): ReactNode {
+  const [tab, setTab] = useState("focus");
+  const [autoCreatePlan, setAutoCreatePlan] = useState(false);
+
+  function handleFociSaved(): void {
+    setAutoCreatePlan(true);
+    setTab("personal");
+  }
+
   return (
-    <Tabs defaultValue="focus">
+    <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
         <TabsTrigger value="focus">מוקדי כוח ומוקדים לחיזוק</TabsTrigger>
         <TabsTrigger value="personal">תוכנית אישית</TabsTrigger>
       </TabsList>
 
       <TabsContent value="focus">
-        <FocusPanel studentId={studentId} program={query.data} canWrite={canWrite} />
+        <FocusPanel
+          studentId={studentId}
+          program={program}
+          canWrite={canWrite}
+          onFociSaved={handleFociSaved}
+        />
       </TabsContent>
 
       <TabsContent value="personal">
-        <PersonalPlanTab studentId={studentId} canWrite={canWrite} />
+        <PersonalPlanTab
+          studentId={studentId}
+          canWrite={canWrite}
+          autoCreate={autoCreatePlan}
+          onAutoCreateHandled={() => setAutoCreatePlan(false)}
+        />
       </TabsContent>
     </Tabs>
   );
@@ -62,10 +92,12 @@ function FocusPanel({
   studentId,
   program,
   canWrite,
+  onFociSaved,
 }: {
   studentId: string;
   program: ProgramResponse;
   canWrite: boolean;
+  onFociSaved: () => void;
 }): ReactNode {
   const [editing, setEditing] = useState(false);
 
@@ -74,7 +106,11 @@ function FocusPanel({
       <ProgramForm
         studentId={studentId}
         program={program}
-        onDone={() => setEditing(false)}
+        onCancel={() => setEditing(false)}
+        onSaved={() => {
+          setEditing(false);
+          onFociSaved();
+        }}
       />
     );
   }
