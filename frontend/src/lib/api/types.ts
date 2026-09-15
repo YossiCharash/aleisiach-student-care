@@ -448,3 +448,45 @@ export interface FunctionalReportUpsertRequest {
   independence_life_skills_domain: string;
   summary_recommendations: string;
 }
+
+export interface ReceptionChecklistItem {
+  done: boolean;
+  note: string;
+}
+
+export interface ReceptionReportResponse {
+  student_id: string;
+  exists: boolean;
+  student_name: string;
+  national_id: string | null;
+  date_of_birth: string | null;
+  committee_date: string | null;
+  committee_participants: string;
+  intake_date: string | null;
+  committee_summary: string;
+  committee_recommendations: string;
+  framework_code: string;
+  tariff_code: string;
+  committee_held: ReceptionChecklistItem;
+  director_approval: ReceptionChecklistItem;
+  family_guardian_housing_updated: ReceptionChecklistItem;
+  community_social_worker_updated: ReceptionChecklistItem;
+  management_updated: ReceptionChecklistItem;
+  written_by_name: string | null;
+  updated_at: string | null;
+}
+
+export interface ReceptionReportUpsertRequest {
+  committee_date: string | null;
+  committee_participants: string;
+  intake_date: string | null;
+  committee_summary: string;
+  committee_recommendations: string;
+  framework_code: string;
+  tariff_code: string;
+  committee_held: ReceptionChecklistItem;
+  director_approval: ReceptionChecklistItem;
+  family_guardian_housing_updated: ReceptionChecklistItem;
+  community_social_worker_updated: ReceptionChecklistItem;
+  management_updated: ReceptionChecklistItem;
+}

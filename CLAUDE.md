@@ -133,6 +133,7 @@ on purpose: it has no access to any of these.
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
+| Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
 | Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
@@ -238,8 +239,19 @@ on purpose: it has no access to any of these.
 - **Main screen** — top-right: worker name + list of students assigned to their class; clicking
   a student → student screen.
 - **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
-  §3 permission matrix). The UI display order (decided 2026-09-08) is: **details · program · team
+  §3 permission matrix). The UI display order (decided 2026-09-08; reception report inserted
+  2026-09-15, ADR-026) is: **details · reception report (managers only) · program · team
   meetings · social-worker note · functional-report summary**, and **details is the default tab**.
+  - **Reception report** (דוח קבלה — טופס 39): a **manager-only** tab (read + write manager-only;
+    instructors and professional teachers are blocked, so the tab is hidden and the API answers
+    403), placed **right after details**. **One stored report per student, updated in place**,
+    modeled on the client's Form 39 ("עדכון קליטת מקבל שירות"). A **פרטי קליטה** block —
+    identity (שם · ת"ז · תאריך לידה) **auto-filled** from the student + Tab 4 details, plus
+    תאריך ועדת קבלה · משתתפי ועדת קבלה · תאריך קליטה · סיכום ועדת קבלה · המלצות הוועדה · סמל
+    מסגרת · סמל תעריף — and a **בקרת תהליך** checklist of five items, each **בוצע/לא בוצע + הערה**.
+    Issuer ("נכתב על ידי") and date are auto-captured from the manager who saves. Server-side
+    **WeasyPrint PDF** export in the app's own layout (no ISO logos / fixed org headers). (Added
+    2026-09-15, ADR-026.)
   - Tab 1 — **Program** (תוכנית קידום): split into **two sub-tabs** with **two separate stored
     documents** (**managers write any student; instructors write students in their own workshop**;
     professional teachers read only). (Changed 2026-09-10, ADR-025 — Tab 1 write opened to

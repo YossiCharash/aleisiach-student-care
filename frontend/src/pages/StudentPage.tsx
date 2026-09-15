@@ -15,6 +15,7 @@ import { MeetingsTab } from "@/pages/student/MeetingsTab";
 import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
 import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
+import { ReceptionReportTab } from "@/pages/student/ReceptionReportTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 import { HelpButton } from "@/components/help/HelpButton";
 
@@ -43,9 +44,15 @@ export function StudentPage(): ReactNode {
 
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
-  const allowedTabs = showSocialNote
-    ? ["details", "program", "meetings", "social-note", "functional-report"]
-    : ["details", "program", "meetings", "functional-report"];
+  const showReceptionReport = permissions.canAccessReceptionReport(user);
+  const allowedTabs = [
+    "details",
+    ...(showReceptionReport ? ["reception-report"] : []),
+    "program",
+    "meetings",
+    ...(showSocialNote ? ["social-note"] : []),
+    "functional-report",
+  ];
   const initialTab =
     requestedTab && allowedTabs.includes(requestedTab) ? requestedTab : "details";
 
@@ -80,6 +87,9 @@ export function StudentPage(): ReactNode {
       <Tabs defaultValue={initialTab}>
         <TabsList variant="pill">
           <TabsTrigger value="details">פרטים אישיים</TabsTrigger>
+          {showReceptionReport && (
+            <TabsTrigger value="reception-report">דוח קבלה</TabsTrigger>
+          )}
           <TabsTrigger value="program">תוכנית קידום</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
           {showSocialNote && <TabsTrigger value="social-note">סיכום עו״ס</TabsTrigger>}
@@ -89,6 +99,11 @@ export function StudentPage(): ReactNode {
         <TabsContent value="details">
           <DetailsTab studentId={student.id} />
         </TabsContent>
+        {showReceptionReport && (
+          <TabsContent value="reception-report">
+            <ReceptionReportTab studentId={student.id} />
+          </TabsContent>
+        )}
         <TabsContent value="program">
           <ProgramTab studentId={student.id} />
         </TabsContent>
