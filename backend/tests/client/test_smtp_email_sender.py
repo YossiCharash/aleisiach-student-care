@@ -26,6 +26,8 @@ def test_invitation_message_composition() -> None:
     assert message["From"] == "no-reply@example.com"
     assert "עלי שיח" in message["Subject"]
     assert "abc123" in message.get_content()
+    assert message["Date"]
+    assert message["Message-ID"].strip().endswith("@example.com>")
 
 
 def test_reset_message_composition() -> None:

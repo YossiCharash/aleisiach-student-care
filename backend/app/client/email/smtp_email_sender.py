@@ -1,6 +1,7 @@
 import smtplib
 import ssl
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
 
 from backend.app.client.email.email_sender import EmailSender
 from backend.app.configuration.email.email_settings import EmailSettings
@@ -28,8 +29,14 @@ class SmtpEmailSender(EmailSender):
         message["From"] = self._settings.from_address
         message["To"] = to
         message["Subject"] = subject
+        message["Date"] = formatdate(localtime=True)
+        message["Message-ID"] = make_msgid(domain=self._sender_domain())
         message.set_content(body)
         return message
+
+    def _sender_domain(self) -> str:
+        _, _, domain = self._settings.from_address.rpartition("@")
+        return domain or self._settings.smtp_host
 
     def _deliver(self, message: EmailMessage) -> None:
         with smtplib.SMTP(
