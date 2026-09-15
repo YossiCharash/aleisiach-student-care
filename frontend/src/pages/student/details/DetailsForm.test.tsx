@@ -60,7 +60,7 @@ describe("DetailsForm", () => {
     renderWithClient(<DetailsForm studentId="s1" details={details()} onDone={vi.fn()} />);
 
     expect(screen.getByText("תיאור המגבלה")).toBeInTheDocument();
-    expect(screen.getByText("רמת תפקוד")).toBeInTheDocument();
+    expect(screen.getByText("אוטיזם")).toBeInTheDocument();
     expect(screen.getByText("מוסד קודם")).toBeInTheDocument();
     expect(screen.getByText("מוסד נוכחי")).toBeInTheDocument();
   });
@@ -71,5 +71,18 @@ describe("DetailsForm", () => {
     const relationship = screen.getAllByPlaceholderText("קרבה")[0];
     expect(relationship).toHaveAttribute("list", "contact-relationship-options");
     expect(relationship.tagName).toBe("INPUT");
+  });
+
+  it("shows a free-text note beside each additional diagnosis", () => {
+    const withDiagnosis = {
+      ...details(),
+      additional_diagnoses: [{ name: "ADHD", note: "קושי בריכוז" }],
+    };
+    renderWithClient(
+      <DetailsForm studentId="s1" details={withDiagnosis} onDone={vi.fn()} />
+    );
+
+    expect(screen.getByDisplayValue("ADHD")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("קושי בריכוז")).toBeInTheDocument();
   });
 });

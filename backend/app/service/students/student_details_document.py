@@ -56,11 +56,15 @@ class StudentDetailsDocument:
     def _diagnoses(self, details: StudentDetailsResponse) -> str:
         severity = details.idd_severity if details.idd_severity else "—"
         items = [f"<li>{escape(_IDD_NAME)} — דרגה: {escape(severity)}</li>"]
-        items.extend(f"<li>{escape(name)}</li>" for name in details.additional_diagnoses)
+        for entry in details.additional_diagnoses:
+            text = escape(entry.name)
+            if entry.note:
+                text += f" — {escape(entry.note)}"
+            items.append(f"<li>{text}</li>")
         return (
             f"<h2>אבחונים</h2><ul>{''.join(items)}</ul>"
             + self._field("תיאור המגבלה", details.disability_severity)
-            + self._field("רמת תפקוד", details.functioning_level)
+            + self._field("אוטיזם", details.functioning_level)
         )
 
     def _medical_profile(self, details: StudentDetailsResponse) -> str:
@@ -100,7 +104,7 @@ class StudentDetailsDocument:
             "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
             + self._field("מוסד קודם", details.previous_institution)
             + self._field("מוסד נוכחי", details.current_institution)
-            + self._field("ניסיון קודם במטלות", details.prior_task_experience)
+            + self._field("רקע תעסוקתי קודם", details.prior_task_experience)
         )
 
     def _emotional_id(self, details: StudentDetailsResponse) -> str:

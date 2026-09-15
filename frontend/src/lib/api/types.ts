@@ -328,6 +328,11 @@ export interface ContactInfo {
   phone: string | null;
 }
 
+export interface DiagnosisEntry {
+  name: string;
+  note: string | null;
+}
+
 export interface StudentDetailsResponse {
   student_id: string;
   national_id: string | null;
@@ -338,7 +343,7 @@ export interface StudentDetailsResponse {
   idd_severity: string | null;
   disability_severity: string | null;
   functioning_level: string | null;
-  additional_diagnoses: string[];
+  additional_diagnoses: DiagnosisEntry[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];
@@ -370,7 +375,7 @@ export interface StudentDetailsUpsertRequest {
   idd_severity: string | null;
   disability_severity: string | null;
   functioning_level: string | null;
-  additional_diagnoses: string[];
+  additional_diagnoses: DiagnosisEntry[];
   emergency_contacts: ContactInfo[];
   legal_status: LegalStatus | null;
   guardians: ContactInfo[];

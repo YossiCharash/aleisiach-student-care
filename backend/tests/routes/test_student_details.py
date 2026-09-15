@@ -18,7 +18,7 @@ _BODY = {
     "date_of_birth": "2012-05-01",
     "home_language": "עברית",
     "idd_severity": "mild",
-    "additional_diagnoses": ["ADHD"],
+    "additional_diagnoses": [{"name": "ADHD", "note": "קושי בריכוז"}],
     "emergency_contacts": [{"full_name": "Mom", "phone": "050"}],
     "legal_status": "guardian_appointed",
     "guardians": [{"full_name": "Guardian", "relationship": "aunt"}],
@@ -107,7 +107,8 @@ def test_professional_teacher_reads_without_sensitive_and_cannot_write(
     assert body["guardians"] == []
     assert body["sensitive_visible"] is False
     assert body["national_id"] == "123456789"
-    assert body["additional_diagnoses"][0] == "ADHD"
+    assert body["additional_diagnoses"][0]["name"] == "ADHD"
+    assert body["additional_diagnoses"][0]["note"] == "קושי בריכוז"
     assert body["idd_severity"] == "mild"
     assert body["emergency_contacts"][0]["full_name"] == "Mom"
     assert body["has_allergies_or_dietary"] is True

@@ -112,7 +112,7 @@ def test_seeded_details_deserialize_through_response_schemas(db_session: Session
 
     assert all(contact.full_name for contact in contacts)
     assert details.idd_severity is not None
-    assert all(isinstance(name, str) for name in details.additional_diagnoses)
+    assert all(entry["name"] for entry in details.additional_diagnoses)
 
 
 def test_run_is_idempotent(db_session: Session) -> None:

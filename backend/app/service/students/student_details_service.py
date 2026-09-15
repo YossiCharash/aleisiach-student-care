@@ -7,6 +7,7 @@ from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.student_details import StudentDetails
 from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis_entry import DiagnosisEntry
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -116,9 +117,7 @@ class StudentDetailsService:
         details.idd_severity = request.idd_severity
         details.disability_severity = request.disability_severity
         details.functioning_level = request.functioning_level
-        details.additional_diagnoses = self._diagnoses.ensure_names(
-            request.additional_diagnoses, actor_id
-        )
+        details.additional_diagnoses = self._apply_diagnoses(request.additional_diagnoses, actor_id)
         details.emergency_contacts = [item.model_dump() for item in request.emergency_contacts]
         details.legal_status = request.legal_status
         details.guardians = [item.model_dump() for item in request.guardians]
@@ -155,6 +154,32 @@ class StudentDetailsService:
         details.emergency_protocol = request.emergency_protocol
         details.assistive_devices = self._clean(request.assistive_devices)
         details.assistive_device_other = request.assistive_device_other
+
+    def _apply_diagnoses(
+        self, entries: list[DiagnosisEntry], actor_id: uuid.UUID
+    ) -> list[dict[str, object]]:
+        result: list[dict[str, object]] = []
+        seen: set[str] = set()
+        for entry in entries:
+            name = entry.name.strip()
+            if not name or name in seen:
+                continue
+            seen.add(name)
+            note = entry.note.strip() if entry.note else ""
+            result.append({"name": name, "note": note or None})
+        self._diagnoses.ensure_names([str(item["name"]) for item in result], actor_id)
+        return result
+
+    def _diagnosis_entry(self, raw: object) -> DiagnosisEntry:
+        if isinstance(raw, str):
+            return DiagnosisEntry(name=raw)
+        if isinstance(raw, dict):
+            note = raw.get("note")
+            return DiagnosisEntry(
+                name=str(raw.get("name", "")),
+                note=note if isinstance(note, str) else None,
+            )
+        return DiagnosisEntry(name=str(raw))
 
     def _validate_options(self, request: StudentDetailsUpsertRequest) -> None:
         valid = self._valid_option_names()
@@ -235,7 +260,9 @@ class StudentDetailsService:
             idd_severity=details.idd_severity,
             disability_severity=details.disability_severity,
             functioning_level=details.functioning_level,
-            additional_diagnoses=list(details.additional_diagnoses),
+            additional_diagnoses=[
+                self._diagnosis_entry(item) for item in details.additional_diagnoses
+            ],
             emergency_contacts=[ContactInfo(**item) for item in details.emergency_contacts],
             legal_status=details.legal_status if include_sensitive else None,
             guardians=(

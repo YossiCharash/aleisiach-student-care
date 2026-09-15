@@ -4,6 +4,7 @@ from datetime import date
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis_entry import DiagnosisEntry
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.service.students.student_details_document import StudentDetailsDocument
 
@@ -21,7 +22,7 @@ def _details(
         idd_severity="קלה",
         disability_severity="קל-בינוני",
         functioning_level="בינוני",
-        additional_diagnoses=["ADHD"],
+        additional_diagnoses=[DiagnosisEntry(name="ADHD", note="קושי בריכוז")],
         emergency_contacts=[ContactInfo(full_name="אמא", phone="050")],
         legal_status=LegalStatus.GUARDIAN_APPOINTED,
         guardians=[ContactInfo(full_name="דוד", relationship="דוד")],
@@ -48,13 +49,14 @@ def test_full_details_include_guardianship() -> None:
     assert 'dir="rtl"' in html
     assert "123456789" in html
     assert "ADHD" in html
+    assert "קושי בריכוז" in html
     assert "אמא" in html
     assert "אפוטרופסות ומעמד משפטי" in html
     assert "מונה אפוטרופוס" in html
     assert "דוד" in html
     assert "מגבלה שכלית התפתחותית" in html
     assert "תיאור המגבלה" in html
-    assert "רמת תפקוד" in html
+    assert "אוטיזם" in html
     assert "מוסד קודם" in html
     assert "מוסד נוכחי" in html
     assert "פרופיל רפואי ובטיחותי קריטי" in html

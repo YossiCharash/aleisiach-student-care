@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, StringConstraints
 
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis_entry import DiagnosisEntry
 
 OptionValue = Annotated[str, StringConstraints(min_length=1, max_length=200)]
 FreeTextItem = Annotated[str, StringConstraints(min_length=1, max_length=500)]
@@ -18,7 +19,7 @@ class StudentDetailsUpsertRequest(BaseModel):
     idd_severity: str | None = Field(default=None, max_length=200)
     disability_severity: str | None = Field(default=None, max_length=200)
     functioning_level: str | None = Field(default=None, max_length=200)
-    additional_diagnoses: list[OptionValue] = Field(default_factory=list)
+    additional_diagnoses: list[DiagnosisEntry] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)
     legal_status: LegalStatus | None = None
     guardians: list[ContactInfo] = Field(default_factory=list)
