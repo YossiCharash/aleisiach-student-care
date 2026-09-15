@@ -89,6 +89,6 @@ class ReceptionReportDocument:
 
     def _value(self, value: object) -> str:
         if isinstance(value, date):
-            return value.isoformat()
+            return value.strftime("%d/%m/%Y")
         text = str(value) if value else ""
         return escape(text) if text else "—"

@@ -232,8 +232,10 @@ function ReceptionReportForm({
     value: ReceptionReportUpsertRequest[K]
   ): void => setDraft((prev) => ({ ...prev, [key]: value }));
 
-  const setChecklist = (key: ChecklistKey, value: ReceptionChecklistItem): void =>
-    setDraft((prev) => ({ ...prev, [key]: value }));
+  const setChecklist = (
+    key: ChecklistKey,
+    patch: Partial<ReceptionChecklistItem>
+  ): void => setDraft((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
 
   return (
     <div className="space-y-4">
@@ -333,10 +335,7 @@ function ReceptionReportForm({
                   className="h-4 w-4"
                   checked={draft[item.key].done}
                   onChange={(event) =>
-                    setChecklist(item.key, {
-                      ...draft[item.key],
-                      done: event.target.checked,
-                    })
+                    setChecklist(item.key, { done: event.target.checked })
                   }
                 />
                 {item.title}
@@ -346,12 +345,7 @@ function ReceptionReportForm({
                 placeholder="הערה (רשות)"
                 value={draft[item.key].note}
                 maxLength={1000}
-                onChange={(event) =>
-                  setChecklist(item.key, {
-                    ...draft[item.key],
-                    note: event.target.value,
-                  })
-                }
+                onChange={(event) => setChecklist(item.key, { note: event.target.value })}
               />
             </div>
           ))}
