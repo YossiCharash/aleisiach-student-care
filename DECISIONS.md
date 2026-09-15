@@ -601,6 +601,45 @@ unchanged (still read-only / 404).
 
 ---
 
+## ADR-026 — Reception report (Form 39): a manager-only per-student intake report with PDF
+
+**Decision:** Add a **Reception report** (דוח קבלה) to the student screen, placed **right after
+details**, modeling the client's official **Form 39 ("עדכון קליטת מקבל שירות")**. It is
+**one stored report per student, updated in place** (like the Form 33 functional report, ADR-020),
+and is **manager-only for both read and write** — instructors and professional teachers are blocked,
+the tab is hidden for them, and every endpoint answers **403**.
+
+**Content:** a **פרטי קליטה** block — identity (שם · ת"ז · תאריך לידה) **auto-filled** from the
+student + Tab 4 details and never stored on the report, plus תאריך ועדת קבלה · משתתפי ועדת קבלה ·
+תאריך קליטה · סיכום ועדת קבלה · המלצות הוועדה · סמל מסגרת · סמל תעריף — and a **בקרת תהליך**
+checklist of the procedure's five items (ועדת קבלה התקיימה · אישור המנהלת · המשפחה/אפוטרופוס/דיור
+עודכנו · העו"ס בקהילה עודכנה · ההנהלה עודכנה), each captured as **בוצע/לא בוצע + הערה** (a
+`ReceptionChecklistItem` DTO, `done` + `note`, reused per item per rule 19). Issuer and date are
+auto-captured from the manager who saves; the change is written to the audit log.
+
+**PDF:** server-side **WeasyPrint** (rule: server-side Hebrew PDFs) rendered through the shared
+`DocumentShell` in the app's own branded layout — the details and the checklist each as a table.
+The original document's ISO-9001 logos, the fixed "מרכז רש"ת"/"עלי שיח" headers and the
+`QA-001-E-01` footer code are **not** reproduced: they are institution-specific and the platform is
+multi-tenant, so each report is stamped with the signed-in institution's name instead.
+
+**Implementation:** a twin of the Form 33 stack — `ReceptionReport(TenantScoped)` model +
+migration `0031`, `ReceptionReportRepository`, `ReceptionReportService` (get/upsert + audit,
+`entity_type="reception_report"`), `ReceptionReportDocument`, and a `Manager`-guarded route at
+`/students/{student_id}/reception-report` (GET · PUT · GET /pdf). Frontend: `ReceptionReportTab`,
+gated by `permissions.canAccessReceptionReport` (manager) in `StudentPage`.
+
+**Alternatives:** a dated, versioned series with history (like Tab 1 plans / Tab 3 notes) —
+rejected, a reception report is a single intake document that is corrected in place, not a
+timeline. A pixel-exact copy of the Word form (logos, fixed headers) — rejected as
+institution-specific and at odds with multi-tenancy; the field structure is preserved instead.
+
+**Consequences:** Managers get a structured, exportable intake record per student. The report holds
+sensitive intake data, so it inherits `TenantScoped` isolation (ADR-018) and is manager-only end to
+end (rule 7). Non-managers are unaffected (tab hidden, API 403).
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

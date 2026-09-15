@@ -44,6 +44,12 @@ describe("permissions matrix", () => {
     expect(permissions.canReadSocialNote(teacher)).toBe(false);
   });
 
+  it("only the manager can access the reception report", () => {
+    expect(permissions.canAccessReceptionReport(manager)).toBe(true);
+    expect(permissions.canAccessReceptionReport(instructor)).toBe(false);
+    expect(permissions.canAccessReceptionReport(teacher)).toBe(false);
+  });
+
   it("the professional teacher never sees sensitive data", () => {
     expect(permissions.canSeeSensitive(manager)).toBe(true);
     expect(permissions.canSeeSensitive(instructor)).toBe(true);

@@ -1,29 +1,11 @@
 import uuid
 
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-
+from backend.app.client.reports.student_report_repository import StudentReportRepository
 from backend.app.models.client.functional_report import FunctionalReport
 
 
-class FunctionalReportRepository:
-    def __init__(self, session: Session) -> None:
-        self._session = session
+class FunctionalReportRepository(StudentReportRepository[FunctionalReport]):
+    _model = FunctionalReport
 
-    def get(self, student_id: uuid.UUID) -> FunctionalReport | None:
-        return self._session.get(FunctionalReport, student_id)
-
-    def create(self, report: FunctionalReport) -> tuple[FunctionalReport, bool]:
-        try:
-            with self._session.begin_nested():
-                self._session.add(report)
-                self._session.flush()
-        except IntegrityError:
-            existing = self.get(report.student_id)
-            if existing is None:
-                raise
-            return existing, False
-        return report, True
-
-    def flush(self) -> None:
-        self._session.flush()
+    def _key(self, report: FunctionalReport) -> uuid.UUID:
+        return report.student_id

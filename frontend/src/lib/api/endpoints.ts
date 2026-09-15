@@ -13,6 +13,8 @@ import type {
   DiagnosisCatalogUpdate,
   FunctionalReportResponse,
   FunctionalReportUpsertRequest,
+  ReceptionReportResponse,
+  ReceptionReportUpsertRequest,
   InvitationCommand,
   LabelResponse,
   LabelTreeNode,
@@ -248,6 +250,21 @@ export const functionalReportApi = {
     ),
   pdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/functional-report/pdf`),
+};
+
+export const receptionReportApi = {
+  get: (studentId: string): Promise<ReceptionReportResponse> =>
+    apiClient.get<ReceptionReportResponse>(`/students/${studentId}/reception-report`),
+  upsert: (
+    studentId: string,
+    body: ReceptionReportUpsertRequest
+  ): Promise<ReceptionReportResponse> =>
+    apiClient.put<ReceptionReportResponse>(
+      `/students/${studentId}/reception-report`,
+      body
+    ),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/reception-report/pdf`),
 };
 
 export const taxonomyApi = {
