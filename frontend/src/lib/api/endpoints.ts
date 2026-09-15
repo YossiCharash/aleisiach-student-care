@@ -15,6 +15,8 @@ import type {
   FunctionalReportUpsertRequest,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
+  SupportedEmploymentResponse,
+  SupportedEmploymentUpsertRequest,
   InvitationCommand,
   LabelResponse,
   LabelTreeNode,
@@ -265,6 +267,23 @@ export const receptionReportApi = {
     ),
   pdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/reception-report/pdf`),
+};
+
+export const supportedEmploymentApi = {
+  get: (studentId: string): Promise<SupportedEmploymentResponse> =>
+    apiClient.get<SupportedEmploymentResponse>(
+      `/students/${studentId}/supported-employment`
+    ),
+  upsert: (
+    studentId: string,
+    body: SupportedEmploymentUpsertRequest
+  ): Promise<SupportedEmploymentResponse> =>
+    apiClient.put<SupportedEmploymentResponse>(
+      `/students/${studentId}/supported-employment`,
+      body
+    ),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/supported-employment/pdf`),
 };
 
 export const taxonomyApi = {

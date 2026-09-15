@@ -11,6 +11,7 @@ export const permissions = {
   canWriteSocialNote: (user: UserResponse): boolean => user.role === "manager",
   canWriteFunctionalReport: (user: UserResponse): boolean => user.role === "manager",
   canAccessReceptionReport: (user: UserResponse): boolean => user.role === "manager",
+  canAccessSupportedEmployment: (user: UserResponse): boolean => user.role === "manager",
   canWriteDetails: (user: UserResponse): boolean =>
     user.role === "manager" || user.role === "instructor",
   canSeeSensitive: (user: UserResponse): boolean => user.role !== "professional_teacher",

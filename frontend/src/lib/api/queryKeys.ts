@@ -12,6 +12,8 @@ export const queryKeys = {
     ["students", studentId, "functional-report"] as const,
   receptionReport: (studentId: string) =>
     ["students", studentId, "reception-report"] as const,
+  supportedEmployment: (studentId: string) =>
+    ["students", studentId, "supported-employment"] as const,
   taxonomyTree: ["taxonomy", "tree"] as const,
   taxonomyLabels: ["taxonomy", "labels"] as const,
   taxonomySkills: (labelId: string) => ["taxonomy", "skills", labelId] as const,

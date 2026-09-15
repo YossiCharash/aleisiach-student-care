@@ -240,8 +240,10 @@ on purpose: it has no access to any of these.
   a student → student screen.
 - **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
   §3 permission matrix). The UI display order (decided 2026-09-08; reception report inserted
-  2026-09-15, ADR-026) is: **details · reception report (managers only) · program · team
-  meetings · social-worker note · functional-report summary**, and **details is the default tab**.
+  2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027) is: **details ·
+  reception report (managers only) · program · team meetings · social-worker note ·
+  functional-report summary · supported employment (managers only)**, and **details is the
+  default tab**.
   - **Reception report** (דוח קבלה — טופס 39): a **manager-only** tab (read + write manager-only;
     instructors and professional teachers are blocked, so the tab is hidden and the API answers
     403), placed **right after details**. **One stored report per student, updated in place**,
@@ -306,6 +308,15 @@ on purpose: it has no access to any of these.
     (the professional teacher is *not* blocked here). Server-side **WeasyPrint PDF** export. (Changed
     2026-09-08, ADR-020 — superseded the earlier read-only surfacing of the Tab 4 emotional-identity
     and communication cards; those cards stay in Tab 4.)
+  - **Supported employment** (עבודה נתמכת — טופס 46): a **manager-only** tab (read + write
+    manager-only; instructors and professional teachers are blocked, so the tab is hidden and the
+    API answers 403), placed **last, after the functional report**. **One stored record per
+    student, updated in place**, modeled on the client's Form 46 ("ניתוח עבודה נתמכת"). Eleven
+    free-text fields — מקום העבודה · כתובת · סוג הפעילות · תהליך העבודה · סביבת העבודה · תפקודי גוף
+    נחוצים · סכנות ובטיחות · איש קשר במקום העבודה · איש קשר מלווה · ניידות · שעת עבודה — with **no
+    identity header and no issuer/date footer** (the source form has none; `updated_by`/`updated_at`
+    are still stored for the audit log). Server-side **WeasyPrint PDF** export in the app's own
+    branded layout. (Added 2026-09-15, ADR-027.)
 - **Settings page**: for **managers** — **Users area** (add/remove users; per user: full name ·
   email · role · class; bulk-invite by email) + manage the taxonomy (labels / sub-labels / skills /
   solutions) + manage Tab 4 section headings. For **every role** — a **"my account"** tab to change

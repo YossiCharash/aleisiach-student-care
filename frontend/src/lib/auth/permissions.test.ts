@@ -50,6 +50,12 @@ describe("permissions matrix", () => {
     expect(permissions.canAccessReceptionReport(teacher)).toBe(false);
   });
 
+  it("only the manager can access the supported-employment analysis", () => {
+    expect(permissions.canAccessSupportedEmployment(manager)).toBe(true);
+    expect(permissions.canAccessSupportedEmployment(instructor)).toBe(false);
+    expect(permissions.canAccessSupportedEmployment(teacher)).toBe(false);
+  });
+
   it("the professional teacher never sees sensitive data", () => {
     expect(permissions.canSeeSensitive(manager)).toBe(true);
     expect(permissions.canSeeSensitive(instructor)).toBe(true);
