@@ -24,6 +24,7 @@ from backend.app.routes.student_extra_sections import (
     router as student_extra_sections_router,
 )
 from backend.app.routes.students import router as students_router
+from backend.app.routes.supported_employment import router as supported_employment_router
 from backend.app.routes.taxonomy import router as taxonomy_router
 from backend.app.routes.users import router as users_router
 from backend.app.routes.workshops import router as workshops_router
@@ -99,6 +100,7 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     app.include_router(social_note_router)
     app.include_router(functional_report_router)
     app.include_router(reception_report_router)
+    app.include_router(supported_employment_router)
     app.include_router(users_router)
     app.include_router(extra_section_types_router)
     app.include_router(student_extra_sections_router)

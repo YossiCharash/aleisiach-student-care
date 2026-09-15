@@ -640,6 +640,46 @@ end (rule 7). Non-managers are unaffected (tab hidden, API 403).
 
 ---
 
+## ADR-027 — Supported-employment analysis (Form 46): a manager-only per-student tab with PDF
+**Status:** Accepted · 2026-09-15
+**Context:** The client uses an official **"טופס 46 — ניתוח עבודה נתמכת"** to record a student's
+supported-employment placement. It needs to live per student, be visible to managers only, and
+export to PDF like the source document.
+
+**Decision:** Add a **Supported-employment analysis** (עבודה נתמכת) tab to the student screen,
+placed **last, after the functional report**. It is **one stored record per student, updated in
+place** (like Form 33 ADR-020 and Form 39 ADR-026) and is **manager-only for both read and write** —
+instructors and professional teachers are blocked, the tab is hidden for them, and every endpoint
+answers **403**.
+
+**Content:** the eleven free-text fields of the source form — מקום העבודה · כתובת · סוג הפעילות ·
+תהליך העבודה · סביבת העבודה · תפקודי גוף נחוצים · סכנות ובטיחות · איש קשר במקום העבודה · איש קשר
+מלווה · ניידות · שעת עבודה. Per the user's decision, **no identity header and no issuer/date
+footer** are shown (the source form has none); `updated_by`/`updated_at` are still stored for the
+audit log but never displayed.
+
+**PDF:** server-side **WeasyPrint** through the shared `DocumentShell` in the app's branded layout,
+stamped with the signed-in institution's name (the source form's ISO logos and fixed org headers
+are not reproduced — institution-specific and at odds with multi-tenancy, per ADR-026's precedent).
+
+**Implementation:** a twin of the Form 33/39 stack — `SupportedEmployment(TenantScoped)` model +
+migration `0032`, `SupportedEmploymentRepository` (over the shared `StudentReportRepository`),
+`SupportedEmploymentService` (get/upsert + audit, `entity_type="supported_employment"`),
+`SupportedEmploymentDocument`, and a `Manager`-guarded route at
+`/students/{student_id}/supported-employment` (GET · PUT · GET /pdf). Frontend:
+`SupportedEmploymentTab`, gated by `permissions.canAccessSupportedEmployment` (manager) in
+`StudentPage`.
+
+**Alternatives:** a dated, versioned series with history — rejected, this is a single placement
+document corrected in place, not a timeline. Auto-filling a student identity header for consistency
+with the sibling forms — rejected by the user, who asked to keep only the source document's fields.
+
+**Consequences:** Managers get a structured, exportable supported-employment record per student. It
+holds workplace data, so it inherits `TenantScoped` isolation (ADR-018) and is manager-only end to
+end (rule 7). Non-managers are unaffected (tab hidden, API 403).
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

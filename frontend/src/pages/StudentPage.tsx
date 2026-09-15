@@ -16,6 +16,7 @@ import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
 import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
 import { ReceptionReportTab } from "@/pages/student/ReceptionReportTab";
+import { SupportedEmploymentTab } from "@/pages/student/SupportedEmploymentTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 import { HelpButton } from "@/components/help/HelpButton";
 
@@ -45,6 +46,7 @@ export function StudentPage(): ReactNode {
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
   const showReceptionReport = permissions.canAccessReceptionReport(user);
+  const showSupportedEmployment = permissions.canAccessSupportedEmployment(user);
   const allowedTabs = [
     "details",
     ...(showReceptionReport ? ["reception-report"] : []),
@@ -52,6 +54,7 @@ export function StudentPage(): ReactNode {
     "meetings",
     ...(showSocialNote ? ["social-note"] : []),
     "functional-report",
+    ...(showSupportedEmployment ? ["supported-employment"] : []),
   ];
   const initialTab =
     requestedTab && allowedTabs.includes(requestedTab) ? requestedTab : "details";
@@ -94,6 +97,9 @@ export function StudentPage(): ReactNode {
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
           {showSocialNote && <TabsTrigger value="social-note">סיכום עו״ס</TabsTrigger>}
           <TabsTrigger value="functional-report">דוח תפקודי</TabsTrigger>
+          {showSupportedEmployment && (
+            <TabsTrigger value="supported-employment">עבודה נתמכת</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="details">
@@ -122,6 +128,11 @@ export function StudentPage(): ReactNode {
         <TabsContent value="functional-report">
           <FunctionalReportTab studentId={student.id} />
         </TabsContent>
+        {showSupportedEmployment && (
+          <TabsContent value="supported-employment">
+            <SupportedEmploymentTab studentId={student.id} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -490,3 +490,24 @@ export interface ReceptionReportUpsertRequest {
   community_social_worker_updated: ReceptionChecklistItem;
   management_updated: ReceptionChecklistItem;
 }
+
+export interface SupportedEmploymentResponse {
+  student_id: string;
+  exists: boolean;
+  workplace: string;
+  address: string;
+  activity_type: string;
+  work_process: string;
+  work_environment: string;
+  required_body_functions: string;
+  hazards_and_safety: string;
+  workplace_contact: string;
+  escort_contact: string;
+  mobility: string;
+  work_hours: string;
+}
+
+export type SupportedEmploymentUpsertRequest = Omit<
+  SupportedEmploymentResponse,
+  "student_id" | "exists"
+>;
