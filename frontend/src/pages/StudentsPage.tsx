@@ -171,6 +171,7 @@ function StudentGroups({ groups }: { groups: WorkshopGroup[] }): ReactNode {
                 key={student.id}
                 id={student.id}
                 name={student.full_name}
+                color={group.color}
               />
             ))}
           </div>
