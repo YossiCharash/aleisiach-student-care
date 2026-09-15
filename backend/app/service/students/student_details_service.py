@@ -170,16 +170,17 @@ class StudentDetailsService:
         self._diagnoses.ensure_names([str(item["name"]) for item in result], actor_id)
         return result
 
-    def _diagnosis_entry(self, raw: object) -> DiagnosisEntry:
-        if isinstance(raw, str):
-            return DiagnosisEntry(name=raw)
+    def _diagnosis_entry(self, raw: object) -> DiagnosisEntry | None:
         if isinstance(raw, dict):
+            name = str(raw.get("name", "")).strip()
             note = raw.get("note")
-            return DiagnosisEntry(
-                name=str(raw.get("name", "")),
-                note=note if isinstance(note, str) else None,
+            return (
+                DiagnosisEntry(name=name, note=note if isinstance(note, str) else None)
+                if name
+                else None
             )
-        return DiagnosisEntry(name=str(raw))
+        name = str(raw).strip()
+        return DiagnosisEntry(name=name) if name else None
 
     def _validate_options(self, request: StudentDetailsUpsertRequest) -> None:
         valid = self._valid_option_names()
@@ -261,7 +262,9 @@ class StudentDetailsService:
             disability_severity=details.disability_severity,
             functioning_level=details.functioning_level,
             additional_diagnoses=[
-                self._diagnosis_entry(item) for item in details.additional_diagnoses
+                entry
+                for item in details.additional_diagnoses
+                if (entry := self._diagnosis_entry(item)) is not None
             ],
             emergency_contacts=[ContactInfo(**item) for item in details.emergency_contacts],
             legal_status=details.legal_status if include_sensitive else None,

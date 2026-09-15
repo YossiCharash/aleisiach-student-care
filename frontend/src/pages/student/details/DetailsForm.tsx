@@ -139,11 +139,19 @@ function items(list: TextItem[]): string[] {
   return list.map((item) => item.value.trim()).filter((value) => value !== "");
 }
 
-function diagnosisEntries(list: DiagnosisItem[]): { name: string; note: string | null }[] {
-  return list
-    .map((item) => ({ name: item.name.trim(), note: item.note.trim() }))
-    .filter((item) => item.name !== "")
-    .map((item) => ({ name: item.name, note: item.note === "" ? null : item.note }));
+function diagnosisEntries(
+  list: DiagnosisItem[]
+): { name: string; note: string | null }[] {
+  const entries: { name: string; note: string | null }[] = [];
+  for (const item of list) {
+    const name = item.name.trim();
+    if (name === "") {
+      continue;
+    }
+    const note = item.note.trim();
+    entries.push({ name, note: note === "" ? null : note });
+  }
+  return entries;
 }
 
 function toContacts(list: ContactItem[]): StudentDetailsResponse["guardians"] {

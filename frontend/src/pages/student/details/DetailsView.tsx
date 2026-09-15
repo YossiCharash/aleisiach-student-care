@@ -52,7 +52,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
               </span>
             </div>
             <div>
-              <span className="text-ink-muted">אוטיזם</span>
+              <span className="text-ink-muted">אוטיזם: </span>
               <span className="font-medium text-ink">
                 {details.functioning_level || "—"}
               </span>
@@ -60,15 +60,13 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           </div>
           {details.additional_diagnoses.length > 0 && (
             <ul className="space-y-1">
-              {details.additional_diagnoses.map((entry) => (
+              {details.additional_diagnoses.map((entry, index) => (
                 <li
-                  key={entry.name}
+                  key={`${index}-${entry.name}`}
                   className="rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-ink"
                 >
                   <span className="font-medium">{entry.name}</span>
-                  {entry.note && (
-                    <span className="text-ink-muted"> — {entry.note}</span>
-                  )}
+                  {entry.note && <span className="text-ink-muted"> — {entry.note}</span>}
                 </li>
               ))}
             </ul>
