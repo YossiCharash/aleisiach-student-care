@@ -27,7 +27,9 @@ class StudentDetails(TenantScoped, Base):
     idd_severity: Mapped[str | None] = mapped_column(String(200), nullable=True)
     disability_severity: Mapped[str | None] = mapped_column(String(200), nullable=True)
     functioning_level: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    additional_diagnoses: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    additional_diagnoses: Mapped[list[dict[str, object]]] = mapped_column(
+        JSON, nullable=False, default=list
+    )
     emergency_contacts: Mapped[list[dict[str, object]]] = mapped_column(
         JSON, nullable=False, default=list
     )

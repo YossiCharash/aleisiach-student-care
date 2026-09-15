@@ -21,8 +21,10 @@ from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.diagnosis_catalog import DiagnosisCatalog
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.models.client.student import Student
+from backend.app.models.client.student_details import StudentDetails
 from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis_entry import DiagnosisEntry
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
 )
@@ -72,7 +74,7 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
         date_of_birth=date(2012, 5, 1),
         home_language="עברית",
         idd_severity="בינונית",
-        additional_diagnoses=["ADHD"],
+        additional_diagnoses=[DiagnosisEntry(name="ADHD", note="קושי בריכוז")],
         emergency_contacts=[ContactInfo(full_name="Mom", phone="050")],
         legal_status=LegalStatus.GUARDIAN_APPOINTED,
         guardians=[ContactInfo(full_name="Guardian", relationship="aunt")],
@@ -92,7 +94,8 @@ def test_upsert_then_get_roundtrip(db_session: Session) -> None:
 
     fetched = service.get(student_id, _ALL, include_sensitive=True)
     assert fetched.national_id == "123456789"
-    assert fetched.additional_diagnoses == ["ADHD"]
+    assert fetched.additional_diagnoses[0].name == "ADHD"
+    assert fetched.additional_diagnoses[0].note == "קושי בריכוז"
     assert fetched.emergency_contacts[0].full_name == "Mom"
 
 
@@ -190,15 +193,41 @@ def test_get_for_out_of_scope_student_is_hidden(db_session: Session) -> None:
 def test_new_diagnosis_is_added_to_catalog(db_session: Session) -> None:
     service, student_id = _setup(db_session)
 
-    service.upsert(
+    saved = service.upsert(
         student_id,
-        StudentDetailsUpsertRequest(additional_diagnoses=["אבחנה חדשה", "אבחנה חדשה"]),
+        StudentDetailsUpsertRequest(
+            additional_diagnoses=[
+                DiagnosisEntry(name="אבחנה חדשה", note="פירוט"),
+                DiagnosisEntry(name="אבחנה חדשה", note="כפילות מוסרת"),
+            ]
+        ),
         _ALL,
         _ACTOR,
     )
 
     catalog = list(db_session.scalars(select(DiagnosisCatalog)))
     assert [entry.name for entry in catalog] == ["אבחנה חדשה"]
+    assert len(saved.additional_diagnoses) == 1
+    assert saved.additional_diagnoses[0].note == "פירוט"
+
+
+def test_legacy_string_diagnoses_are_read_as_entries(db_session: Session) -> None:
+    service, student_id = _setup(db_session)
+    service.upsert(
+        student_id,
+        StudentDetailsUpsertRequest(additional_diagnoses=[DiagnosisEntry(name="ADHD")]),
+        _ALL,
+        _ACTOR,
+    )
+    row = db_session.get(StudentDetails, student_id)
+    assert row is not None
+    row.additional_diagnoses = ["אבחנה ישנה"]  # type: ignore[list-item]
+    db_session.flush()
+
+    fetched = service.get(student_id, _ALL, include_sensitive=True)
+
+    assert fetched.additional_diagnoses[0].name == "אבחנה ישנה"
+    assert fetched.additional_diagnoses[0].note is None
 
 
 def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session) -> None:

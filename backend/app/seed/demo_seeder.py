@@ -240,7 +240,10 @@ class DemoSeeder:
                 idd_severity="קלה",
                 disability_severity="קל-בינוני",
                 functioning_level="בינוני",
-                additional_diagnoses=["הפרעת קשב וריכוז", "אוטיזם"],
+                additional_diagnoses=[
+                    {"name": "הפרעת קשב וריכוז", "note": "מאובחן, נוטל ריטלין"},
+                    {"name": "אוטיזם", "note": None},
+                ],
                 emergency_contacts=[
                     {"full_name": "הורה לדוגמה", "relationship": "אמא", "phone": "050-0000000"}
                 ],

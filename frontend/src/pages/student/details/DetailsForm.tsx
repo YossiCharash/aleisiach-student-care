@@ -29,6 +29,11 @@ interface TextItem {
   value: string;
 }
 
+interface DiagnosisItem {
+  name: string;
+  note: string;
+}
+
 interface ContactItem {
   full_name: string;
   relationship: string;
@@ -43,7 +48,7 @@ interface FormValues {
   idd_severity: string;
   disability_severity: string;
   functioning_level: string;
-  additional_diagnoses: TextItem[];
+  additional_diagnoses: DiagnosisItem[];
   emergency_contacts: ContactItem[];
   legal_status: LegalStatus | "";
   guardians: ContactItem[];
@@ -98,7 +103,10 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     idd_severity: details.idd_severity ?? "",
     disability_severity: details.disability_severity ?? "",
     functioning_level: details.functioning_level ?? "",
-    additional_diagnoses: details.additional_diagnoses.map((value) => ({ value })),
+    additional_diagnoses: details.additional_diagnoses.map((entry) => ({
+      name: entry.name,
+      note: entry.note ?? "",
+    })),
     emergency_contacts: toContactItems(details.emergency_contacts),
     legal_status: details.legal_status ?? "",
     guardians: toContactItems(details.guardians),
@@ -131,6 +139,21 @@ function items(list: TextItem[]): string[] {
   return list.map((item) => item.value.trim()).filter((value) => value !== "");
 }
 
+function diagnosisEntries(
+  list: DiagnosisItem[]
+): { name: string; note: string | null }[] {
+  const entries: { name: string; note: string | null }[] = [];
+  for (const item of list) {
+    const name = item.name.trim();
+    if (name === "") {
+      continue;
+    }
+    const note = item.note.trim();
+    entries.push({ name, note: note === "" ? null : note });
+  }
+  return entries;
+}
+
 function toContacts(list: ContactItem[]): StudentDetailsResponse["guardians"] {
   return list
     .filter((contact) => contact.full_name.trim() !== "")
@@ -150,7 +173,7 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     idd_severity: emptyToNull(values.idd_severity),
     disability_severity: emptyToNull(values.disability_severity),
     functioning_level: emptyToNull(values.functioning_level),
-    additional_diagnoses: items(values.additional_diagnoses),
+    additional_diagnoses: diagnosisEntries(values.additional_diagnoses),
     emergency_contacts: toContacts(values.emergency_contacts),
     legal_status: values.legal_status === "" ? null : values.legal_status,
     guardians: toContacts(values.guardians),
@@ -403,7 +426,7 @@ function DiagnosesCard({
             />
           </div>
           <div>
-            <Label htmlFor="functioning_level">רמת תפקוד</Label>
+            <Label htmlFor="functioning_level">אוטיזם</Label>
             <OptionSelect
               id="functioning_level"
               register={register}
@@ -418,16 +441,61 @@ function DiagnosesCard({
             <option key={entry.id} value={entry.name} />
           ))}
         </datalist>
-        <StringArray
+        <DiagnosisArray
           control={control}
           register={register}
-          name="additional_diagnoses"
-          label="אבחנות נוספות"
-          placeholder="בחר/י מהרשימה או הקלד/י אבחנה חדשה"
           datalistId="diagnosis-options"
         />
       </CardContent>
     </Card>
+  );
+}
+
+function DiagnosisArray({
+  control,
+  register,
+  datalistId,
+}: {
+  control: Control<FormValues>;
+  register: UseFormRegister<FormValues>;
+  datalistId: string;
+}): ReactNode {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "additional_diagnoses",
+  });
+
+  return (
+    <div className="space-y-2">
+      <div className="text-sm font-medium text-ink">אבחנות נוספות</div>
+      {fields.map((field, index) => (
+        <div key={field.id} className="flex items-start gap-2">
+          <div className="grid flex-1 gap-2 sm:grid-cols-2">
+            <Input
+              placeholder="בחר/י מהרשימה או הקלד/י אבחנה חדשה"
+              list={datalistId}
+              {...register(`additional_diagnoses.${index}.name`)}
+            />
+            <Input
+              placeholder="פירוט חופשי (לא חובה)"
+              {...register(`additional_diagnoses.${index}.note`)}
+            />
+          </div>
+          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+            <Trash2 className="h-4 w-4 text-rating-red" />
+          </Button>
+        </div>
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => append({ name: "", note: "" })}
+      >
+        <Plus className="h-4 w-4" />
+        הוספה
+      </Button>
+    </div>
   );
 }
 
@@ -604,7 +672,7 @@ function BackgroundCard({
           />
         </div>
         <div>
-          <Label htmlFor="prior_task_experience">ניסיון קודם במטלות</Label>
+          <Label htmlFor="prior_task_experience">רקע תעסוקתי קודם</Label>
           <Textarea
             id="prior_task_experience"
             rows={3}
@@ -664,7 +732,7 @@ function EmotionalIdCard({
   );
 }
 
-type StringArrayName = "additional_diagnoses" | "allergies_dietary" | "medications";
+type StringArrayName = "allergies_dietary" | "medications";
 
 function StringArray({
   control,
@@ -672,14 +740,12 @@ function StringArray({
   name,
   label,
   placeholder,
-  datalistId,
 }: {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
   name: StringArrayName;
   label: string;
   placeholder: string;
-  datalistId?: string;
 }): ReactNode {
   const { fields, append, remove } = useFieldArray({ control, name });
 
@@ -691,7 +757,6 @@ function StringArray({
           <Input
             className="flex-1"
             placeholder={placeholder}
-            list={datalistId}
             {...register(`${name}.${index}.value`)}
           />
           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>

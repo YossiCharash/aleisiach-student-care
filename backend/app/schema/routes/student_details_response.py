@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
+from backend.app.schema.routes.diagnosis_entry import DiagnosisEntry
 
 
 class StudentDetailsResponse(BaseModel):
@@ -17,7 +18,7 @@ class StudentDetailsResponse(BaseModel):
     idd_severity: str | None = None
     disability_severity: str | None = None
     functioning_level: str | None = None
-    additional_diagnoses: list[str] = Field(default_factory=list)
+    additional_diagnoses: list[DiagnosisEntry] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)
     legal_status: LegalStatus | None = None
     guardians: list[ContactInfo] = Field(default_factory=list)
