@@ -35,28 +35,22 @@ class FunctionalReportDocument:
         return self._shell.render(self._css(), institution_name, "דוח תפקודי", body)
 
     def _identity(self, report: FunctionalReportResponse) -> str:
-        dob = report.date_of_birth.isoformat() if report.date_of_birth is not None else "—"
         return (
-            self._field("שם", report.student_name)
-            + self._field("מספר ת.ז", report.national_id)
-            + self._field("תאריך לידה", dob)
+            self._shell.field("שם", report.student_name)
+            + self._shell.field("מספר ת.ז", report.national_id)
+            + self._shell.field("תאריך לידה", self._shell.value(report.date_of_birth))
         )
 
     def _sections(self, report: FunctionalReportResponse) -> str:
         return "".join(
             f"<h2>{escape(title)}</h2>"
-            f'<div class="section-body">{self._value(getattr(report, field))}</div>'
+            f'<div class="section-body">{self._shell.value(getattr(report, field))}</div>'
             for field, title in _SECTION_TITLES
         )
 
     def _footer(self, report: FunctionalReportResponse) -> str:
         return (
-            '<div class="footer">' + self._field("נכתב על ידי", report.written_by_name) + "</div>"
+            '<div class="footer">'
+            + self._shell.field("נכתב על ידי", report.written_by_name)
+            + "</div>"
         )
-
-    def _field(self, label: str, value: str | None) -> str:
-        shown = escape(value) if value else "—"
-        return f'<div class="field"><span class="label">{escape(label)}: </span>{shown}</div>'
-
-    def _value(self, value: str) -> str:
-        return escape(value) if value else "—"

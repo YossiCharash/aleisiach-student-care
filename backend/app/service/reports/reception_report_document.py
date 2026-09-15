@@ -1,4 +1,3 @@
-from datetime import date
 from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
@@ -61,7 +60,7 @@ class ReceptionReportDocument:
     def _details_table(self, report: ReceptionReportResponse) -> str:
         rows = "".join(
             f"<tr><th>{escape(title)}</th>"
-            f'<td class="cell">{self._value(getattr(report, field))}</td></tr>'
+            f'<td class="cell">{self._shell.value(getattr(report, field))}</td></tr>'
             for field, title in _DETAIL_ROWS
         )
         return f"<table>{rows}</table>"
@@ -74,21 +73,13 @@ class ReceptionReportDocument:
             mark = "בוצע" if item.done else "לא בוצע"
             rows += (
                 f"<tr><td>{escape(title)}</td><td>{mark}</td>"
-                f'<td class="cell">{self._value(item.note)}</td></tr>'
+                f'<td class="cell">{self._shell.value(item.note)}</td></tr>'
             )
         return f"<table>{header}{rows}</table>"
 
     def _footer(self, report: ReceptionReportResponse) -> str:
         return (
-            '<div class="footer">' + self._field("נכתב על ידי", report.written_by_name) + "</div>"
+            '<div class="footer">'
+            + self._shell.field("נכתב על ידי", report.written_by_name)
+            + "</div>"
         )
-
-    def _field(self, label: str, value: str | None) -> str:
-        shown = escape(value) if value else "—"
-        return f'<div class="field"><span class="label">{escape(label)}: </span>{shown}</div>'
-
-    def _value(self, value: object) -> str:
-        if isinstance(value, date):
-            return value.strftime("%d/%m/%Y")
-        text = str(value) if value else ""
-        return escape(text) if text else "—"

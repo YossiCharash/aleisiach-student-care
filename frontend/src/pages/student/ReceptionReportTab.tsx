@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 import { receptionReportApi } from "@/lib/api/endpoints";
@@ -214,10 +214,6 @@ function ReceptionReportForm({
 }): ReactNode {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<ReceptionReportUpsertRequest>(() => toDraft(report));
-
-  useEffect(() => {
-    setDraft(toDraft(report));
-  }, [report]);
 
   const mutation = useMutation({
     mutationFn: () => receptionReportApi.upsert(studentId, draft),

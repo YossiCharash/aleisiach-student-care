@@ -1,3 +1,4 @@
+from datetime import date
 from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
@@ -6,6 +7,16 @@ from backend.app.configuration.pdf.brand_settings import BrandSettings
 class DocumentShell:
     def __init__(self, brand: BrandSettings) -> None:
         self._brand = brand
+
+    def field(self, label: str, value: str | None) -> str:
+        shown = escape(value) if value else "—"
+        return f'<div class="field"><span class="label">{escape(label)}: </span>{shown}</div>'
+
+    def value(self, value: object) -> str:
+        if isinstance(value, date):
+            return value.strftime("%d/%m/%Y")
+        text = str(value) if value else ""
+        return escape(text) if text else "—"
 
     def base_css(self) -> str:
         return (
