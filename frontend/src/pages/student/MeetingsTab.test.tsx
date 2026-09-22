@@ -101,16 +101,16 @@ describe("MeetingsTab history", () => {
     updateMock.mockResolvedValue(meeting);
   });
 
-  it("renders the dated snapshot of areas, plan and the summary without strengths", async () => {
+  it("renders only the dated personal plan and the summary (no foci)", async () => {
     signedInAs("professional_teacher");
     renderTab({});
 
     expect(await screen.findByText(/2026/)).toBeInTheDocument();
-    expect(screen.getByText("מוקדים לחיזוק")).toBeInTheDocument();
+    expect(screen.getByText("תוכנית אישית")).toBeInTheDocument();
     expect(screen.getByText("תרגול יומי")).toBeInTheDocument();
     expect(screen.getByText("סיכום קיים")).toBeInTheDocument();
+    expect(screen.queryByText("מוקדים לחיזוק")).not.toBeInTheDocument();
     expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
-    expect(screen.queryByText("הבעה")).not.toBeInTheDocument();
   });
 
   it("hides the edit-summary control from a read-only professional teacher", async () => {

@@ -1,20 +1,8 @@
 import type { ReactNode } from "react";
-import type { MeetingRating, PlanEntryResponse, ProgramArea } from "@/lib/api/types";
+import type { PlanEntryResponse } from "@/lib/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
-import { cn } from "@/lib/utils/cn";
-
-export interface MeetingSnapshotData {
-  areas_to_strengthen: ProgramArea[];
-  plan_entries: PlanEntryResponse[];
-}
-
-const areaToneClass: Record<MeetingRating, string> = {
-  green: "border-rating-green bg-accent-50 text-brand-700",
-  yellow: "border-rating-yellow bg-amber-50 text-amber-800",
-  red: "border-rating-red bg-red-50 text-red-800",
-};
 
 export function PlanEntriesCard({
   entries,
@@ -57,39 +45,5 @@ export function PlanEntriesCard({
         )}
       </CardContent>
     </Card>
-  );
-}
-
-export function MeetingSnapshot({ data }: { data: MeetingSnapshotData }): ReactNode {
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>מוקדים לחיזוק</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.areas_to_strengthen.length === 0 ? (
-            <EmptyState>אין מוקדים לחיזוק.</EmptyState>
-          ) : (
-            <ul className="space-y-2">
-              {data.areas_to_strengthen.map((area) => (
-                <li
-                  key={area.skill_id}
-                  className={cn(
-                    "flex items-center justify-between gap-3 rounded-xl border-s-4 px-3.5 py-2.5",
-                    areaToneClass[area.rating]
-                  )}
-                >
-                  <span className="font-medium">{area.skill_name}</span>
-                  <RatingPill rating={area.rating} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-
-      <PlanEntriesCard entries={data.plan_entries} />
-    </div>
   );
 }

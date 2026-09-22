@@ -15,7 +15,7 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { PdfButton } from "@/components/PdfButton";
 import { AddMeetingDialog } from "@/pages/student/meetings/AddMeetingDialog";
-import { MeetingSnapshot } from "@/pages/student/meetings/MeetingSnapshot";
+import { PlanEntriesCard } from "@/pages/student/meetings/PlanEntriesCard";
 
 interface MeetingsTabProps {
   studentId: string;
@@ -98,7 +98,7 @@ function MeetingList({
             />
           </CardHeader>
           <CardContent className="space-y-4">
-            <MeetingSnapshot data={meeting} />
+            <PlanEntriesCard entries={meeting.plan_entries} />
             <SummarySection studentId={studentId} meeting={meeting} canWrite={canWrite} />
           </CardContent>
         </Card>

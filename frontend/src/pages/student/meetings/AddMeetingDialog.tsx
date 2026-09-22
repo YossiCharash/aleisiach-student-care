@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { meetingsApi, programApi, programPlansApi } from "@/lib/api/endpoints";
+import { meetingsApi, programPlansApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import {
   Dialog,
@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/Spinner";
 import { ErrorState, errorMessage } from "@/components/ui/ErrorState";
-import { MeetingSnapshot } from "@/pages/student/meetings/MeetingSnapshot";
+import { PlanEntriesCard } from "@/pages/student/meetings/PlanEntriesCard";
 import { PreviousMeetingCard } from "@/pages/student/meetings/PreviousMeetingCard";
 
 interface Props {
@@ -39,8 +39,7 @@ export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): Reac
         <DialogHeader>
           <DialogTitle>ישיבת צוות חדשה</DialogTitle>
           <DialogDescription>
-            המוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת. מלאו את
-            הסיכום.
+            התוכנית האישית מוצגת לקריאה בלבד ותישמר כפי שהיא כעת. מלאו את הסיכום.
           </DialogDescription>
         </DialogHeader>
         {open && (
@@ -62,12 +61,8 @@ function AddMeetingForm({
   const [meetingDate, setMeetingDate] = useState(today);
   const [summary, setSummary] = useState("");
 
-  const [programQuery, plansQuery, meetingsQuery] = useQueries({
+  const [plansQuery, meetingsQuery] = useQueries({
     queries: [
-      {
-        queryKey: queryKeys.program(studentId),
-        queryFn: () => programApi.get(studentId),
-      },
       {
         queryKey: queryKeys.programPlans(studentId),
         queryFn: () => programPlansApi.list(studentId),
@@ -88,23 +83,15 @@ function AddMeetingForm({
     },
   });
 
-  if (programQuery.isLoading || plansQuery.isLoading) {
+  if (plansQuery.isLoading) {
     return <LoadingState />;
-  }
-  if (programQuery.isError) {
-    return <ErrorState error={programQuery.error} />;
   }
   if (plansQuery.isError) {
     return <ErrorState error={plansQuery.error} />;
   }
 
-  const program = programQuery.data;
   const latestPlan = plansQuery.data?.[0];
   const previousMeeting = meetingsQuery.data?.[0];
-  const snapshot = {
-    areas_to_strengthen: program?.areas_to_strengthen ?? [],
-    plan_entries: latestPlan?.entries ?? [],
-  };
 
   return (
     <div className="space-y-4">
@@ -120,7 +107,7 @@ function AddMeetingForm({
 
       {previousMeeting && <PreviousMeetingCard meeting={previousMeeting} />}
 
-      <MeetingSnapshot data={snapshot} />
+      <PlanEntriesCard entries={latestPlan?.entries ?? []} />
 
       <div>
         <Label htmlFor="meeting-summary">סיכום</Label>

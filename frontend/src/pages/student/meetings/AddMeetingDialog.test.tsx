@@ -2,22 +2,13 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithClient } from "@/test/renderWithClient";
 import { AddMeetingDialog } from "@/pages/student/meetings/AddMeetingDialog";
-import { meetingsApi, programApi, programPlansApi } from "@/lib/api/endpoints";
-import type { MeetingResponse, PlanResponse, ProgramResponse } from "@/lib/api/types";
+import { meetingsApi, programPlansApi } from "@/lib/api/endpoints";
+import type { MeetingResponse, PlanResponse } from "@/lib/api/types";
 
 vi.mock("@/lib/api/endpoints", () => ({
-  programApi: { get: vi.fn() },
   programPlansApi: { list: vi.fn() },
   meetingsApi: { create: vi.fn(), list: vi.fn() },
 }));
-
-const program: ProgramResponse = {
-  student_id: "s1",
-  exists: true,
-  entries: [],
-  strengths: [{ skill_id: "sk1", skill_name: "הבעה" }],
-  areas_to_strengthen: [{ skill_id: "sk2", skill_name: "רחיצת ידיים", rating: "yellow" }],
-};
 
 const plan: PlanResponse = {
   id: "p1",
@@ -54,28 +45,26 @@ const previousMeeting: MeetingResponse = {
   ],
 };
 
-const getMock = vi.mocked(programApi.get);
 const listMock = vi.mocked(programPlansApi.list);
 const meetingsListMock = vi.mocked(meetingsApi.list);
 const createMock = vi.mocked(meetingsApi.create);
 
 describe("AddMeetingDialog", () => {
   beforeEach(() => {
-    getMock.mockReset();
     listMock.mockReset();
     meetingsListMock.mockReset();
     createMock.mockReset();
-    getMock.mockResolvedValue(program);
     listMock.mockResolvedValue([plan]);
     meetingsListMock.mockResolvedValue([]);
     createMock.mockResolvedValue({} as MeetingResponse);
   });
 
-  it("previews the current areas and plan without strengths and creates a dated meeting", async () => {
+  it("previews only the personal plan (no foci) and creates a dated meeting", async () => {
     renderWithClient(<AddMeetingDialog studentId="s1" open onOpenChange={() => {}} />);
 
-    expect(await screen.findByText("מוקדים לחיזוק")).toBeInTheDocument();
+    expect(await screen.findByText("תוכנית אישית")).toBeInTheDocument();
     expect(screen.getByText("תרגול יומי")).toBeInTheDocument();
+    expect(screen.queryByText("מוקדים לחיזוק")).not.toBeInTheDocument();
     expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByPlaceholderText("סיכום הישיבה…"), {
