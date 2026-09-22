@@ -43,9 +43,7 @@ const previousMeeting: MeetingResponse = {
   created_at: "2026-07-01T00:00:00Z",
   updated_at: "2026-07-01T00:00:00Z",
   strengths: [{ skill_id: "sk1", skill_name: "הבעה" }],
-  areas_to_strengthen: [
-    { skill_id: "sk2", skill_name: "רחיצת ידיים", rating: "yellow" },
-  ],
+  areas_to_strengthen: [{ skill_id: "sk2", skill_name: "רחיצת ידיים", rating: "yellow" }],
   plan_entries: [
     {
       skill_id: "sk2",

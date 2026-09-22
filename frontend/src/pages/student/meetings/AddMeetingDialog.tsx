@@ -39,8 +39,8 @@ export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): Reac
         <DialogHeader>
           <DialogTitle>ישיבת צוות חדשה</DialogTitle>
           <DialogDescription>
-            המוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת. מלאו
-            את הסיכום.
+            המוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת. מלאו את
+            הסיכום.
           </DialogDescription>
         </DialogHeader>
         {open && (
