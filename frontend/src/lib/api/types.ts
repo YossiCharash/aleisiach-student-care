@@ -358,7 +358,6 @@ export interface StudentDetailsResponse {
   expression_mode: string | null;
   language_comprehension: string | null;
   previous_institution: string | null;
-  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;
@@ -390,7 +389,6 @@ export interface StudentDetailsUpsertRequest {
   expression_mode: string | null;
   language_comprehension: string | null;
   previous_institution: string | null;
-  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;

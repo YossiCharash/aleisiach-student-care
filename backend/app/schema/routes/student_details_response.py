@@ -33,7 +33,6 @@ class StudentDetailsResponse(BaseModel):
     expression_mode: str | None = None
     language_comprehension: str | None = None
     previous_institution: str | None = None
-    current_institution: str | None = None
     prior_task_experience: str | None = None
     interests_strengths: str | None = None
     triggers: str | None = None

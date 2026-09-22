@@ -34,7 +34,6 @@ class StudentDetailsUpsertRequest(BaseModel):
     expression_mode: str | None = Field(default=None, max_length=200)
     language_comprehension: str | None = Field(default=None, max_length=200)
     previous_institution: str | None = Field(default=None, max_length=300)
-    current_institution: str | None = Field(default=None, max_length=300)
     prior_task_experience: str | None = Field(default=None, max_length=2000)
     interests_strengths: str | None = Field(default=None, max_length=2000)
     triggers: str | None = Field(default=None, max_length=2000)

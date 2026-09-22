@@ -259,7 +259,6 @@ class DemoSeeder:
                 expression_mode="דיבור מילולי שוטף",
                 language_comprehension="מבין הוראות מורכבות",
                 previous_institution="גן תקשורת עירוני",
-                current_institution="סדנת תקשורת בבית הספר",
                 prior_task_experience="סייעה בחלוקת חומרים בסדנה.",
                 interests_strengths="אוהבת ציור ומוזיקה; חזקה בזיכרון חזותי.",
                 triggers="רעש פתאומי חזק.",

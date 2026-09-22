@@ -680,6 +680,36 @@ end (rule 7). Non-managers are unaffected (tab hidden, API 403).
 
 ---
 
+## ADR-028 — Tab 2 screen shows areas-to-strengthen only + previous-meeting reference; Tab 4 drops "מוסד נוכחי"
+
+**Decision (per the user):** Three targeted adjustments.
+
+1. **Team-meeting screen hides "מוקדי כוח".** The on-screen meeting snapshot (`MeetingSnapshot`,
+   used both in the new-meeting dialog and the meeting history) now shows only **מוקדים לחיזוק** and
+   **תוכנית אישית** — the strengths card is removed. The meeting still **stores** the strengths in
+   its frozen snapshot and the **PDF export keeps "מוקדי כוח"** (the user asked to hide it on screen
+   only, not in the document), so `MeetingSummaryDocument` is unchanged.
+2. **The new-meeting form shows the previous meeting for reference.** Above the current read-only
+   snapshot, `AddMeetingDialog` now renders a `PreviousMeetingCard` for the most recent existing
+   meeting (`meetingsApi.list(...)[0]`) — its **summary** and its **תוכנית אישית** only (no
+   areas-to-strengthen list), read-only, so the writer has context while composing the new summary.
+3. **Tab 4 drops the "מוסד נוכחי" field.** `current_institution` is fully removed — form, read
+   view, response/upsert schemas, the SQLAlchemy model, the details PDF, the demo seeder, and the DB
+   column (migration `0033`). "מוסד קודם" (`previous_institution`) stays.
+
+**Alternatives:** hiding "מוקדי כוח" in the PDF too — rejected by the user. Showing the previous
+meeting's full snapshot (including areas) — rejected; the user asked for the summary + work plan
+without the areas-to-strengthen list. Keeping the `current_institution` column for backward
+compatibility — rejected by the user, who chose a full removal including the column (demo-only data,
+prototype phase).
+
+**Consequences:** The meeting screen is lighter and focused on what needs work, while the exported
+document remains complete. Writers see the prior meeting inline. Tab 4 loses one background field;
+the drop is a destructive migration, acceptable here because the phase is demo-data-only (rule 8)
+and the user authorized it.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

@@ -103,7 +103,6 @@ class StudentDetailsDocument:
         return (
             "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
             + self._field("מוסד קודם", details.previous_institution)
-            + self._field("מוסד נוכחי", details.current_institution)
             + self._field("רקע תעסוקתי קודם", details.prior_task_experience)
         )
 

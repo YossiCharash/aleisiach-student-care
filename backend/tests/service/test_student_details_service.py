@@ -241,7 +241,6 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
             disability_severity="קל-בינוני",
             functioning_level="בינוני",
             previous_institution="גן תקשורת",
-            current_institution="סדנת תקשורת",
         ),
         _ALL,
         _ACTOR,
@@ -250,7 +249,6 @@ def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session
     assert saved.disability_severity == "קל-בינוני"
     assert saved.functioning_level == "בינוני"
     assert saved.previous_institution == "גן תקשורת"
-    assert saved.current_institution == "סדנת תקשורת"
 
 
 def test_functioning_level_outside_catalog_is_rejected(db_session: Session) -> None:

@@ -48,7 +48,6 @@ class StudentDetails(TenantScoped, Base):
     expression_mode: Mapped[str | None] = mapped_column(String(200), nullable=True)
     language_comprehension: Mapped[str | None] = mapped_column(String(200), nullable=True)
     previous_institution: Mapped[str | None] = mapped_column(String(300), nullable=True)
-    current_institution: Mapped[str | None] = mapped_column(String(300), nullable=True)
     prior_task_experience: Mapped[str | None] = mapped_column(Text, nullable=True)
     interests_strengths: Mapped[str | None] = mapped_column(Text, nullable=True)
     triggers: Mapped[str | None] = mapped_column(Text, nullable=True)

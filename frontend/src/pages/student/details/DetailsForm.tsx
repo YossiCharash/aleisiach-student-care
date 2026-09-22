@@ -63,7 +63,6 @@ interface FormValues {
   expression_mode: string;
   language_comprehension: string;
   previous_institution: string;
-  current_institution: string;
   prior_task_experience: string;
   interests_strengths: string;
   triggers: string;
@@ -121,7 +120,6 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     expression_mode: details.expression_mode ?? "",
     language_comprehension: details.language_comprehension ?? "",
     previous_institution: details.previous_institution ?? "",
-    current_institution: details.current_institution ?? "",
     prior_task_experience: details.prior_task_experience ?? "",
     interests_strengths: details.interests_strengths ?? "",
     triggers: details.triggers ?? "",
@@ -188,7 +186,6 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     expression_mode: emptyToNull(values.expression_mode),
     language_comprehension: emptyToNull(values.language_comprehension),
     previous_institution: emptyToNull(values.previous_institution),
-    current_institution: emptyToNull(values.current_institution),
     prior_task_experience: emptyToNull(values.prior_task_experience),
     interests_strengths: emptyToNull(values.interests_strengths),
     triggers: emptyToNull(values.triggers),
@@ -661,14 +658,6 @@ function BackgroundCard({
             id="previous_institution"
             maxLength={300}
             {...register("previous_institution")}
-          />
-        </div>
-        <div>
-          <Label htmlFor="current_institution">מוסד נוכחי</Label>
-          <Input
-            id="current_institution"
-            maxLength={300}
-            {...register("current_institution")}
           />
         </div>
         <div>

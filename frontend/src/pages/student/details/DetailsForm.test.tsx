@@ -40,7 +40,6 @@ function details(): StudentDetailsResponse {
     expression_mode: null,
     language_comprehension: null,
     previous_institution: null,
-    current_institution: null,
     prior_task_experience: null,
     interests_strengths: null,
     triggers: null,
@@ -62,7 +61,6 @@ describe("DetailsForm", () => {
     expect(screen.getByText("תיאור המגבלה")).toBeInTheDocument();
     expect(screen.getByText("אוטיזם")).toBeInTheDocument();
     expect(screen.getByText("מוסד קודם")).toBeInTheDocument();
-    expect(screen.getByText("מוסד נוכחי")).toBeInTheDocument();
   });
 
   it("offers the contact relationship as a settings-managed datalist, not a fixed list", () => {

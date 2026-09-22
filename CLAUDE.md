@@ -279,12 +279,16 @@ on purpose: it has no access to any of these.
     solutions moved out of the foci into versioned, dated plans with history and reports; team
     meetings still do not feed Tab 1.)
   - Tab 2 — **Team meetings** (organized **by date**): a **"ישיבת צוות חדשה"** button opens a form
-    that shows the student's **current foci and personal plan read-only** (a frozen snapshot taken at
-    that moment) and a large **summary** (סיכום) free-text field, plus a **date picker** (defaults to
-    today). Saving stores the meeting with its dated snapshot; the history lists meetings newest
+    that shows the student's **current areas-to-strengthen and personal plan read-only** (a frozen
+    snapshot taken at that moment) and a large **summary** (סיכום) free-text field, plus a **date
+    picker** (defaults to today). On screen the snapshot shows **only מוקדים לחיזוק + תוכנית אישית —
+    "מוקדי כוח" is hidden** (still stored in the snapshot and still printed in the PDF). The form also
+    shows the **previous meeting for reference** (its summary + תוכנית אישית, read-only), when one
+    exists. Saving stores the meeting with its dated snapshot; the history lists meetings newest
     first, each showing its snapshot + summary, an **edit-summary** action (the snapshot stays
     frozen), and a **per-meeting PDF** export. (Changed 2026-09-09, ADR-022 — replaced the earlier
-    accordion rating form + solutions; team meetings still do not feed Tab 1, they read from it.)
+    accordion rating form + solutions; team meetings still do not feed Tab 1, they read from it.
+    On-screen strengths hidden + previous-meeting reference added 2026-09-22, ADR-028.)
   - Tab 3 — **Social worker note** (organized **by date**): a **dated, append-only series of
     notes** (not a single editable note). A **"הערה חדשה"** button opens a form with a **date
     picker** (defaults to today) and a free-text note; saving appends a new dated entry, and the

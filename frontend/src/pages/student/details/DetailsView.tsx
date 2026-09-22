@@ -93,7 +93,6 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <TextBlock label="מוסד קודם" value={details.previous_institution} />
-          <TextBlock label="מוסד נוכחי" value={details.current_institution} />
           <TextBlock label="רקע תעסוקתי קודם" value={details.prior_task_experience} />
         </CardContent>
       </Card>

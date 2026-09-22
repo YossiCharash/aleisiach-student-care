@@ -44,7 +44,6 @@ _TRACKED_FIELDS = (
     "expression_mode",
     "language_comprehension",
     "previous_institution",
-    "current_institution",
     "prior_task_experience",
     "interests_strengths",
     "triggers",
@@ -130,7 +129,6 @@ class StudentDetailsService:
         details.expression_mode = request.expression_mode
         details.language_comprehension = request.language_comprehension
         details.previous_institution = request.previous_institution
-        details.current_institution = request.current_institution
         details.prior_task_experience = request.prior_task_experience
         details.interests_strengths = request.interests_strengths
         details.triggers = request.triggers
@@ -282,7 +280,6 @@ class StudentDetailsService:
             expression_mode=details.expression_mode,
             language_comprehension=details.language_comprehension,
             previous_institution=details.previous_institution,
-            current_institution=details.current_institution,
             prior_task_experience=details.prior_task_experience,
             interests_strengths=details.interests_strengths,
             triggers=details.triggers,
