@@ -680,6 +680,71 @@ end (rule 7). Non-managers are unaffected (tab hidden, API 403).
 
 ---
 
+## ADR-028 — Tab 2 screen shows areas-to-strengthen only + previous-meeting reference; Tab 4 drops "מוסד נוכחי"
+
+**Decision (per the user):** Three targeted adjustments.
+
+1. **Team-meeting screen hides "מוקדי כוח".** The on-screen meeting snapshot (`MeetingSnapshot`,
+   used both in the new-meeting dialog and the meeting history) now shows only **מוקדים לחיזוק** and
+   **תוכנית אישית** — the strengths card is removed. The meeting still **stores** the strengths in
+   its frozen snapshot and the **PDF export keeps "מוקדי כוח"** (the user asked to hide it on screen
+   only, not in the document), so `MeetingSummaryDocument` is unchanged.
+2. **The new-meeting form shows the previous meeting for reference.** Above the current read-only
+   snapshot, `AddMeetingDialog` now renders a `PreviousMeetingCard` for the most recent existing
+   meeting (`meetingsApi.list(...)[0]`) — its **summary** and its **תוכנית אישית** only (no
+   areas-to-strengthen list), read-only, so the writer has context while composing the new summary.
+3. **Tab 4 drops the "מוסד נוכחי" field.** `current_institution` is fully removed — form, read
+   view, response/upsert schemas, the SQLAlchemy model, the details PDF, the demo seeder, and the DB
+   column (migration `0033`). "מוסד קודם" (`previous_institution`) stays.
+
+**Alternatives:** hiding "מוקדי כוח" in the PDF too — rejected by the user. Showing the previous
+meeting's full snapshot (including areas) — rejected; the user asked for the summary + work plan
+without the areas-to-strengthen list. Keeping the `current_institution` column for backward
+compatibility — rejected by the user, who chose a full removal including the column (demo-only data,
+prototype phase).
+
+**Consequences:** The meeting screen is lighter and focused on what needs work, while the exported
+document remains complete. Writers see the prior meeting inline. Tab 4 loses one background field;
+the drop is a destructive migration, acceptable here because the phase is demo-data-only (rule 8)
+and the user authorized it.
+
+---
+
+## ADR-029 — Tab 4 drops "תיאור המגבלה"; the details PDF omits empty fields and empty sections
+
+**Decision (per the user):** Two adjustments to Tab 4 (student details).
+
+1. **Remove the "תיאור המגבלה" field.** `disability_severity` is fully removed — form, read view,
+   response/upsert schemas, the SQLAlchemy model, the details PDF, the demo seeder, **and its
+   taxonomy option category** (`DetailOptionField.DISABILITY_SEVERITY` + the institution template
+   default), so the Settings "עריכת פרטי חניך" area no longer offers a dangling "תיאור המגבלה" list.
+   Migration `0034` deletes the orphaned `detail_options` rows (field = `disability_severity`, a
+   `native_enum=False` VARCHAR — no DB enum to alter) and drops the `student_details` column. The
+   other אבחונים content stays: the IDD diagnosis + degree, the additional-diagnoses list, and
+   "אוטיזם" (`functioning_level`).
+2. **The details PDF omits empty fields — and a section whose fields are all empty drops its
+   header too.** `StudentDetailsDocument` no longer prints `label: —` for a blank value: `_field`
+   / `_named_list` return nothing when empty, and `_section(title, *parts)` emits the `<h2>` only
+   when at least one part is non-empty. So a student with no communication / background / emotional
+   data simply has no such section in the exported report. The **on-screen `DetailsView` mirrors the
+   same behavior** (added on the user's follow-up): each `Field` / `TextBlock` / `ListBlock` and the
+   two profile cards return `null` when empty, and each section card renders only when it has
+   content. The אבחונים section always renders (the IDD diagnosis line is always present), and the
+   guardianship card still shows its "מידע רגיש — אין הרשאת צפייה" notice when access is blocked.
+   The form is unchanged — it already offers a "— לא צוין —" none option on optional selects.
+
+**Alternatives:** removing "תיאור המגבלה" only from the PDF while keeping the field for data entry —
+rejected by the user, who chose a full removal including the DB column and the taxonomy category.
+Applying the empty-omission to the on-screen view as well — out of scope; the user specified the
+report.
+
+**Consequences:** Reports are shorter and show only filled content, so a sparsely-filled student no
+longer produces a page of dashes. Tab 4 loses the disability-description field and its options
+category. Both DB changes are destructive migrations, acceptable in the demo-data-only phase
+(rule 8) and authorized by the user.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

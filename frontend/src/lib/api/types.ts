@@ -287,7 +287,6 @@ export interface PlanCreateRequest {
 
 export type DetailOptionField =
   | "idd_severity"
-  | "disability_severity"
   | "functioning_level"
   | "medication_independence"
   | "expression_mode"
@@ -341,7 +340,6 @@ export interface StudentDetailsResponse {
   address: string | null;
   home_language: string | null;
   idd_severity: string | null;
-  disability_severity: string | null;
   functioning_level: string | null;
   additional_diagnoses: DiagnosisEntry[];
   emergency_contacts: ContactInfo[];
@@ -358,7 +356,6 @@ export interface StudentDetailsResponse {
   expression_mode: string | null;
   language_comprehension: string | null;
   previous_institution: string | null;
-  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;
@@ -373,7 +370,6 @@ export interface StudentDetailsUpsertRequest {
   address: string | null;
   home_language: string | null;
   idd_severity: string | null;
-  disability_severity: string | null;
   functioning_level: string | null;
   additional_diagnoses: DiagnosisEntry[];
   emergency_contacts: ContactInfo[];
@@ -390,7 +386,6 @@ export interface StudentDetailsUpsertRequest {
   expression_mode: string | null;
   language_comprehension: string | null;
   previous_institution: string | null;
-  current_institution: string | null;
   prior_task_experience: string | null;
   interests_strengths: string | null;
   triggers: string | null;

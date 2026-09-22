@@ -230,27 +230,22 @@ def test_legacy_string_diagnoses_are_read_as_entries(db_session: Session) -> Non
     assert fetched.additional_diagnoses[0].note is None
 
 
-def test_disability_and_functioning_and_frameworks_roundtrip(db_session: Session) -> None:
-    _seed_option(db_session, DetailOptionField.DISABILITY_SEVERITY, "קל-בינוני")
+def test_functioning_and_frameworks_roundtrip(db_session: Session) -> None:
     _seed_option(db_session, DetailOptionField.FUNCTIONING_LEVEL, "בינוני")
     service, student_id = _setup(db_session)
 
     saved = service.upsert(
         student_id,
         StudentDetailsUpsertRequest(
-            disability_severity="קל-בינוני",
             functioning_level="בינוני",
             previous_institution="גן תקשורת",
-            current_institution="סדנת תקשורת",
         ),
         _ALL,
         _ACTOR,
     )
 
-    assert saved.disability_severity == "קל-בינוני"
     assert saved.functioning_level == "בינוני"
     assert saved.previous_institution == "גן תקשורת"
-    assert saved.current_institution == "סדנת תקשורת"
 
 
 def test_functioning_level_outside_catalog_is_rejected(db_session: Session) -> None:

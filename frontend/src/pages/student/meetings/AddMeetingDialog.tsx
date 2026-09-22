@@ -17,6 +17,7 @@ import { Alert } from "@/components/ui/Alert";
 import { LoadingState } from "@/components/ui/Spinner";
 import { ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { MeetingSnapshot } from "@/pages/student/meetings/MeetingSnapshot";
+import { PreviousMeetingCard } from "@/pages/student/meetings/PreviousMeetingCard";
 
 interface Props {
   studentId: string;
@@ -38,8 +39,8 @@ export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): Reac
         <DialogHeader>
           <DialogTitle>ישיבת צוות חדשה</DialogTitle>
           <DialogDescription>
-            מוקדי הכוח והמוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם
-            כעת. מלאו את הסיכום.
+            המוקדים לחיזוק והתוכנית האישית מוצגים לקריאה בלבד ויישמרו כפי שהם כעת. מלאו את
+            הסיכום.
           </DialogDescription>
         </DialogHeader>
         {open && (
@@ -61,7 +62,7 @@ function AddMeetingForm({
   const [meetingDate, setMeetingDate] = useState(today);
   const [summary, setSummary] = useState("");
 
-  const [programQuery, plansQuery] = useQueries({
+  const [programQuery, plansQuery, meetingsQuery] = useQueries({
     queries: [
       {
         queryKey: queryKeys.program(studentId),
@@ -70,6 +71,10 @@ function AddMeetingForm({
       {
         queryKey: queryKeys.programPlans(studentId),
         queryFn: () => programPlansApi.list(studentId),
+      },
+      {
+        queryKey: queryKeys.meetings(studentId),
+        queryFn: () => meetingsApi.list(studentId),
       },
     ],
   });
@@ -95,8 +100,8 @@ function AddMeetingForm({
 
   const program = programQuery.data;
   const latestPlan = plansQuery.data?.[0];
+  const previousMeeting = meetingsQuery.data?.[0];
   const snapshot = {
-    strengths: program?.strengths ?? [],
     areas_to_strengthen: program?.areas_to_strengthen ?? [],
     plan_entries: latestPlan?.entries ?? [],
   };
@@ -112,6 +117,8 @@ function AddMeetingForm({
           onChange={(event) => setMeetingDate(event.target.value)}
         />
       </div>
+
+      {previousMeeting && <PreviousMeetingCard meeting={previousMeeting} />}
 
       <MeetingSnapshot data={snapshot} />
 

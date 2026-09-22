@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { StudentDetailsResponse } from "@/lib/api/types";
+import { filled } from "@/lib/utils/text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export function TextBlock({
@@ -9,10 +10,13 @@ export function TextBlock({
   label: string;
   value: string | null;
 }): ReactNode {
+  if (!filled(value)) {
+    return null;
+  }
   return (
     <div>
       <div className="mb-1 text-ink-muted">{label}</div>
-      <div className="whitespace-pre-wrap font-medium text-ink">{value || "—"}</div>
+      <div className="whitespace-pre-wrap font-medium text-ink">{value}</div>
     </div>
   );
 }
@@ -22,22 +26,27 @@ export function CommunicationChannelCard({
 }: {
   details: StudentDetailsResponse;
 }): ReactNode {
+  if (!filled(details.expression_mode) && !filled(details.language_comprehension)) {
+    return null;
+  }
   return (
     <Card>
       <CardHeader>
         <CardTitle>ערוץ תקשורת מועדף</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <div>
-          <span className="text-ink-muted">אופן הבעה עיקרי: </span>
-          <span className="font-medium text-ink">{details.expression_mode || "—"}</span>
-        </div>
-        <div>
-          <span className="text-ink-muted">מידת הבנת השפה: </span>
-          <span className="font-medium text-ink">
-            {details.language_comprehension || "—"}
-          </span>
-        </div>
+        {filled(details.expression_mode) && (
+          <div>
+            <span className="text-ink-muted">אופן הבעה עיקרי: </span>
+            <span className="font-medium text-ink">{details.expression_mode}</span>
+          </div>
+        )}
+        {filled(details.language_comprehension) && (
+          <div>
+            <span className="text-ink-muted">מידת הבנת השפה: </span>
+            <span className="font-medium text-ink">{details.language_comprehension}</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -48,6 +57,15 @@ export function EmotionalProfileCard({
 }: {
   details: StudentDetailsResponse;
 }): ReactNode {
+  const hasContent = [
+    details.interests_strengths,
+    details.triggers,
+    details.distress_early_signs,
+    details.calming_methods,
+  ].some(filled);
+  if (!hasContent) {
+    return null;
+  }
   return (
     <Card>
       <CardHeader>

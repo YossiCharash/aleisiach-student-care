@@ -39,7 +39,6 @@ export const legalStatusLabels: Record<LegalStatus, string> = {
 
 export const detailOptionFieldLabels: Record<DetailOptionField, string> = {
   idd_severity: "דרגת מגבלה שכלית התפתחותית",
-  disability_severity: "תיאור המגבלה",
   functioning_level: "אוטיזם",
   medication_independence: "מידת עצמאות בלקיחת תרופות",
   expression_mode: "אופן הבעה עיקרי",

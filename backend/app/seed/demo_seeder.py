@@ -238,7 +238,6 @@ class DemoSeeder:
                 address="רחוב הדגמה 1, עיר הדגמה",
                 home_language="עברית",
                 idd_severity="קלה",
-                disability_severity="קל-בינוני",
                 functioning_level="בינוני",
                 additional_diagnoses=[
                     {"name": "הפרעת קשב וריכוז", "note": "מאובחן, נוטל ריטלין"},
@@ -259,7 +258,6 @@ class DemoSeeder:
                 expression_mode="דיבור מילולי שוטף",
                 language_comprehension="מבין הוראות מורכבות",
                 previous_institution="גן תקשורת עירוני",
-                current_institution="סדנת תקשורת בבית הספר",
                 prior_task_experience="סייעה בחלוקת חומרים בסדנה.",
                 interests_strengths="אוהבת ציור ומוזיקה; חזקה בזיכרון חזותי.",
                 triggers="רעש פתאומי חזק.",

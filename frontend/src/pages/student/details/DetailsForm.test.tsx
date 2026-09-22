@@ -23,7 +23,6 @@ function details(): StudentDetailsResponse {
     address: null,
     home_language: null,
     idd_severity: null,
-    disability_severity: null,
     functioning_level: null,
     additional_diagnoses: [],
     emergency_contacts: [{ full_name: "אמא", relationship: "אמא", phone: "050" }],
@@ -40,7 +39,6 @@ function details(): StudentDetailsResponse {
     expression_mode: null,
     language_comprehension: null,
     previous_institution: null,
-    current_institution: null,
     prior_task_experience: null,
     interests_strengths: null,
     triggers: null,
@@ -56,13 +54,11 @@ describe("DetailsForm", () => {
     diagnosesListMock.mockReset().mockResolvedValue([]);
   });
 
-  it("renders the disability, functioning and institution fields", () => {
+  it("renders the functioning and institution fields", () => {
     renderWithClient(<DetailsForm studentId="s1" details={details()} onDone={vi.fn()} />);
 
-    expect(screen.getByText("תיאור המגבלה")).toBeInTheDocument();
     expect(screen.getByText("אוטיזם")).toBeInTheDocument();
     expect(screen.getByText("מוסד קודם")).toBeInTheDocument();
-    expect(screen.getByText("מוסד נוכחי")).toBeInTheDocument();
   });
 
   it("offers the contact relationship as a settings-managed datalist, not a fixed list", () => {

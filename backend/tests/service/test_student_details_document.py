@@ -20,7 +20,6 @@ def _details(
         address="רחוב הבנים 1",
         home_language="עברית",
         idd_severity="קלה",
-        disability_severity="קל-בינוני",
         functioning_level="בינוני",
         additional_diagnoses=[DiagnosisEntry(name="ADHD", note="קושי בריכוז")],
         emergency_contacts=[ContactInfo(full_name="אמא", phone="050")],
@@ -33,7 +32,6 @@ def _details(
         expression_mode="דיבור מילולי שוטף",
         language_comprehension="מבין הוראות מורכבות",
         previous_institution="גן שפתי",
-        current_institution="סדנת תקשורת",
         prior_task_experience="עבודה במטבח",
         interests_strengths="ציור",
         triggers="רעש",
@@ -55,10 +53,9 @@ def test_full_details_include_guardianship() -> None:
     assert "מונה אפוטרופוס" in html
     assert "דוד" in html
     assert "מגבלה שכלית התפתחותית" in html
-    assert "תיאור המגבלה" in html
     assert "אוטיזם" in html
     assert "מוסד קודם" in html
-    assert "מוסד נוכחי" in html
+    assert "מוסד קודם" in html
     assert "פרופיל רפואי ובטיחותי קריטי" in html
     assert "מכשיר מיוחד" in html
     assert "ערוץ תקשורת מועדף" in html
@@ -97,3 +94,22 @@ def test_headings_use_the_primary_brand_green() -> None:
     html = StudentDetailsDocument(BrandSettings()).to_html(_details(), "מוסד בדיקה")
 
     assert "h1{color:#3F8420" in html
+
+
+def test_empty_fields_and_sections_are_omitted() -> None:
+    minimal = StudentDetailsResponse(
+        student_id=uuid.uuid4(), national_id="123456789", idd_severity="קלה"
+    )
+
+    html = StudentDetailsDocument(BrandSettings()).to_html(minimal, "מוסד בדיקה")
+
+    assert "זהות" in html
+    assert "123456789" in html
+    assert "כתובת" not in html
+    assert "אבחונים" in html
+    assert "אוטיזם" not in html
+    assert "אנשי קשר לחירום" not in html
+    assert "פרופיל רפואי ובטיחותי קריטי" not in html
+    assert "ערוץ תקשורת מועדף" not in html
+    assert "רקע חינוכי ותעסוקתי קודם" not in html
+    assert "תעודת זהות רגשית" not in html
