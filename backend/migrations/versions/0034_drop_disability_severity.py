@@ -17,9 +17,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.execute(
-        sa.text("DELETE FROM detail_options WHERE field = 'disability_severity'")
-    )
+    op.execute(sa.text("DELETE FROM detail_options WHERE field = 'disability_severity'"))
     op.drop_column("student_details", "disability_severity")
 
 
