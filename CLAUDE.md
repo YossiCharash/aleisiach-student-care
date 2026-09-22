@@ -303,9 +303,9 @@ on purpose: it has no access to any of these.
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.
     Exact heading names to be supplied by the user (draft reading was 5. preferred communication
     channel · 6. prior educational/occupational background · 7. preferences & sensitivities).
-    The **details PDF omits empty fields**, and drops a section's header when all its fields are
-    empty (on-screen still shows "—"). The **"תיאור המגבלה" field was removed** (field + its
-    taxonomy option category). (Both 2026-09-22, ADR-029.)
+    The **details PDF and the on-screen view both omit empty fields**, and drop a section (its
+    header / card) when all its fields are empty. The **"תיאור המגבלה" field was removed** (field +
+    its taxonomy option category). (Both 2026-09-22, ADR-029.)
   - Tab 5 — **Functional report** (דוח תפקודי): a **manager-authored form** modeled on the
     client's official **"טופס 33"** — **one stored report per student, updated in place**. Six
     free-text sections (רקע כללי · התחום התעסוקתי · התחום ההתנהגותי-רגשי · התחום התקשורתי-חברתי ·

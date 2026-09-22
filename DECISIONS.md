@@ -726,10 +726,12 @@ and the user authorized it.
    header too.** `StudentDetailsDocument` no longer prints `label: —` for a blank value: `_field`
    / `_named_list` return nothing when empty, and `_section(title, *parts)` emits the `<h2>` only
    when at least one part is non-empty. So a student with no communication / background / emotional
-   data simply has no such section in the exported report. This is **PDF-only** — the on-screen
-   `DetailsView` still shows "—" for blanks (the user asked about the report; the form already
-   offers a "— לא צוין —" none option on optional selects). The אבחונים section always renders,
-   because the IDD diagnosis line is always present.
+   data simply has no such section in the exported report. The **on-screen `DetailsView` mirrors the
+   same behavior** (added on the user's follow-up): each `Field` / `TextBlock` / `ListBlock` and the
+   two profile cards return `null` when empty, and each section card renders only when it has
+   content. The אבחונים section always renders (the IDD diagnosis line is always present), and the
+   guardianship card still shows its "מידע רגיש — אין הרשאת צפייה" notice when access is blocked.
+   The form is unchanged — it already offers a "— לא צוין —" none option on optional selects.
 
 **Alternatives:** removing "תיאור המגבלה" only from the PDF while keeping the field for data entry —
 rejected by the user, who chose a full removal including the DB column and the taxonomy category.
