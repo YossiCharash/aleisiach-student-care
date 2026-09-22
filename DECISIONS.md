@@ -745,6 +745,29 @@ category. Both DB changes are destructive migrations, acceptable in the demo-dat
 
 ---
 
+## ADR-030 — Team-meeting screen shows only the personal plan (foci hidden)
+
+**Decision (per the user):** On screen — in both the team-meeting history and the "ישיבת צוות חדשה"
+dialog — show **only תוכנית אישית** (the work plan). **Both מוקדי כוח and מוקדים לחיזוק are hidden**
+on screen. This narrows ADR-028, which had hidden only מוקדי כוח and still showed מוקדים לחיזוק.
+Both foci lists are **still frozen into the stored meeting snapshot and still printed in the PDF**
+(the PDF is unchanged, per ADR-028's decision to hide on screen only).
+
+**Implementation:** `MeetingSnapshot` (which rendered the areas card + the plan card) was deleted;
+its plan card was extracted to its own `PlanEntriesCard` component. Both `MeetingsTab` (history) and
+`AddMeetingDialog` (new meeting) now render `PlanEntriesCard` directly. The new-meeting dialog no
+longer fetches the program at all (it only needs the latest plan for the preview + the previous
+meeting for reference); the meeting still freezes the current foci + plan server-side on save.
+
+**Alternatives:** keeping `MeetingSnapshot` as a one-line wrapper around `PlanEntriesCard` — rejected
+as a redundant indirection (it no longer added the foci it was named for).
+
+**Consequences:** The meeting screens are focused on the plan the team is executing. The stored
+snapshot and the exported PDF are unchanged, so no data is lost — only the on-screen presentation is
+narrowed.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

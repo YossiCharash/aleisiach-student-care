@@ -3,7 +3,7 @@ import type { MeetingResponse } from "@/lib/api/types";
 import { formatDate } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
-import { PlanEntriesCard } from "@/pages/student/meetings/MeetingSnapshot";
+import { PlanEntriesCard } from "@/pages/student/meetings/PlanEntriesCard";
 
 export function PreviousMeetingCard({
   meeting,
