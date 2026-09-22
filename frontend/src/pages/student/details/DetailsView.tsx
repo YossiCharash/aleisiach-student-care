@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { ContactInfo, StudentDetailsResponse } from "@/lib/api/types";
 import { formatDate, IDD_DIAGNOSIS_NAME, legalStatusLabels } from "@/lib/utils/hebrew";
+import { filled } from "@/lib/utils/text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -8,10 +9,6 @@ import {
   EmotionalProfileCard,
   TextBlock,
 } from "@/pages/student/details/DetailProfileCards";
-
-function filled(value: string | null | undefined): boolean {
-  return typeof value === "string" && value.trim().length > 0;
-}
 
 export function DetailsView({ details }: { details: StudentDetailsResponse }): ReactNode {
   const dob = details.date_of_birth ? formatDate(details.date_of_birth) : null;

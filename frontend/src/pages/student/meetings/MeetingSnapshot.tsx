@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
-import type {
-  MeetingRating,
-  PlanEntryResponse,
-  ProgramArea,
-  ProgramStrength,
-} from "@/lib/api/types";
+import type { MeetingRating, PlanEntryResponse, ProgramArea } from "@/lib/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
 import { cn } from "@/lib/utils/cn";
 
 export interface MeetingSnapshotData {
-  strengths: ProgramStrength[];
   areas_to_strengthen: ProgramArea[];
   plan_entries: PlanEntryResponse[];
 }

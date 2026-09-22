@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
 import type { StudentDetailsResponse } from "@/lib/api/types";
+import { filled } from "@/lib/utils/text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-
-function filled(value: string | null | undefined): boolean {
-  return typeof value === "string" && value.trim().length > 0;
-}
 
 export function TextBlock({
   label,

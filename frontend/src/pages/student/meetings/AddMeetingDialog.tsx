@@ -88,7 +88,7 @@ function AddMeetingForm({
     },
   });
 
-  if (programQuery.isLoading || plansQuery.isLoading || meetingsQuery.isLoading) {
+  if (programQuery.isLoading || plansQuery.isLoading) {
     return <LoadingState />;
   }
   if (programQuery.isError) {
@@ -97,15 +97,11 @@ function AddMeetingForm({
   if (plansQuery.isError) {
     return <ErrorState error={plansQuery.error} />;
   }
-  if (meetingsQuery.isError) {
-    return <ErrorState error={meetingsQuery.error} />;
-  }
 
   const program = programQuery.data;
   const latestPlan = plansQuery.data?.[0];
   const previousMeeting = meetingsQuery.data?.[0];
   const snapshot = {
-    strengths: program?.strengths ?? [],
     areas_to_strengthen: program?.areas_to_strengthen ?? [],
     plan_entries: latestPlan?.entries ?? [],
   };
