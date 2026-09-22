@@ -46,7 +46,6 @@ interface FormValues {
   address: string;
   home_language: string;
   idd_severity: string;
-  disability_severity: string;
   functioning_level: string;
   additional_diagnoses: DiagnosisItem[];
   emergency_contacts: ContactItem[];
@@ -100,7 +99,6 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     address: details.address ?? "",
     home_language: details.home_language ?? "",
     idd_severity: details.idd_severity ?? "",
-    disability_severity: details.disability_severity ?? "",
     functioning_level: details.functioning_level ?? "",
     additional_diagnoses: details.additional_diagnoses.map((entry) => ({
       name: entry.name,
@@ -169,7 +167,6 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     address: emptyToNull(values.address),
     home_language: emptyToNull(values.home_language),
     idd_severity: emptyToNull(values.idd_severity),
-    disability_severity: emptyToNull(values.disability_severity),
     functioning_level: emptyToNull(values.functioning_level),
     additional_diagnoses: diagnosisEntries(values.additional_diagnoses),
     emergency_contacts: toContacts(values.emergency_contacts),
@@ -268,9 +265,6 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
         severityOptions={mergeMissing(optionsFor("idd_severity"), [
           details.idd_severity ?? "",
         ])}
-        disabilityOptions={mergeMissing(optionsFor("disability_severity"), [
-          details.disability_severity ?? "",
-        ])}
         functioningOptions={mergeMissing(optionsFor("functioning_level"), [
           details.functioning_level ?? "",
         ])}
@@ -352,7 +346,6 @@ function OptionSelect({
   register: UseFormRegister<FormValues>;
   name:
     | "idd_severity"
-    | "disability_severity"
     | "functioning_level"
     | "medication_independence"
     | "expression_mode"
@@ -376,14 +369,12 @@ function DiagnosesCard({
   control,
   register,
   severityOptions,
-  disabilityOptions,
   functioningOptions,
   error,
 }: {
   control: Control<FormValues>;
   register: UseFormRegister<FormValues>;
   severityOptions: string[];
-  disabilityOptions: string[];
   functioningOptions: string[];
   error: boolean;
 }): ReactNode {
@@ -412,25 +403,14 @@ function DiagnosesCard({
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="disability_severity">תיאור המגבלה</Label>
-            <OptionSelect
-              id="disability_severity"
-              register={register}
-              name="disability_severity"
-              options={disabilityOptions}
-            />
-          </div>
-          <div>
-            <Label htmlFor="functioning_level">אוטיזם</Label>
-            <OptionSelect
-              id="functioning_level"
-              register={register}
-              name="functioning_level"
-              options={functioningOptions}
-            />
-          </div>
+        <div>
+          <Label htmlFor="functioning_level">אוטיזם</Label>
+          <OptionSelect
+            id="functioning_level"
+            register={register}
+            name="functioning_level"
+            options={functioningOptions}
+          />
         </div>
 
         <datalist id="diagnosis-options">

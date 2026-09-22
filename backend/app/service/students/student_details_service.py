@@ -27,7 +27,6 @@ _TRACKED_FIELDS = (
     "address",
     "home_language",
     "idd_severity",
-    "disability_severity",
     "functioning_level",
     "additional_diagnoses",
     "emergency_contacts",
@@ -114,7 +113,6 @@ class StudentDetailsService:
         details.address = request.address
         details.home_language = request.home_language
         details.idd_severity = request.idd_severity
-        details.disability_severity = request.disability_severity
         details.functioning_level = request.functioning_level
         details.additional_diagnoses = self._apply_diagnoses(request.additional_diagnoses, actor_id)
         details.emergency_contacts = [item.model_dump() for item in request.emergency_contacts]
@@ -183,9 +181,6 @@ class StudentDetailsService:
     def _validate_options(self, request: StudentDetailsUpsertRequest) -> None:
         valid = self._valid_option_names()
         self._check_option(valid, DetailOptionField.IDD_SEVERITY, request.idd_severity)
-        self._check_option(
-            valid, DetailOptionField.DISABILITY_SEVERITY, request.disability_severity
-        )
         self._check_option(valid, DetailOptionField.FUNCTIONING_LEVEL, request.functioning_level)
         self._check_option(valid, DetailOptionField.EXPRESSION_MODE, request.expression_mode)
         self._check_option(
@@ -257,7 +252,6 @@ class StudentDetailsService:
             address=details.address,
             home_language=details.home_language,
             idd_severity=details.idd_severity,
-            disability_severity=details.disability_severity,
             functioning_level=details.functioning_level,
             additional_diagnoses=[
                 entry

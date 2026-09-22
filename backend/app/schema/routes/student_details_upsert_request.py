@@ -17,7 +17,6 @@ class StudentDetailsUpsertRequest(BaseModel):
     address: str | None = Field(default=None, max_length=300)
     home_language: str | None = Field(default=None, max_length=100)
     idd_severity: str | None = Field(default=None, max_length=200)
-    disability_severity: str | None = Field(default=None, max_length=200)
     functioning_level: str | None = Field(default=None, max_length=200)
     additional_diagnoses: list[DiagnosisEntry] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)

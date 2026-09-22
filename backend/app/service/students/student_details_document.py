@@ -42,108 +42,91 @@ class StudentDetailsDocument:
         return self._shell.render(self._css(), institution_name, "פרטי חניך", body)
 
     def _identity(self, details: StudentDetailsResponse) -> str:
-        age = str(details.age) if details.age is not None else "—"
-        dob = details.date_of_birth.isoformat() if details.date_of_birth is not None else "—"
-        fields = [
+        dob = details.date_of_birth.isoformat() if details.date_of_birth is not None else None
+        age = str(details.age) if details.age is not None else None
+        return self._section(
+            "זהות",
             self._field("תעודת זהות", details.national_id),
             self._field("תאריך לידה", dob),
             self._field("גיל", age),
             self._field("כתובת", details.address),
             self._field("שפת דיבור עיקרית בבית", details.home_language),
-        ]
-        return "<h2>זהות</h2>" + "".join(fields)
+        )
 
     def _diagnoses(self, details: StudentDetailsResponse) -> str:
-        severity = details.idd_severity if details.idd_severity else "—"
-        items = [f"<li>{escape(_IDD_NAME)} — דרגה: {escape(severity)}</li>"]
+        severity = details.idd_severity
+        head = escape(_IDD_NAME) + (f" — דרגה: {escape(severity)}" if severity else "")
+        items = [f"<li>{head}</li>"]
         for entry in details.additional_diagnoses:
             text = escape(entry.name)
             if entry.note:
                 text += f" — {escape(entry.note)}"
             items.append(f"<li>{text}</li>")
-        return (
-            f"<h2>אבחונים</h2><ul>{''.join(items)}</ul>"
-            + self._field("תיאור המגבלה", details.disability_severity)
-            + self._field("אוטיזם", details.functioning_level)
+        return self._section(
+            "אבחונים",
+            f"<ul>{''.join(items)}</ul>",
+            self._field("אוטיזם", details.functioning_level),
         )
 
     def _medical_profile(self, details: StudentDetailsResponse) -> str:
-        allergies = self._list_or_dash(
-            details.allergies_dietary if details.has_allergies_or_dietary else []
+        allergies = list(details.allergies_dietary) if details.has_allergies_or_dietary else []
+        medications = list(details.medications) if details.takes_regular_medication else []
+        independence = details.medication_independence if details.takes_regular_medication else None
+        return self._section(
+            "פרופיל רפואי ובטיחותי קריטי",
+            self._named_list("אלרגיות / מגבלות תזונה", allergies),
+            self._named_list("תרופות קבועות", medications),
+            self._field("מידת עצמאות בלקיחת תרופות", independence),
+            self._field("פרוטוקול חירום רפואי", details.emergency_protocol),
+            self._named_list("אביזרי עזר פיזיים", self._device_labels(details)),
         )
-        medications = self._list_or_dash(
-            details.medications if details.takes_regular_medication else []
-        )
-        independence = (
-            details.medication_independence
-            if details.takes_regular_medication and details.medication_independence
-            else "—"
-        )
-        devices = self._device_labels(details)
-        return (
-            "<h2>פרופיל רפואי ובטיחותי קריטי</h2>"
-            + self._block("אלרגיות / מגבלות תזונה", allergies)
-            + self._block("תרופות קבועות", medications)
-            + self._field("מידת עצמאות בלקיחת תרופות", independence)
-            + self._field("פרוטוקול חירום רפואי", details.emergency_protocol)
-            + self._block("אביזרי עזר פיזיים", devices)
-        )
-
-    def _block(self, label: str, body: str) -> str:
-        return f"<div class='field'><span class='label'>{escape(label)}:</span></div>{body}"
 
     def _communication(self, details: StudentDetailsResponse) -> str:
-        return (
-            "<h2>ערוץ תקשורת מועדף</h2>"
-            + self._field("אופן הבעה עיקרי", details.expression_mode)
-            + self._field("מידת הבנת השפה", details.language_comprehension)
+        return self._section(
+            "ערוץ תקשורת מועדף",
+            self._field("אופן הבעה עיקרי", details.expression_mode),
+            self._field("מידת הבנת השפה", details.language_comprehension),
         )
 
     def _background(self, details: StudentDetailsResponse) -> str:
-        return (
-            "<h2>רקע חינוכי ותעסוקתי קודם</h2>"
-            + self._field("מוסד קודם", details.previous_institution)
-            + self._field("רקע תעסוקתי קודם", details.prior_task_experience)
+        return self._section(
+            "רקע חינוכי ותעסוקתי קודם",
+            self._field("מוסד קודם", details.previous_institution),
+            self._field("רקע תעסוקתי קודם", details.prior_task_experience),
         )
 
     def _emotional_id(self, details: StudentDetailsResponse) -> str:
-        return (
-            "<h2>תעודת זהות רגשית</h2>"
-            + self._field("תחומי עניין וחוזקות", details.interests_strengths)
-            + self._field("גורמים מציפים / טריגרים", details.triggers)
-            + self._field("סימנים מקדימים למצוקה", details.distress_early_signs)
-            + self._field("דרכי הרגעה מומלצות", details.calming_methods)
+        return self._section(
+            "תעודת זהות רגשית",
+            self._field("תחומי עניין וחוזקות", details.interests_strengths),
+            self._field("גורמים מציפים / טריגרים", details.triggers),
+            self._field("סימנים מקדימים למצוקה", details.distress_early_signs),
+            self._field("דרכי הרגעה מומלצות", details.calming_methods),
         )
-
-    def _device_labels(self, details: StudentDetailsResponse) -> str:
-        labels = list(details.assistive_devices)
-        if details.assistive_device_other:
-            labels.append(f"אחר: {details.assistive_device_other}")
-        return self._list_or_dash(labels)
-
-    def _list_or_dash(self, values: list[str]) -> str:
-        if not values:
-            return self._field("", "—")
-        items = "".join(f"<li>{escape(value)}</li>" for value in values)
-        return f"<ul>{items}</ul>"
 
     def _contacts(self, title: str, contacts: list[ContactInfo]) -> str:
         if not contacts:
-            return f"<h2>{escape(title)}</h2>" + self._field("", "—")
+            return ""
         items = "".join(f"<li>{self._contact_line(contact)}</li>" for contact in contacts)
         return f"<h2>{escape(title)}</h2><ul>{items}</ul>"
 
     def _guardianship(self, details: StudentDetailsResponse) -> str:
         status = (
-            _LEGAL_STATUS_LABELS[details.legal_status] if details.legal_status is not None else "—"
+            _LEGAL_STATUS_LABELS[details.legal_status] if details.legal_status is not None else None
         )
-        head = "<h2>אפוטרופסות ומעמד משפטי</h2>" + self._field("מעמד משפטי", status)
-        if not details.guardians:
-            return head + self._field("אפוטרופסים", "—")
-        items = "".join(
-            f"<li>{self._contact_line(guardian)}</li>" for guardian in details.guardians
-        )
-        return head + f"<ul>{items}</ul>"
+        parts = [self._field("מעמד משפטי", status)]
+        if details.guardians:
+            items = "".join(
+                f"<li>{self._contact_line(guardian)}</li>" for guardian in details.guardians
+            )
+            parts.append(f"<ul>{items}</ul>")
+        return self._section("אפוטרופסות ומעמד משפטי", *parts)
+
+    def _device_labels(self, details: StudentDetailsResponse) -> list[str]:
+        labels = list(details.assistive_devices)
+        if details.assistive_device_other:
+            labels.append(f"אחר: {details.assistive_device_other}")
+        return labels
 
     def _contact_line(self, contact: ContactInfo) -> str:
         parts = [escape(contact.full_name)]
@@ -153,7 +136,23 @@ class StudentDetailsDocument:
             parts.append(escape(contact.phone))
         return " ".join(parts)
 
+    def _section(self, title: str, *parts: str) -> str:
+        body = "".join(part for part in parts if part)
+        return f"<h2>{escape(title)}</h2>{body}" if body else ""
+
     def _field(self, label: str, value: str | None) -> str:
-        shown = escape(value) if value else "—"
-        prefix = f'<span class="label">{escape(label)}: </span>' if label else ""
-        return f'<div class="field">{prefix}{shown}</div>'
+        if value is None or not value.strip():
+            return ""
+        return (
+            f'<div class="field"><span class="label">{escape(label)}: </span>'
+            f"{escape(value)}</div>"
+        )
+
+    def _named_list(self, label: str, values: list[str]) -> str:
+        if not values:
+            return ""
+        items = "".join(f"<li>{escape(value)}</li>" for value in values)
+        return (
+            f'<div class="field"><span class="label">{escape(label)}:</span></div>'
+            f"<ul>{items}</ul>"
+        )

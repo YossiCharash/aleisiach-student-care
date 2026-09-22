@@ -16,7 +16,6 @@ class StudentDetailsResponse(BaseModel):
     address: str | None = None
     home_language: str | None = None
     idd_severity: str | None = None
-    disability_severity: str | None = None
     functioning_level: str | None = None
     additional_diagnoses: list[DiagnosisEntry] = Field(default_factory=list)
     emergency_contacts: list[ContactInfo] = Field(default_factory=list)

@@ -44,19 +44,11 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
               דרגה: {details.idd_severity || "—"}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-ink-muted">תיאור המגבלה: </span>
-              <span className="font-medium text-ink">
-                {details.disability_severity || "—"}
-              </span>
-            </div>
-            <div>
-              <span className="text-ink-muted">אוטיזם: </span>
-              <span className="font-medium text-ink">
-                {details.functioning_level || "—"}
-              </span>
-            </div>
+          <div className="text-sm">
+            <span className="text-ink-muted">אוטיזם: </span>
+            <span className="font-medium text-ink">
+              {details.functioning_level || "—"}
+            </span>
           </div>
           {details.additional_diagnoses.length > 0 && (
             <ul className="space-y-1">
