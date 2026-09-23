@@ -810,6 +810,44 @@ student purge; an institution purge intentionally takes its own audit log with i
 
 ---
 
+## ADR-032 — One shared branded PDF template for every document
+
+**Status:** accepted (2026-09-23). Chosen by the user from three mockups ("כותרת ירוקה מלאה" won).
+
+**Decision (per the user):** Every exported PDF uses **one fixed, branded template** in the Aleisiach
+brand colors, so all documents look like one set. The template carries a place for the **student
+name**, an optional **content date** ("תאריך במקרה שיש"), the **issue date** ("תאריך הנפקה") and the
+**issuer** ("הופק על ידי"), plus the document's own body. Each file is named
+**`<student> - <document>.pdf`** in Hebrew.
+
+- **"הופק על ידי" = the signed-in user who clicks export**, and the issue date = today — distinct
+  from "נכתב על ידי" (the content author) that the official forms (33/39) still show.
+- Layout: brand-green header band (logo + title + institution) · lime accent stripe · אפרפר metadata
+  card · per-page footer with issuer, institution and page numbers.
+
+**Implementation:**
+- `DocumentShell` (`utils/service/document_shell.py`) **is** the template — `render(css, meta, body)`.
+  Restyling the whole system is a one-file change. All seven document builders were reduced to a body
+  plus a `DocumentMeta`; none owns a frame any more.
+- New DTOs `IssueContext` / `DocumentMeta` (`schema/service/`); a shared `Issue` route dependency
+  (`routes/pdf.py`) resolves the student via `StudentAccessGuard` (PDF access = page access), the
+  issuer (`user.full_name`) and today's date.
+- The logo is bundled at `configuration/pdf/assets/logo.png` and embedded as a `data:` URI by
+  `BrandLogo` (the WeasyPrint renderer allows the `data:` protocol only).
+- Hebrew filename via `utils/routes/pdf_disposition.py` (RFC 5987 `filename*`), with the
+  `Content-Disposition` header exposed through CORS.
+- Frontend `PdfButton` offers **open in a tab** and **download** (the download reads the filename from
+  the header).
+
+**Alternatives considered:** two other mockups ("פס צד ירוק", "מינימלי") — rejected by the user; a
+per-document layout — rejected (defeats the point of one branded set and duplicates the frame).
+
+**Consequences:** Brand/layout/footer changes are made once in `DocumentShell` and apply everywhere.
+Fonts remain the deferred Heebo/Tubic choice (ADR-016). WeasyPrint rendering is exercised only in the
+container/CI, not on Windows dev machines (GTK libraries absent).
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

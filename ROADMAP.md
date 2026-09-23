@@ -58,6 +58,7 @@
 - [ ] Tab 4 — כותרות נוספות (`extra_section_type` + `student_extra_section`) — חסום על שמות הכותרות
 - [x] Audit log: טבלת `AUDIT_LOG` + רישום על כל create/update/archive (student · details · meeting · taxonomy · permission)
 - [x] ייצוא PDF (WeasyPrint) — סיכום ישיבה + פרטי חניך (RTL עברי, מכבד הסתרה רגישה)
+- [x] תבנית PDF מותגית אחידה לכל המסמכים (`DocumentShell`, ADR-032) — כותרת ירוקה עם לוגו, כרטיס פרטים (שם · תאריך · תאריך הנפקה · הופק על ידי), כותרת תחתונה עם מספור עמודים; שם קובץ `<שם התלמיד> - <שם הטופס>.pdf`; פתיחה + הורדה בצד לקוח
 
 ## 4. Frontend (Vite React SPA) — בפיתוח
 - [x] Scaffold: Vite + React 18 + TS + Tailwind RTL + design tokens (מותג) + Heebo + Radix/shadcn primitives
