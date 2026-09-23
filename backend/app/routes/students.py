@@ -23,6 +23,7 @@ from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_purge_service import StudentPurgeService
 from backend.app.service.students.student_service import StudentService
+from backend.app.utils.service.password_verifier import PasswordVerifier
 
 
 def get_student_service(
@@ -44,8 +45,7 @@ def get_student_purge_service(
     return StudentPurgeService(
         StudentRepository(session),
         StudentPurgeRepository(session),
-        UserRepository(session),
-        bootstrap.password_hasher,
+        PasswordVerifier(UserRepository(session), bootstrap.password_hasher),
         AuditLogger(AuditLogRepository(session)),
     )
 

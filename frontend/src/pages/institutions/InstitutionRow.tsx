@@ -170,7 +170,12 @@ export function InstitutionRow({
       />
       <ConfirmWithPasswordDialog
         open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+        onOpenChange={(next) => {
+          if (!next) {
+            remove.reset();
+          }
+          setDeleteOpen(next);
+        }}
         title="מחיקת המוסד לצמיתות"
         description={
           <>

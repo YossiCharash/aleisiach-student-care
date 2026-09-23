@@ -36,6 +36,7 @@ from backend.app.service.institutions.institution_provisioning_service import (
 )
 from backend.app.service.institutions.institution_purge_service import InstitutionPurgeService
 from backend.app.service.institutions.institution_service import InstitutionService
+from backend.app.utils.service.password_verifier import PasswordVerifier
 
 SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
@@ -64,8 +65,7 @@ def get_purge_service(session: SessionDep, bootstrap: BootstrapDep) -> Instituti
     return InstitutionPurgeService(
         InstitutionRepository(session),
         InstitutionPurgeRepository(session),
-        UserRepository(session),
-        bootstrap.password_hasher,
+        PasswordVerifier(UserRepository(session), bootstrap.password_hasher),
     )
 
 
