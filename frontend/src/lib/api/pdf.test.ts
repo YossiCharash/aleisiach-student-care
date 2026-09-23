@@ -10,7 +10,9 @@ describe("parseContentDispositionFilename", () => {
   });
 
   it("falls back to a quoted ascii filename", () => {
-    expect(parseContentDispositionFilename('inline; filename="document.pdf"')).toBe("document.pdf");
+    expect(parseContentDispositionFilename('inline; filename="document.pdf"')).toBe(
+      "document.pdf"
+    );
   });
 
   it("returns null when the header is missing", () => {
