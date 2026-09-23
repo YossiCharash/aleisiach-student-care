@@ -48,8 +48,12 @@ Design source: Claude Design — file `Student Care System.dc.html`.
   `routes / service / client`. See `ARCHITECTURE.md` §2.
 
 ### Additional capabilities
-- **PDF export / print:** **server-side in Python (WeasyPrint)** for the team-meeting summary
-  (Tab 2) and student details — consistent, RTL-correct Hebrew output. (Hebrew font choice: §6.)
+- **PDF export / print:** **server-side in Python (WeasyPrint)** for every document — consistent,
+  RTL-correct Hebrew output. **All PDFs share one branded template** (`DocumentShell`, ADR-032):
+  green header band with the עלי שיח logo + title + institution, a metadata card (student name ·
+  content date when present · issue date · "הופק על ידי" = the exporting user) and a per-page footer
+  with page numbers. Each file downloads as **`<שם התלמיד> - <שם הטופס>.pdf`**. Restyle the whole
+  system by editing that one file — never add a per-document layout. (Hebrew font choice: §6.)
 - **Auth:** see section 3 — **username + password** for all users, manager-provisioned via email
   invitation, with password change and forgot-password reset. Requires an email-sending service.
 - **Error handling & alerting:** central typed-error handling with a consistent Hebrew
@@ -346,6 +350,11 @@ on purpose: it has no access to any of these.
 - [ ] Choose the login-screen design variation (and maybe one for the student screen too).
 - [ ] Hebrew font choice for UI + PDF — **deferred to the end** (candidates: license **Tubic**
       for exact brand match, or free **Heebo**). Brand colors already captured in §1.
+- [x] PDF template — **one shared branded template for every document** ("כותרת ירוקה מלאה",
+      chosen from three mockups): green header band with logo/title/institution, metadata card
+      (student · content date when present · issue date · "הופק על ידי" = the exporting user),
+      per-page footer; Hebrew filename `<שם התלמיד> - <שם הטופס>.pdf`; frontend open + download
+      (decided 2026-09-23, ADR-032). Lives in `DocumentShell` — one place to restyle.
 - [x] Auth flow — **username + password for all users** (national ID dropped from auth);
       manager-provisioned via email invitation; role + class set in the invite form; password
       change + forgot-password reset; hashed passwords, single-use expiring tokens, rate-limit +

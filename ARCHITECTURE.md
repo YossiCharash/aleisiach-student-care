@@ -360,6 +360,49 @@ WHERE institution_id = bound"]
 
 ---
 
+## 4d. PDF export — one shared branded template (ADR-032)
+
+Every server-side PDF is produced through a single template so the whole system looks like one
+branded document set. There is **no per-document layout** — a document builder only supplies its own
+body sections; the frame is shared.
+
+```
+routes/<doc>.py           → resolves `Issue` (see below), calls the builder, sets the filename
+service/**/<doc>_document.py → builds the body HTML, calls DocumentShell.render(css, meta, body)
+utils/service/document_shell.py → THE template (header · meta card · footer), one place to restyle
+client/pdf/weasyprint_pdf_renderer.py → HTML → PDF (data: protocol only)
+```
+
+- **`DocumentShell`** renders the approved "green header band" template: a brand-green
+  (`BrandSettings.primary_color`) header with the Aleisiach logo + document title + institution name,
+  a lime accent stripe, an אפרפר **metadata card** (student name · content date *when present* · issue
+  date · issued-by), and a per-page footer (`@page` margin boxes) carrying issuer, institution and
+  `counter(page)`/`counter(pages)`. Restyling the whole system = editing this one file.
+- **Logo** is bundled at `configuration/pdf/assets/logo.png`; `utils/service/brand_logo.py`
+  (`BrandLogo.data_uri`, `lru_cache`) embeds it as a `data:` URI — required because the WeasyPrint
+  renderer allows the `data:` protocol only (no file/http fetch).
+- **DTOs** (`schema/service/`): `IssueContext` = what the route knows (institution name · student
+  name · issued-by · issue date); `DocumentMeta` = the full header/footer model, built via
+  `DocumentMeta.build(title, issue, content_date?)`. Both are Pydantic (working-rule 12/19).
+- **`Issue` route dependency** (`routes/pdf.py::build_issue_context`) resolves the student through
+  `StudentAccessGuard` (so PDF access matches page access — cross-scope/archived → 404), the issuer
+  from the current user (`user.full_name`), and the issue date from `Clock().today()`. **"Issued-by"
+  is the user who exports**, distinct from the content author ("נכתב על ידי") kept in the official
+  forms.
+- **Filename** — `utils/routes/pdf_disposition.py::pdf_content_disposition` builds
+  `Content-Disposition: inline; filename="document.pdf"; filename*=UTF-8''<encoded>` where the name is
+  `"<student> - <document>.pdf"` in Hebrew (RFC 5987). The header is exposed through CORS
+  (`expose_headers=["Content-Disposition"]`) so the SPA can read it cross-origin.
+- **Frontend** — the single `PdfButton` offers both **open in a new tab** (`openAuthedPdf`) and
+  **download** (`downloadAuthedPdf`, which reads the Hebrew filename from `Content-Disposition`).
+  Every export screen uses this one component.
+
+Covered documents (all through the shell): student details · reception report (Form 39) · functional
+report (Form 33) · supported employment (Form 46) · personal plan (per-version + combined) · team
+meeting · social-worker note (per-entry + combined).
+
+---
+
 ## 5. Permission enforcement (RBAC / RLS)
 
 ```mermaid
