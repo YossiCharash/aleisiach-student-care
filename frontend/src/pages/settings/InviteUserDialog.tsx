@@ -38,6 +38,15 @@ interface RowFailure {
 
 let rowIdCounter = 0;
 
+function successText(sent: boolean, count: number): string {
+  if (!sent) {
+    return count > 1 ? `${count} משתמשים נוספו בהצלחה.` : "המשתמש נוסף בהצלחה.";
+  }
+  return count > 1
+    ? `${count} הזמנות נשלחו בהצלחה בדוא״ל.`
+    : "ההזמנה נשלחה בהצלחה בדוא״ל.";
+}
+
 function newRow(): InviteRow {
   rowIdCounter += 1;
   return {
@@ -54,14 +63,17 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
   const [sendEmail, setSendEmail] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failures, setFailures] = useState<RowFailure[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function reset(): void {
     setRows([newRow()]);
     setSendEmail(true);
     setFailures([]);
+    setSuccessMessage(null);
   }
 
   function updateRow(key: string, patch: Partial<InviteRow>): void {
+    setSuccessMessage(null);
     setRows((current) =>
       current.map((row) => (row.key === key ? { ...row, ...patch } : row))
     );
@@ -81,6 +93,9 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
     event.preventDefault();
     setIsSubmitting(true);
     setFailures([]);
+    setSuccessMessage(null);
+    const sent = sendEmail;
+    const total = rows.length;
     const collected: RowFailure[] = [];
     for (const row of rows) {
       try {
@@ -98,8 +113,9 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
     void queryClient.invalidateQueries({ queryKey: queryKeys.users });
 
     if (collected.length === 0) {
-      reset();
-      onOpenChange(false);
+      const succeeded = total - collected.length;
+      setRows([newRow()]);
+      setSuccessMessage(successText(sent, succeeded));
       return;
     }
     setFailures(collected);
@@ -132,6 +148,7 @@ export function InviteUserDialog({ open, onOpenChange }: Props): ReactNode {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {successMessage && <Alert tone="success">{successMessage}</Alert>}
           {failures.length > 0 && (
             <Alert tone="error">
               חלק מההזמנות נכשלו — נותרו למטה לתיקון:

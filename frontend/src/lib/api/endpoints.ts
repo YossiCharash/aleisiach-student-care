@@ -92,6 +92,8 @@ export const institutionsApi = {
     apiClient.post<InstitutionResponse>(`/institutions/${institutionId}/deactivate`),
   activate: (institutionId: string): Promise<InstitutionResponse> =>
     apiClient.post<InstitutionResponse>(`/institutions/${institutionId}/activate`),
+  remove: (institutionId: string, password: string): Promise<void> =>
+    apiClient.del<void>(`/institutions/${institutionId}`, { password }),
 };
 
 export const usersApi = {
@@ -135,6 +137,8 @@ export const studentsApi = {
     apiClient.get<StudentResponse[]>("/students/archived"),
   restore: (studentId: string): Promise<StudentResponse> =>
     apiClient.post<StudentResponse>(`/students/${studentId}/restore`),
+  remove: (studentId: string, password: string): Promise<void> =>
+    apiClient.del<void>(`/students/${studentId}`, { password }),
 };
 
 export const programApi = {

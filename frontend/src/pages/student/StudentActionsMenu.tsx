@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Archive, MoreHorizontal, Pencil } from "lucide-react";
+import { Archive, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { StudentResponse } from "@/lib/api/types";
@@ -21,12 +21,14 @@ import {
 } from "@/components/ui/DropdownMenu";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { ConfirmWithPasswordDialog } from "@/components/ui/ConfirmWithPasswordDialog";
 import { errorMessage } from "@/components/ui/ErrorState";
 import { EditStudentDialog } from "@/pages/student/EditStudentDialog";
 
 export function StudentActionsMenu({ student }: { student: StudentResponse }): ReactNode {
   const [editOpen, setEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <>
@@ -46,6 +48,10 @@ export function StudentActionsMenu({ student }: { student: StudentResponse }): R
             <Archive className="h-4 w-4" />
             העברה לארכיון
           </DropdownMenuItem>
+          <DropdownMenuItem tone="danger" onSelect={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4" />
+            מחיקה לצמיתות
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -55,7 +61,60 @@ export function StudentActionsMenu({ student }: { student: StudentResponse }): R
         open={archiveOpen}
         onOpenChange={setArchiveOpen}
       />
+      <DeleteStudentDialog
+        studentId={student.id}
+        studentName={student.full_name}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </>
+  );
+}
+
+function DeleteStudentDialog({
+  studentId,
+  studentName,
+  open,
+  onOpenChange,
+}: {
+  studentId: string;
+  studentName: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}): ReactNode {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const mutation = useMutation({
+    mutationFn: (password: string) => studentsApi.remove(studentId, password),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.students });
+      navigate("/students", { replace: true });
+    },
+  });
+
+  return (
+    <ConfirmWithPasswordDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          mutation.reset();
+        }
+        onOpenChange(next);
+      }}
+      title="מחיקת התלמיד לצמיתות"
+      description={
+        <>
+          פעולה זו תמחק את {studentName} ואת כל ההיסטוריה שלו (פרטים, תוכניות, ישיבות
+          צוות, הערות ודוחות) לצמיתות. לא ניתן לשחזר.
+        </>
+      }
+      confirmLabel="מחיקה לצמיתות"
+      pendingLabel="מוחק…"
+      isPending={mutation.isPending}
+      error={mutation.isError ? errorMessage(mutation.error) : null}
+      onConfirm={(password) => mutation.mutate(password)}
+    />
   );
 }
 

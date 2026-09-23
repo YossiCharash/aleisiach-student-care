@@ -100,6 +100,8 @@ export const apiClient = {
     request<TResponse>(path, { method: "PUT", body }),
   patch: <TResponse>(path: string, body?: unknown): Promise<TResponse> =>
     request<TResponse>(path, { method: "PATCH", body }),
+  del: <TResponse>(path: string, body?: unknown): Promise<TResponse> =>
+    request<TResponse>(path, { method: "DELETE", body }),
   postPublic: <TResponse>(path: string, body?: unknown): Promise<TResponse> =>
     request<TResponse>(path, { method: "POST", body, auth: false }),
 };

@@ -1,14 +1,18 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.database.tenant_scope import TenantScope
+from backend.app.client.institutions.institution_purge_repository import (
+    InstitutionPurgeRepository,
+)
 from backend.app.client.institutions.institution_repository import InstitutionRepository
 from backend.app.client.students.detail_option_repository import DetailOptionRepository
+from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
 from backend.app.configuration.institutions.institution_template_settings import (
     InstitutionTemplateSettings,
@@ -19,6 +23,7 @@ from backend.app.schema.routes.institution_create_request import InstitutionCrea
 from backend.app.schema.routes.institution_response import InstitutionResponse
 from backend.app.schema.routes.institution_summary import InstitutionSummary
 from backend.app.schema.routes.institution_update_request import InstitutionUpdateRequest
+from backend.app.schema.routes.password_confirmation_request import PasswordConfirmationRequest
 from backend.app.schema.service.institution_provisioning_command import (
     InstitutionProvisioningCommand,
 )
@@ -29,7 +34,9 @@ from backend.app.service.auth.invitation_service_factory import InvitationServic
 from backend.app.service.institutions.institution_provisioning_service import (
     InstitutionProvisioningService,
 )
+from backend.app.service.institutions.institution_purge_service import InstitutionPurgeService
 from backend.app.service.institutions.institution_service import InstitutionService
+from backend.app.utils.service.password_verifier import PasswordVerifier
 
 SessionDep = Annotated[Session, Depends(get_session)]
 BootstrapDep = Annotated[Bootstrap, Depends(get_bootstrap)]
@@ -54,8 +61,17 @@ def get_provisioning_service(
     )
 
 
+def get_purge_service(session: SessionDep, bootstrap: BootstrapDep) -> InstitutionPurgeService:
+    return InstitutionPurgeService(
+        InstitutionRepository(session),
+        InstitutionPurgeRepository(session),
+        PasswordVerifier(UserRepository(session), bootstrap.password_hasher),
+    )
+
+
 ServiceDep = Annotated[InstitutionService, Depends(get_institution_service)]
 ProvisioningDep = Annotated[InstitutionProvisioningService, Depends(get_provisioning_service)]
+PurgeDep = Annotated[InstitutionPurgeService, Depends(get_purge_service)]
 
 router = APIRouter(
     prefix="/institutions",
@@ -110,3 +126,14 @@ def resend_manager_invitation(
     institution_id: uuid.UUID, service: ProvisioningDep, admin: SuperAdmin
 ) -> InstitutionResponse:
     return service.resend_manager_invitation(institution_id, admin.id)
+
+
+@router.delete("/{institution_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_institution(
+    institution_id: uuid.UUID,
+    request: PasswordConfirmationRequest,
+    service: PurgeDep,
+    admin: SuperAdmin,
+) -> Response:
+    service.delete(institution_id, admin.id, request.password)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

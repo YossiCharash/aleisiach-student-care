@@ -5,6 +5,7 @@ class AuditAction(StrEnum):
     CREATE = "create"
     UPDATE = "update"
     ARCHIVE = "archive"
+    DELETE = "delete"
     LOGIN = "login"
     LOGIN_FAILED = "login_failed"
     LOCKOUT = "lockout"
