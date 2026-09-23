@@ -6,7 +6,7 @@ import { setToken } from "@/lib/auth/tokenStorage";
 import { roleLabels } from "@/lib/utils/hebrew";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Label } from "@/components/ui/Label";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
@@ -104,9 +104,8 @@ function ChangePasswordForm(): ReactNode {
       {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
       <div>
         <Label htmlFor="current-password">סיסמה נוכחית</Label>
-        <Input
+        <PasswordInput
           id="current-password"
-          type="password"
           autoComplete="current-password"
           value={currentPassword}
           onChange={(event) => setCurrentPassword(event.target.value)}
@@ -115,9 +114,8 @@ function ChangePasswordForm(): ReactNode {
       </div>
       <div>
         <Label htmlFor="new-password">סיסמה חדשה</Label>
-        <Input
+        <PasswordInput
           id="new-password"
-          type="password"
           autoComplete="new-password"
           value={newPassword}
           onChange={(event) => setNewPassword(event.target.value)}
@@ -126,9 +124,8 @@ function ChangePasswordForm(): ReactNode {
       </div>
       <div>
         <Label htmlFor="confirm-password">אימות סיסמה חדשה</Label>
-        <Input
+        <PasswordInput
           id="confirm-password"
-          type="password"
           autoComplete="new-password"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}

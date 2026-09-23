@@ -37,6 +37,17 @@ describe("InviteUserDialog", () => {
     );
   });
 
+  it("confirms that the invitation email was sent", async () => {
+    renderWithClient(<InviteUserDialog open onOpenChange={vi.fn()} />);
+    await fillFirstRow();
+
+    await userEvent.click(screen.getByRole("button", { name: "שליחת הזמנה" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("ההזמנה נשלחה בהצלחה בדוא״ל.")).toBeInTheDocument()
+    );
+  });
+
   it("creates the user without an email when the toggle is cleared", async () => {
     renderWithClient(<InviteUserDialog open onOpenChange={vi.fn()} />);
     await fillFirstRow();

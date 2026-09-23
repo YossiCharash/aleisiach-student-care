@@ -33,6 +33,7 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
   const queryClient = useQueryClient();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -46,7 +47,8 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.institutions });
-      handleOpenChange(false);
+      setSuccessMessage(`המוסד הוקם, והזמנה נשלחה בהצלחה בדוא״ל אל ${form.managerEmail.trim()}.`);
+      setForm(EMPTY_FORM);
     },
     onError: (caught) => setError(errorMessage(caught)),
   });
@@ -55,6 +57,7 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
     if (!next) {
       setForm(EMPTY_FORM);
       setError(null);
+      setSuccessMessage(null);
     }
     onOpenChange(next);
   }
@@ -62,6 +65,7 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
     setError(null);
+    setSuccessMessage(null);
     mutation.mutate();
   }
 
@@ -75,6 +79,7 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {successMessage !== null && <Alert tone="success">{successMessage}</Alert>}
           {error !== null && <Alert tone="error">{error}</Alert>}
 
           <div>

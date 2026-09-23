@@ -768,6 +768,48 @@ narrowed.
 
 ---
 
+## ADR-031 — Permanent hard delete of a student / institution (password-confirmed)
+
+**Status:** accepted (2026-09-23). **Supersedes** the "archive-only, no hard delete" clause of
+working-rule 7 by adding one explicit exception; soft-delete (archive) remains the default path.
+
+**Decision (per the user):** Provide a deliberate, permanent hard delete "with all the history":
+- A **manager** may permanently delete a **student in their own institution** — removing the
+  student and every dependent record (details, program + entries, versioned plans + entries +
+  solutions, team meetings + snapshots, social-worker notes, reception/functional/supported-
+  employment reports, extra sections).
+- A **super_admin** may permanently delete an **institution** — removing the institution and all of
+  its data (users, sessions/tokens, workshops, students and their whole subtree, taxonomy, extra
+  section types, audit log).
+Each action is **irreversible** and is gated behind **re-entering the acting user's own password**,
+verified server-side (`argon2` hash) before anything is deleted; a wrong password returns 400 and
+changes nothing. Cross-institution never happens: a student purge runs under the manager's tenant
+scope, and an institution purge filters every delete by `institution_id` explicitly.
+
+**Implementation:**
+- `StudentPurgeService` + `StudentPurgeRepository` — loads each direct child subtree via ORM and
+  `session.delete`s it so the existing `cascade="all, delete-orphan"` relationships remove the
+  grandchildren, then deletes the student; records a final `AuditAction.DELETE` entry.
+- `InstitutionPurgeService` + `InstitutionPurgeRepository` — deletes each user's sessions/tokens
+  first (they carry no `institution_id`), then walks `Base.metadata.sorted_tables` in reverse
+  dependency order deleting every table that has an `institution_id` (self-referential
+  `extra_section_types` is deleted leaf-first), then the institution row. Runs under
+  `TenantBinding.platform` (the super_admin has no tenant).
+- Routes: `DELETE /students/{id}` (manager) and `DELETE /institutions/{id}` (super_admin), both
+  taking a `PasswordConfirmationRequest` body and answering `204`.
+- Frontend: a shared `ConfirmWithPasswordDialog` (uses the show/hide `PasswordInput`); reached from
+  the student actions menu ("מחיקה לצמיתות") and the institutions-console row.
+
+**Alternatives considered:** DB-level `ON DELETE CASCADE` (rejected — no cascade exists in the
+schema/migrations and adding it is a broad, risky change); a second confirmation typed-name field
+instead of the password (rejected — the user asked specifically for password confirmation).
+
+**Consequences:** Data can now be destroyed irretrievably from the app, so the password gate and the
+manager/super_admin split are the only safeguards. The audit trail keeps a `delete` record for a
+student purge; an institution purge intentionally takes its own audit log with it.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

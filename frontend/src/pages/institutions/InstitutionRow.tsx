@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, MailPlus, Pencil, Power } from "lucide-react";
+import { Building2, MailPlus, Pencil, Power, Trash2 } from "lucide-react";
 import { institutionsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { InstitutionSummary } from "@/lib/api/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ConfirmWithPasswordDialog } from "@/components/ui/ConfirmWithPasswordDialog";
 import { errorMessage } from "@/components/ui/ErrorState";
 import { ConfirmDeactivationDialog } from "@/pages/institutions/ConfirmDeactivationDialog";
 import { EditInstitutionDialog } from "@/pages/institutions/EditInstitutionDialog";
@@ -18,7 +19,9 @@ export function InstitutionRow({
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
   function refresh(): void {
     setActionError(null);
@@ -27,6 +30,7 @@ export function InstitutionRow({
 
   function reportFailure(caught: unknown): void {
     setConfirmOpen(false);
+    setActionNotice(null);
     setActionError(errorMessage(caught));
   }
 
@@ -44,8 +48,19 @@ export function InstitutionRow({
 
   const resendInvitation = useMutation({
     mutationFn: () => institutionsApi.resendManagerInvitation(institution.id),
-    onSuccess: refresh,
+    onSuccess: () => {
+      refresh();
+      setActionNotice("הזמנת המנהל נשלחה מחדש בהצלחה בדוא״ל.");
+    },
     onError: reportFailure,
+  });
+
+  const remove = useMutation({
+    mutationFn: (password: string) => institutionsApi.remove(institution.id, password),
+    onSuccess: () => {
+      setDeleteOpen(false);
+      refresh();
+    },
   });
 
   return (
@@ -67,6 +82,9 @@ export function InstitutionRow({
             )}
             {actionError !== null && (
               <div className="text-xs font-normal text-rating-red">{actionError}</div>
+            )}
+            {actionNotice !== null && (
+              <div className="text-xs font-normal text-brand">{actionNotice}</div>
             )}
           </div>
         </div>
@@ -122,6 +140,17 @@ export function InstitutionRow({
           >
             <Power className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            title="מחיקת המוסד לצמיתות"
+            onClick={() => {
+              remove.reset();
+              setDeleteOpen(true);
+            }}
+          >
+            <Trash2 className="h-4 w-4 text-rating-red" />
+          </Button>
         </div>
       </td>
 
@@ -138,6 +167,22 @@ export function InstitutionRow({
         institutionName={institution.name}
         isPending={toggleActive.isPending}
         onConfirm={() => toggleActive.mutate()}
+      />
+      <ConfirmWithPasswordDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="מחיקת המוסד לצמיתות"
+        description={
+          <>
+            פעולה זו תמחק את {institution.name} ואת כל הנתונים שלו (משתמשים, סדנאות,
+            תלמידים וכל ההיסטוריה) לצמיתות. לא ניתן לשחזר.
+          </>
+        }
+        confirmLabel="מחיקה לצמיתות"
+        pendingLabel="מוחק…"
+        isPending={remove.isPending}
+        error={remove.isError ? errorMessage(remove.error) : null}
+        onConfirm={(password) => remove.mutate(password)}
       />
     </tr>
   );

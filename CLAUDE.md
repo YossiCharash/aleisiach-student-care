@@ -163,10 +163,16 @@ on purpose: it has no access to any of these.
    **Never let data cross institutions** — a new table that belongs to an institution carries
    `institution_id` and inherits `TenantScoped`; a new query that does not go through the ORM
    entity filter (a raw aggregate, a column-only select) filters by institution explicitly.
-   **Deletion is archive-only** (soft-delete, manager only) — no hard delete from the app. **Audit
-   log records every change** (create/update/archive of student/details/meeting/taxonomy/
-   permission) — actor + what changed + when; reads are not logged, and raw sensitive values are
-   never written to the log.
+   **Deletion is archive-only by default** (soft-delete, manager only). The **one exception**
+   (added 2026-09-23, ADR-031) is a deliberate **permanent hard delete**: a **manager** may
+   permanently delete a **student in their own institution** with all its history, and a
+   **super_admin** may permanently delete an **institution** with all its data. Each is
+   irreversible, gated behind **re-entering the acting user's own password** (verified server-side),
+   and never cascades across institutions. **Audit log records every change**
+   (create/update/archive/**delete** of student/details/meeting/taxonomy/permission) — actor + what
+   changed + when; reads are not logged, and raw sensitive values are never written to the log. (A
+   student purge writes a final `delete` audit entry; an institution purge removes that
+   institution's audit log along with the rest of its data.)
 8. **Demo data only** during the prototype phase; do not enter real student data.
 9. **Consistent terminology** — the end-user term is **"student" (תלמיד)** (not ward/patient).
 10. **Ask before irreversible actions** (deletion, destructive migrations, permission changes).
@@ -233,7 +239,8 @@ on purpose: it has no access to any of these.
 - **Institutions console** (`super_admin` only) — the list of institutions with their user and
   student counts and contact person; create an institution (name · code · first manager's name
   and e-mail · optional contact), edit name and contact, re-send a pending manager invitation,
-  deactivate and reactivate. Shows no institution content.
+  deactivate and reactivate, and **permanently delete an institution with all its data**
+  (password-confirmed, irreversible — ADR-031). Shows no institution content.
 - **Invitation-acceptance screen** — reached from the email link; set username + password (+ confirm).
 - **Forgot-password screen** — enter email; neutral confirmation message either way.
 - **Main screen** — top-right: worker name + list of students assigned to their class; clicking
