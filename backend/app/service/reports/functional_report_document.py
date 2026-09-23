@@ -2,6 +2,8 @@ from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.functional_report_response import FunctionalReportResponse
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _SECTION_TITLES = (
@@ -30,15 +32,14 @@ class FunctionalReportDocument:
             "padding-top:8pt}"
         )
 
-    def to_html(self, report: FunctionalReportResponse, institution_name: str) -> str:
+    def to_html(self, report: FunctionalReportResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("דוח תפקודי", issue)
         body = self._identity(report) + self._sections(report) + self._footer(report)
-        return self._shell.render(self._css(), institution_name, "דוח תפקודי", body)
+        return self._shell.render(self._css(), meta, body)
 
     def _identity(self, report: FunctionalReportResponse) -> str:
-        return (
-            self._shell.field("שם", report.student_name)
-            + self._shell.field("מספר ת.ז", report.national_id)
-            + self._shell.field("תאריך לידה", self._shell.value(report.date_of_birth))
+        return self._shell.field("מספר ת.ז", report.national_id) + self._shell.field(
+            "תאריך לידה", self._shell.value(report.date_of_birth)
         )
 
     def _sections(self, report: FunctionalReportResponse) -> str:

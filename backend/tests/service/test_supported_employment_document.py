@@ -1,10 +1,21 @@
 import uuid
+from datetime import date
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.supported_employment_response import SupportedEmploymentResponse
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.reports.supported_employment_document import (
     SupportedEmploymentDocument,
 )
+
+
+def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
+    return IssueContext(
+        institution_name=institution_name,
+        student_name="נועה",
+        issued_by="מפיקה",
+        issue_date=date(2026, 9, 23),
+    )
 
 
 def _report(**overrides: object) -> SupportedEmploymentResponse:
@@ -28,7 +39,7 @@ def _report(**overrides: object) -> SupportedEmploymentResponse:
 
 
 def test_html_is_rtl_and_contains_all_fields() -> None:
-    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), "מוסד בדיקה")
+    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), _issue())
 
     assert 'dir="rtl"' in html
     assert "ניתוח עבודה נתמכת" in html
@@ -42,7 +53,7 @@ def test_html_is_rtl_and_contains_all_fields() -> None:
 
 def test_html_escapes_free_text() -> None:
     html = SupportedEmploymentDocument(BrandSettings()).to_html(
-        _report(work_process="<script>x</script>"), "מוסד בדיקה"
+        _report(work_process="<script>x</script>"), _issue()
     )
 
     assert "<script>x</script>" not in html
@@ -50,12 +61,12 @@ def test_html_escapes_free_text() -> None:
 
 
 def test_empty_value_renders_a_dash() -> None:
-    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(mobility=""), "מוסד בדיקה")
+    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(mobility=""), _issue())
 
     assert "—" in html
 
 
 def test_carries_the_institution_name() -> None:
-    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), "בית ספר השרון")
+    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html

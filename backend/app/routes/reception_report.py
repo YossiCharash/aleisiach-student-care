@@ -10,8 +10,8 @@ from backend.app.client.reports.reception_report_repository import ReceptionRepo
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
-from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import Manager, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, Issue, RendererDep
+from backend.app.routes.security import Manager, require_tenant
 from backend.app.schema.routes.reception_report_response import ReceptionReportResponse
 from backend.app.schema.routes.reception_report_upsert_request import (
     ReceptionReportUpsertRequest,
@@ -21,6 +21,7 @@ from backend.app.service.reports.reception_report_document import ReceptionRepor
 from backend.app.service.reports.reception_report_service import ReceptionReportService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 from backend.app.utils.service.clock import Clock
 
 
@@ -68,15 +69,15 @@ def get_reception_report_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
     manager: Manager,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     report = service.get(student_id, StudentAccessPolicy.scope_for(manager))
-    html = ReceptionReportDocument(brand).to_html(report, tenant.institution_name)
+    html = ReceptionReportDocument(brand).to_html(report, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="reception-report-{student_id}.pdf"'},
+        headers={"Content-Disposition": pdf_content_disposition(issue.student_name, "דוח קבלה")},
     )

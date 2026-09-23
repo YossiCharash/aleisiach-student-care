@@ -4,7 +4,17 @@ from datetime import UTC, date, datetime
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.reception_checklist_item import ReceptionChecklistItem
 from backend.app.schema.routes.reception_report_response import ReceptionReportResponse
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.reports.reception_report_document import ReceptionReportDocument
+
+
+def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
+    return IssueContext(
+        institution_name=institution_name,
+        student_name="נועה",
+        issued_by="מפיקה",
+        issue_date=date(2026, 9, 23),
+    )
 
 
 def _report(**overrides: object) -> ReceptionReportResponse:
@@ -34,7 +44,7 @@ def _report(**overrides: object) -> ReceptionReportResponse:
 
 
 def test_html_is_rtl_and_contains_all_sections() -> None:
-    html = ReceptionReportDocument(BrandSettings()).to_html(_report(), "מוסד בדיקה")
+    html = ReceptionReportDocument(BrandSettings()).to_html(_report(), _issue())
 
     assert 'dir="rtl"' in html
     assert "דוח קבלה" in html
@@ -52,7 +62,7 @@ def test_html_is_rtl_and_contains_all_sections() -> None:
 
 def test_html_escapes_free_text() -> None:
     html = ReceptionReportDocument(BrandSettings()).to_html(
-        _report(committee_summary="<script>x</script>"), "מוסד בדיקה"
+        _report(committee_summary="<script>x</script>"), _issue()
     )
 
     assert "<script>x</script>" not in html
@@ -61,13 +71,13 @@ def test_html_escapes_free_text() -> None:
 
 def test_empty_values_render_a_dash() -> None:
     html = ReceptionReportDocument(BrandSettings()).to_html(
-        _report(committee_recommendations="", written_by_name=None), "מוסד בדיקה"
+        _report(committee_recommendations="", written_by_name=None), _issue()
     )
 
     assert "—" in html
 
 
 def test_carries_the_institution_name() -> None:
-    html = ReceptionReportDocument(BrandSettings()).to_html(_report(), "בית ספר השרון")
+    html = ReceptionReportDocument(BrandSettings()).to_html(_report(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html

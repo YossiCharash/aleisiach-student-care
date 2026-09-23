@@ -4,6 +4,8 @@ from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.legal_status import LegalStatus
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _LEGAL_STATUS_LABELS = {
@@ -26,7 +28,8 @@ class StudentDetailsDocument:
             "ul{margin:0;padding-inline-start:18pt}"
         )
 
-    def to_html(self, details: StudentDetailsResponse, institution_name: str) -> str:
+    def to_html(self, details: StudentDetailsResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("פרטי חניך", issue)
         sections = [
             self._identity(details),
             self._diagnoses(details),
@@ -39,7 +42,7 @@ class StudentDetailsDocument:
         sections.append(self._background(details))
         sections.append(self._emotional_id(details))
         body = "".join(sections)
-        return self._shell.render(self._css(), institution_name, "פרטי חניך", body)
+        return self._shell.render(self._css(), meta, body)
 
     def _identity(self, details: StudentDetailsResponse) -> str:
         dob = details.date_of_birth.isoformat() if details.date_of_birth is not None else None

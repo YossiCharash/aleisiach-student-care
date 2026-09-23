@@ -10,8 +10,8 @@ from backend.app.client.program.program_plan_repository import ProgramPlanReposi
 from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.taxonomy.taxonomy_repository import TaxonomyRepository
-from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, Issue, RendererDep
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.plan_create_request import PlanCreateRequest
 from backend.app.schema.routes.plan_response import PlanResponse
 from backend.app.service.audit.audit_logger import AuditLogger
@@ -19,6 +19,7 @@ from backend.app.service.program.plan_document import PlanDocument
 from backend.app.service.program.program_plan_service import ProgramPlanService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 
 
 def get_program_plan_service(
@@ -63,17 +64,19 @@ def get_plans_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
     user: CurrentUser,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     plans = service.list_for_student(student_id, StudentAccessPolicy.scope_for(user))
-    html = PlanDocument(brand).combined_html(plans, tenant.institution_name)
+    html = PlanDocument(brand).combined_html(plans, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="plans-{student_id}.pdf"'},
+        headers={
+            "Content-Disposition": pdf_content_disposition(issue.student_name, "תוכניות אישיות")
+        },
     )
 
 
@@ -83,15 +86,17 @@ def get_plan_pdf(
     plan_id: uuid.UUID,
     service: ServiceDep,
     user: CurrentUser,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     plan = service.get(student_id, plan_id, StudentAccessPolicy.scope_for(user))
-    html = PlanDocument(brand).to_html(plan, tenant.institution_name)
+    html = PlanDocument(brand).to_html(plan, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="plan-{plan_id}.pdf"'},
+        headers={
+            "Content-Disposition": pdf_content_disposition(issue.student_name, "תוכנית אישית")
+        },
     )

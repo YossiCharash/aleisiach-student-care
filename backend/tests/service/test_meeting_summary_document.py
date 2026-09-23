@@ -8,7 +8,17 @@ from backend.app.schema.routes.plan_entry_response import PlanEntryResponse
 from backend.app.schema.routes.plan_solution_response import PlanSolutionResponse
 from backend.app.schema.routes.program_area import ProgramArea
 from backend.app.schema.routes.program_strength import ProgramStrength
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.meetings.meeting_summary_document import MeetingSummaryDocument
+
+
+def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
+    return IssueContext(
+        institution_name=institution_name,
+        student_name="נועה",
+        issued_by="רכזת",
+        issue_date=date(2026, 9, 23),
+    )
 
 
 def _meeting(area_name: str = "רחיצת ידיים", summary: str = "סיכום הישיבה") -> MeetingResponse:
@@ -42,7 +52,7 @@ def _meeting(area_name: str = "רחיצת ידיים", summary: str = "סיכו�
 
 
 def test_html_is_rtl_and_contains_content() -> None:
-    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue())
 
     assert 'dir="rtl"' in html
     assert "הבעה" in html
@@ -55,7 +65,7 @@ def test_html_is_rtl_and_contains_content() -> None:
 
 def test_html_escapes_snapshot_text() -> None:
     html = MeetingSummaryDocument(BrandSettings()).to_html(
-        _meeting(area_name="<script>x</script>"), "מוסד בדיקה"
+        _meeting(area_name="<script>x</script>"), _issue()
     )
 
     assert "<script>x</script>" not in html
@@ -63,18 +73,18 @@ def test_html_escapes_snapshot_text() -> None:
 
 
 def test_summary_html_carries_the_institution_name() -> None:
-    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "בית ספר השרון")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html
 
 
 def test_headings_use_the_primary_brand_green() -> None:
-    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue())
 
-    assert "h1{color:#3F8420" in html
+    assert "h2{color:#3F8420" in html
 
 
 def test_table_header_puts_white_text_on_the_primary_green() -> None:
-    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), "מוסד בדיקה")
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue())
 
     assert "th{background:#3F8420;color:#ffffff}" in html

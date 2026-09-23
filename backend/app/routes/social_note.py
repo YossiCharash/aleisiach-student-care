@@ -9,8 +9,8 @@ from backend.app.client.database.provider import get_session
 from backend.app.client.notes.social_note_repository import SocialNoteRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
-from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import Manager, ManagerOrInstructor, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, Issue, RendererDep
+from backend.app.routes.security import Manager, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.social_note_create_request import SocialNoteCreateRequest
 from backend.app.schema.routes.social_note_entry_response import SocialNoteEntryResponse
 from backend.app.schema.routes.social_note_report_response import SocialNoteReportResponse
@@ -20,6 +20,7 @@ from backend.app.service.notes.social_note_document import SocialNoteDocument
 from backend.app.service.notes.social_note_service import SocialNoteService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 from backend.app.utils.service.clock import Clock
 
 
@@ -90,17 +91,17 @@ def get_social_notes_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
     reader: ManagerOrInstructor,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     report = service.report(student_id, StudentAccessPolicy.scope_for(reader))
-    html = SocialNoteDocument(brand).combined_html(report, tenant.institution_name)
+    html = SocialNoteDocument(brand).combined_html(report, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="social-notes-{student_id}.pdf"'},
+        headers={"Content-Disposition": pdf_content_disposition(issue.student_name, "סיכומי עו״ס")},
     )
 
 
@@ -110,15 +111,15 @@ def get_social_note_pdf(
     entry_id: uuid.UUID,
     service: ServiceDep,
     reader: ManagerOrInstructor,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     report = service.entry_report(student_id, entry_id, StudentAccessPolicy.scope_for(reader))
-    html = SocialNoteDocument(brand).single_html(report, tenant.institution_name)
+    html = SocialNoteDocument(brand).single_html(report, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="social-note-{entry_id}.pdf"'},
+        headers={"Content-Disposition": pdf_content_disposition(issue.student_name, "סיכום עו״ס")},
     )

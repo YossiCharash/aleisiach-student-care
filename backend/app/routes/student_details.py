@@ -12,8 +12,8 @@ from backend.app.client.students.diagnosis_catalog_repository import (
 )
 from backend.app.client.students.student_details_repository import StudentDetailsRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, Issue, RendererDep
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.student_details_response import StudentDetailsResponse
 from backend.app.schema.routes.student_details_upsert_request import (
     StudentDetailsUpsertRequest,
@@ -24,6 +24,7 @@ from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
 from backend.app.service.students.student_details_document import StudentDetailsDocument
 from backend.app.service.students.student_details_service import StudentDetailsService
+from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 from backend.app.utils.service.clock import Clock
 
 
@@ -76,18 +77,18 @@ def get_details_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
     user: CurrentUser,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     details = service.get(
         student_id,
         StudentAccessPolicy.scope_for(user),
         StudentAccessPolicy.can_see_sensitive(user),
     )
-    pdf = renderer.render(StudentDetailsDocument(brand).to_html(details, tenant.institution_name))
+    pdf = renderer.render(StudentDetailsDocument(brand).to_html(details, issue))
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="details-{student_id}.pdf"'},
+        headers={"Content-Disposition": pdf_content_disposition(issue.student_name, "פרטי חניך")},
     )

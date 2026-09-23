@@ -3,6 +3,8 @@ from html import escape
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.reception_checklist_item import ReceptionChecklistItem
 from backend.app.schema.routes.reception_report_response import ReceptionReportResponse
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _DETAIL_ROWS = (
@@ -47,7 +49,8 @@ class ReceptionReportDocument:
             f".field{{margin:3pt 0}}.label{{color:{self._brand.muted_color}}}"
         )
 
-    def to_html(self, report: ReceptionReportResponse, institution_name: str) -> str:
+    def to_html(self, report: ReceptionReportResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("דוח קבלה", issue)
         body = (
             "<h2>פרטי קליטה</h2>"
             + self._details_table(report)
@@ -55,7 +58,7 @@ class ReceptionReportDocument:
             + self._checklist_table(report)
             + self._footer(report)
         )
-        return self._shell.render(self._css(), institution_name, "דוח קבלה", body)
+        return self._shell.render(self._css(), meta, body)
 
     def _details_table(self, report: ReceptionReportResponse) -> str:
         rows = "".join(

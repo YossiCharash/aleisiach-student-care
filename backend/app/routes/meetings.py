@@ -10,8 +10,8 @@ from backend.app.client.meetings.meeting_repository import MeetingRepository
 from backend.app.client.program.program_plan_repository import ProgramPlanRepository
 from backend.app.client.program.program_repository import ProgramRepository
 from backend.app.client.students.student_repository import StudentRepository
-from backend.app.routes.pdf import BrandDep, RendererDep
-from backend.app.routes.security import CurrentUser, ManagerOrInstructor, Tenant, require_tenant
+from backend.app.routes.pdf import BrandDep, Issue, RendererDep
+from backend.app.routes.security import CurrentUser, ManagerOrInstructor, require_tenant
 from backend.app.schema.routes.meeting_create_request import MeetingCreateRequest
 from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.schema.routes.meeting_update_request import MeetingUpdateRequest
@@ -20,6 +20,7 @@ from backend.app.service.meetings.meeting_service import MeetingService
 from backend.app.service.meetings.meeting_summary_document import MeetingSummaryDocument
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 
 
 def get_meeting_service(
@@ -89,15 +90,17 @@ def get_meeting_pdf(
     meeting_id: uuid.UUID,
     service: ServiceDep,
     user: CurrentUser,
+    issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
-    tenant: Tenant,
 ) -> Response:
     meeting = service.get(student_id, meeting_id, StudentAccessPolicy.scope_for(user))
-    html = MeetingSummaryDocument(brand).to_html(meeting, tenant.institution_name)
+    html = MeetingSummaryDocument(brand).to_html(meeting, issue)
     pdf = renderer.render(html)
     return Response(
         content=pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="meeting-{meeting_id}.pdf"'},
+        headers={
+            "Content-Disposition": pdf_content_disposition(issue.student_name, "סיכום ישיבת צוות")
+        },
     )
