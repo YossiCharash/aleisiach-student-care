@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Callable
+from urllib.parse import quote
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -144,6 +145,8 @@ def test_pdf_export(
     pdf = api.get(f"/students/{student_id}/functional-report/pdf", headers=headers)
     assert pdf.status_code == 200
     assert pdf.headers["content-type"] == "application/pdf"
+    assert "filename*=UTF-8''" in pdf.headers["content-disposition"]
+    assert quote("דוח תפקודי.pdf", safe="") in pdf.headers["content-disposition"]
 
 
 def test_report_requires_authentication(

@@ -6,6 +6,8 @@ from backend.app.schema.routes.meeting_response import MeetingResponse
 from backend.app.schema.routes.plan_entry_response import PlanEntryResponse
 from backend.app.schema.routes.program_area import ProgramArea
 from backend.app.schema.routes.program_strength import ProgramStrength
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _AREA_RATING_LABELS = {
@@ -19,15 +21,15 @@ class MeetingSummaryDocument:
         self._brand = brand
         self._shell = DocumentShell(brand)
 
-    def to_html(self, meeting: MeetingResponse, institution_name: str) -> str:
+    def to_html(self, meeting: MeetingResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("סיכום ישיבת צוות", issue, meeting.meeting_date)
         body = (
-            f'<p class="period">{meeting.meeting_date.strftime("%d/%m/%Y")}</p>'
             f"{self._strengths_section(meeting.strengths)}"
             f"{self._areas_section(meeting.areas_to_strengthen)}"
             f"{self._plan_section(meeting.plan_entries)}"
             f"{self._summary_section(meeting.summary)}"
         )
-        return self._shell.render(self._css(), institution_name, "סיכום ישיבת צוות", body)
+        return self._shell.render(self._css(), meta, body)
 
     def _strengths_section(self, strengths: list[ProgramStrength]) -> str:
         if not strengths:
@@ -77,7 +79,6 @@ class MeetingSummaryDocument:
 
     def _css(self) -> str:
         return (
-            f".period{{color:{self._brand.muted_color};margin-bottom:0.6cm}}"
             f"h2{{color:{self._brand.primary_color};font-size:14pt;margin:0.8cm 0 0.3cm}}"
             f".empty{{color:{self._brand.muted_color}}}"
             "ul.foci{margin:0;padding-inline-start:1.1cm}"

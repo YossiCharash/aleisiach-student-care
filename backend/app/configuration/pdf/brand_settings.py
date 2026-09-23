@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_DEFAULT_LOGO_PATH = str(Path(__file__).resolve().parent / "assets" / "logo.png")
 
 
 class BrandSettings(BaseSettings):
@@ -10,3 +14,5 @@ class BrandSettings(BaseSettings):
     text_color: str = "#333333"
     muted_color: str = "#5C5C5C"
     surface_color: str = "#ffffff"
+    logo_path: str = _DEFAULT_LOGO_PATH
+    institution_tagline: str = "מובילים קדימה"

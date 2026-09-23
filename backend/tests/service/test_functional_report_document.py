@@ -3,7 +3,17 @@ from datetime import UTC, date, datetime
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.functional_report_response import FunctionalReportResponse
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.reports.functional_report_document import FunctionalReportDocument
+
+
+def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
+    return IssueContext(
+        institution_name=institution_name,
+        student_name="נועה",
+        issued_by="מפיקה",
+        issue_date=date(2026, 9, 23),
+    )
 
 
 def _report(**overrides: object) -> FunctionalReportResponse:
@@ -27,7 +37,7 @@ def _report(**overrides: object) -> FunctionalReportResponse:
 
 
 def test_html_is_rtl_and_contains_all_sections() -> None:
-    html = FunctionalReportDocument(BrandSettings()).to_html(_report(), "מוסד בדיקה")
+    html = FunctionalReportDocument(BrandSettings()).to_html(_report(), _issue())
 
     assert 'dir="rtl"' in html
     assert "דוח תפקודי" in html
@@ -42,7 +52,7 @@ def test_html_is_rtl_and_contains_all_sections() -> None:
 
 def test_html_escapes_section_text() -> None:
     html = FunctionalReportDocument(BrandSettings()).to_html(
-        _report(general_background="<script>x</script>"), "מוסד בדיקה"
+        _report(general_background="<script>x</script>"), _issue()
     )
 
     assert "<script>x</script>" not in html
@@ -51,13 +61,22 @@ def test_html_escapes_section_text() -> None:
 
 def test_empty_sections_render_a_dash() -> None:
     html = FunctionalReportDocument(BrandSettings()).to_html(
-        _report(vocational_domain="", written_by_name=None), "מוסד בדיקה"
+        _report(vocational_domain="", written_by_name=None), _issue()
     )
 
     assert "—" in html
 
 
 def test_carries_the_institution_name() -> None:
-    html = FunctionalReportDocument(BrandSettings()).to_html(_report(), "בית ספר השרון")
+    html = FunctionalReportDocument(BrandSettings()).to_html(_report(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html
+
+
+def test_issue_metadata_appears_in_the_header_card() -> None:
+    html = FunctionalReportDocument(BrandSettings()).to_html(_report(), _issue())
+
+    assert "הופק על ידי" in html
+    assert "מפיקה" in html
+    assert "תאריך הנפקה" in html
+    assert "23/09/2026" in html

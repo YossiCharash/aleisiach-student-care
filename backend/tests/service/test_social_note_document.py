@@ -4,7 +4,17 @@ from datetime import UTC, date, datetime
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.social_note_entry_response import SocialNoteEntryResponse
 from backend.app.schema.routes.social_note_report_response import SocialNoteReportResponse
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.notes.social_note_document import SocialNoteDocument
+
+
+def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
+    return IssueContext(
+        institution_name=institution_name,
+        student_name="דנה",
+        issued_by="מפיקה",
+        issue_date=date(2026, 9, 23),
+    )
 
 
 def _entry(content: str = "שיחה עם ההורים", author_name: str = "מור") -> SocialNoteEntryResponse:
@@ -26,7 +36,7 @@ def _report(entries: list[SocialNoteEntryResponse]) -> SocialNoteReportResponse:
 
 
 def test_combined_html_is_rtl_and_contains_entries() -> None:
-    html = SocialNoteDocument(BrandSettings()).combined_html(_report([_entry()]), "מוסד בדיקה")
+    html = SocialNoteDocument(BrandSettings()).combined_html(_report([_entry()]), _issue())
 
     assert 'dir="rtl"' in html
     assert "דנה" in html
@@ -37,7 +47,7 @@ def test_combined_html_is_rtl_and_contains_entries() -> None:
 
 
 def test_combined_html_handles_no_entries() -> None:
-    html = SocialNoteDocument(BrandSettings()).combined_html(_report([]), "מוסד בדיקה")
+    html = SocialNoteDocument(BrandSettings()).combined_html(_report([]), _issue())
 
     assert "אין סיכומי עו״ס להצגה." in html
     assert "דנה" in html
@@ -45,7 +55,7 @@ def test_combined_html_handles_no_entries() -> None:
 
 def test_single_html_renders_one_entry() -> None:
     entry = _entry(content="הערה בודדת")
-    html = SocialNoteDocument(BrandSettings()).single_html(_report([entry]), "מוסד בדיקה")
+    html = SocialNoteDocument(BrandSettings()).single_html(_report([entry]), _issue())
 
     assert "הערה בודדת" in html
     assert "סיכום עו״ס" in html
@@ -53,7 +63,7 @@ def test_single_html_renders_one_entry() -> None:
 
 def test_html_escapes_note_content() -> None:
     html = SocialNoteDocument(BrandSettings()).combined_html(
-        _report([_entry(content="<script>x</script>")]), "מוסד בדיקה"
+        _report([_entry(content="<script>x</script>")]), _issue()
     )
 
     assert "<script>x</script>" not in html
@@ -61,6 +71,6 @@ def test_html_escapes_note_content() -> None:
 
 
 def test_headings_use_the_primary_brand_green() -> None:
-    html = SocialNoteDocument(BrandSettings()).combined_html(_report([_entry()]), "מוסד בדיקה")
+    html = SocialNoteDocument(BrandSettings()).combined_html(_report([_entry()]), _issue())
 
-    assert "h1{color:#3F8420" in html
+    assert "h2{color:#3F8420" in html

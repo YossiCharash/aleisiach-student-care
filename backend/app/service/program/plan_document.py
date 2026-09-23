@@ -4,6 +4,8 @@ from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.meeting_rating import MeetingRating
 from backend.app.schema.routes.plan_entry_response import PlanEntryResponse
 from backend.app.schema.routes.plan_response import PlanResponse
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _RATING_LABELS = {
@@ -17,19 +19,17 @@ class PlanDocument:
         self._brand = brand
         self._shell = DocumentShell(brand)
 
-    def to_html(self, plan: PlanResponse, institution_name: str) -> str:
-        return self._shell.render(
-            self._css(), institution_name, "תוכנית אישית", self._plan_section(plan)
-        )
+    def to_html(self, plan: PlanResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("תוכנית אישית", issue, plan.created_at.date())
+        return self._shell.render(self._css(), meta, self._plan_section(plan))
 
-    def combined_html(self, plans: list[PlanResponse], institution_name: str) -> str:
+    def combined_html(self, plans: list[PlanResponse], issue: IssueContext) -> str:
+        meta = DocumentMeta.build("תוכניות אישיות — כל התאריכים", issue)
         if not plans:
             body = '<p class="empty">אין תוכניות להצגה.</p>'
         else:
             body = "".join(self._plan_section(plan) for plan in reversed(plans))
-        return self._shell.render(
-            self._css(), institution_name, "תוכניות אישיות — כל התאריכים", body
-        )
+        return self._shell.render(self._css(), meta, body)
 
     def _plan_section(self, plan: PlanResponse) -> str:
         rows = "".join(self._row(entry) for entry in plan.entries)

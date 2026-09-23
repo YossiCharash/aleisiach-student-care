@@ -2,6 +2,8 @@ from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.schema.routes.supported_employment_response import SupportedEmploymentResponse
+from backend.app.schema.service.document_meta import DocumentMeta
+from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 _FIELD_TITLES = (
@@ -32,9 +34,10 @@ class SupportedEmploymentDocument:
             ".section-body{white-space:pre-wrap;margin:4pt 0}"
         )
 
-    def to_html(self, report: SupportedEmploymentResponse, institution_name: str) -> str:
+    def to_html(self, report: SupportedEmploymentResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build("ניתוח עבודה נתמכת", issue)
         body = self._fields(report)
-        return self._shell.render(self._css(), institution_name, "ניתוח עבודה נתמכת", body)
+        return self._shell.render(self._css(), meta, body)
 
     def _fields(self, report: SupportedEmploymentResponse) -> str:
         return "".join(
