@@ -68,7 +68,11 @@ export function ConfirmWithPasswordDialog({
             />
           </div>
           <div className="flex justify-start gap-2">
-            <Button type="submit" variant="danger" disabled={isPending || password.length === 0}>
+            <Button
+              type="submit"
+              variant="danger"
+              disabled={isPending || password.length === 0}
+            >
               {isPending ? pendingLabel : confirmLabel}
             </Button>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

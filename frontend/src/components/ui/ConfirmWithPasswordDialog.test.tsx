@@ -3,7 +3,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConfirmWithPasswordDialog } from "@/components/ui/ConfirmWithPasswordDialog";
 
-function renderDialog(overrides: Partial<Parameters<typeof ConfirmWithPasswordDialog>[0]> = {}) {
+function renderDialog(
+  overrides: Partial<Parameters<typeof ConfirmWithPasswordDialog>[0]> = {}
+) {
   const onConfirm = vi.fn();
   render(
     <ConfirmWithPasswordDialog

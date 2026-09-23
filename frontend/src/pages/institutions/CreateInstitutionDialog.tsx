@@ -47,7 +47,9 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.institutions });
-      setSuccessMessage(`המוסד הוקם, והזמנה נשלחה בהצלחה בדוא״ל אל ${form.managerEmail.trim()}.`);
+      setSuccessMessage(
+        `המוסד הוקם, והזמנה נשלחה בהצלחה בדוא״ל אל ${form.managerEmail.trim()}.`
+      );
       setForm(EMPTY_FORM);
     },
     onError: (caught) => setError(errorMessage(caught)),
