@@ -131,7 +131,7 @@ function WorkshopRow({
         aria-hidden
       />
       <span
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-2 ring-white ring-offset-1 ring-offset-slate-100"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-900/10 ring-2 ring-white ring-offset-1 ring-offset-slate-100"
         style={{ backgroundColor: workshop.color }}
         aria-hidden
       />
@@ -184,7 +184,7 @@ function ArchivedWorkshopRow({ workshop }: { workshop: WorkshopResponse }): Reac
         aria-hidden
       />
       <span
-        className="h-10 w-10 shrink-0 rounded-full opacity-50 grayscale"
+        className="h-10 w-10 shrink-0 rounded-full border border-slate-300 opacity-50 grayscale"
         style={{ backgroundColor: workshop.color }}
         aria-hidden
       />
