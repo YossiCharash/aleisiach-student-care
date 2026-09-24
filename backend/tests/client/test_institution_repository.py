@@ -19,8 +19,8 @@ def test_get_returns_the_stored_institution(db_session: Session) -> None:
 def test_list_all_is_ordered_by_name_across_institutions(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    seed_institution("אלף", "alef")
-    seed_institution("בית", "bet")
+    seed_institution("אלף")
+    seed_institution("בית")
 
     names = [institution.name for institution in InstitutionRepository(db_session).list_all()]
 
@@ -30,7 +30,7 @@ def test_list_all_is_ordered_by_name_across_institutions(
 def test_new_institutions_are_active(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    institution = seed_institution("מוסד חדש", "fresh")
+    institution = seed_institution("מוסד חדש")
 
     assert institution.is_active is True
     assert institution.deactivated_at is None

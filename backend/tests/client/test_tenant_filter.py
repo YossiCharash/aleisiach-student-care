@@ -35,7 +35,7 @@ def _seed_student(session: Session, institution_id: uuid.UUID, name: str) -> Stu
 def test_select_returns_only_the_bound_institution(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     _seed_student(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
     _seed_student(db_session, other.id, "שלהם")
 
@@ -47,7 +47,7 @@ def test_select_returns_only_the_bound_institution(
 def test_each_binding_sees_its_own_rows(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     _seed_student(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
     _seed_student(db_session, other.id, "שלהם")
 
@@ -63,7 +63,7 @@ def test_each_binding_sees_its_own_rows(
 def test_get_by_id_hides_a_foreign_row(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     foreign = _seed_student(db_session, other.id, "שלהם")
 
     assert StudentRepository(db_session).get(foreign.id) is None
@@ -72,7 +72,7 @@ def test_get_by_id_hides_a_foreign_row(
 def test_aggregate_counts_only_the_bound_institution(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     _seed_student(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
     _seed_student(db_session, other.id, "שלהם")
 
@@ -98,7 +98,7 @@ def test_denied_binding_hides_every_row(db_session: Session) -> None:
 def test_platform_scope_sees_every_institution(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     _seed_workshop(db_session, DEFAULT_INSTITUTION_ID, "שלנו")
     _seed_workshop(db_session, other.id, "שלהם")
 
@@ -125,7 +125,7 @@ def test_require_rejects_a_denied_session(db_session: Session) -> None:
 def test_taxonomy_of_another_institution_is_hidden(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     db_session.add(Label(name="שלהם", order=0, institution_id=other.id))
     db_session.add(Label(name="שלנו", order=0, institution_id=DEFAULT_INSTITUTION_ID))
     db_session.flush()

@@ -68,7 +68,7 @@ def require_tenant(request: Request, user: CurrentUser, session: SessionDep) -> 
     institution = InstitutionRepository(session).get(user.institution_id)
     if institution is None:
         raise AuthorizationError
-    request.state.institution_ref = str(institution.id)
+    request.state.institution_ref = institution.name
     if not institution.is_active:
         raise InstitutionInactiveError
     return TenantContext(institution_id=institution.id, institution_name=institution.name)

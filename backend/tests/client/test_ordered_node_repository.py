@@ -24,7 +24,7 @@ def test_next_order_ignores_the_nodes_of_another_institution(
     repository = TaxonomyRepository(db_session)
     repository.add_label(Label(name="ניקיון", order=0))
     repository.add_label(Label(name="תזונה", order=1))
-    neighbour = seed_institution("מוסד שכן", "neighbour")
+    neighbour = seed_institution("מוסד שכן")
 
     TenantBinding.bind(db_session, neighbour.id)
 

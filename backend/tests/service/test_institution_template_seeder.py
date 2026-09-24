@@ -35,7 +35,7 @@ def _options(session: Session, institution_id: uuid.UUID) -> list[DetailOption]:
 def test_seeds_every_configured_field(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    institution = seed_institution("מוסד חדש", "fresh")
+    institution = seed_institution("מוסד חדש")
 
     _seeder(db_session, InstitutionTemplateSettings()).seed(institution.id)
 
@@ -46,7 +46,7 @@ def test_seeds_every_configured_field(
 def test_seeded_options_keep_their_configured_order(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    institution = seed_institution("מוסד חדש", "fresh")
+    institution = seed_institution("מוסד חדש")
     settings = InstitutionTemplateSettings(detail_options={"idd_severity": ("אחת", "שתיים")})
 
     _seeder(db_session, settings).seed(institution.id)
@@ -58,8 +58,8 @@ def test_seeded_options_keep_their_configured_order(
 def test_seeded_options_belong_to_the_requested_institution_only(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    first = seed_institution("ראשון", "first")
-    second = seed_institution("שני", "second")
+    first = seed_institution("ראשון")
+    second = seed_institution("שני")
     settings = InstitutionTemplateSettings(detail_options={"idd_severity": ("אחת",)})
 
     _seeder(db_session, settings).seed(first.id)
@@ -71,7 +71,7 @@ def test_seeded_options_belong_to_the_requested_institution_only(
 def test_an_empty_template_seeds_nothing(
     db_session: Session, seed_institution: SeedInstitution
 ) -> None:
-    institution = seed_institution("מוסד חדש", "fresh")
+    institution = seed_institution("מוסד חדש")
 
     _seeder(db_session, InstitutionTemplateSettings(detail_options={})).seed(institution.id)
 

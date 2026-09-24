@@ -104,7 +104,7 @@ class _NoOpRateLimiter(RateLimiter):
 
 @pytest.fixture
 def seed_institution(db_session: Session) -> Callable[..., Institution]:
-    def _seed(name: str, code: str = "", is_active: bool = True) -> Institution:
+    def _seed(name: str, is_active: bool = True) -> Institution:
         institution = Institution(id=uuid.uuid4(), name=name, is_active=is_active)
         db_session.add(institution)
         db_session.flush()

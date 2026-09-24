@@ -34,7 +34,7 @@ def _service(session: Session) -> InstitutionPurgeService:
 def test_deletes_the_institution(
     db_session: Session, seed_institution: SeedInstitution, seed_user: SeedUser
 ) -> None:
-    target_id = seed_institution("בית ספר ב", "school-b").id
+    target_id = seed_institution("בית ספר ב").id
     admin_id = seed_user("root", UserRole.SUPER_ADMIN).id
 
     _service(db_session).delete(target_id, admin_id, "password123")
@@ -46,7 +46,7 @@ def test_deletes_the_institution(
 def test_wrong_password_raises_and_keeps_the_institution(
     db_session: Session, seed_institution: SeedInstitution, seed_user: SeedUser
 ) -> None:
-    target_id = seed_institution("בית ספר ב", "school-b").id
+    target_id = seed_institution("בית ספר ב").id
     admin_id = seed_user("root", UserRole.SUPER_ADMIN).id
 
     with pytest.raises(InvalidCurrentPasswordError):

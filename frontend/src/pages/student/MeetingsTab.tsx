@@ -70,7 +70,7 @@ export function MeetingsTab({
           studentId={studentId}
           meeting={selected}
           canWrite={canWrite}
-          onOpenChange={(open) => setSelectedId(open ? selected.id : null)}
+          onOpenChange={() => setSelectedId(null)}
         />
       )}
 
