@@ -40,12 +40,7 @@ export function PdfButton({ url, label }: { url: string; label?: string }): Reac
           <Download className="h-4 w-4" />
           {pending === "download" ? "מוריד…" : "הורדה"}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => run("print")}
-          disabled={busy}
-        >
+        <Button variant="outline" size="sm" onClick={() => run("print")} disabled={busy}>
           <Printer className="h-4 w-4" />
           {pending === "print" ? "מכין להדפסה…" : "הדפסה"}
         </Button>
