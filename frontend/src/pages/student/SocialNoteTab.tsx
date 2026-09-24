@@ -112,7 +112,7 @@ function EntryCard({
       <CardHeader className="flex items-center justify-between">
         <CardTitle>{formatDate(entry.note_date)}</CardTitle>
         <div className="flex items-center gap-2">
-          <PdfButton url={socialNoteApi.pdfUrl(studentId, entry.id)} label="ייצוא PDF" />
+          <PdfButton url={socialNoteApi.pdfUrl(studentId, entry.id)} />
           {canWrite && !editing && (
             <>
               <Button

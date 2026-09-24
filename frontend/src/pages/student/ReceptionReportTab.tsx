@@ -84,7 +84,7 @@ export function ReceptionReportTab({ studentId }: { studentId: string }): ReactN
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <PdfButton url={receptionReportApi.pdfUrl(studentId)} label="ייצוא PDF" />
+        <PdfButton url={receptionReportApi.pdfUrl(studentId)} />
         <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
           <Pencil className="h-4 w-4" />
           {report.exists ? "עריכה" : "מילוי הדוח"}

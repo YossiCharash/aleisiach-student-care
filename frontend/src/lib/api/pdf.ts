@@ -30,16 +30,26 @@ export function parseContentDispositionFilename(header: string | null): string |
   return plain ? plain[1] : null;
 }
 
-export async function openAuthedPdf(url: string): Promise<void> {
+export async function printAuthedPdf(url: string): Promise<void> {
   const response = await fetchPdfBlob(url);
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);
-  const opened = window.open(objectUrl, "_blank", "noopener");
-  if (opened === null) {
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.style.visibility = "hidden";
+  iframe.src = objectUrl;
+  iframe.onload = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+  };
+  document.body.appendChild(iframe);
+  setTimeout(() => {
+    iframe.remove();
     URL.revokeObjectURL(objectUrl);
-    throw new Error("הדפדפן חסם את פתיחת ה-PDF. אפשרו חלונות קופצים ונסו שוב.");
-  }
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  }, 60_000);
 }
 
 export async function downloadAuthedPdf(url: string): Promise<void> {

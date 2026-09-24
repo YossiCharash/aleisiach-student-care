@@ -35,7 +35,7 @@ export function DetailsTab({ studentId }: { studentId: string }): ReactNode {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <PdfButton url={detailsApi.pdfUrl(studentId)} label="ייצוא PDF" />
+        <PdfButton url={detailsApi.pdfUrl(studentId)} />
         {canWrite && !editing && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />

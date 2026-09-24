@@ -82,7 +82,7 @@ export function SupportedEmploymentTab({ studentId }: { studentId: string }): Re
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <PdfButton url={supportedEmploymentApi.pdfUrl(studentId)} label="ייצוא PDF" />
+        <PdfButton url={supportedEmploymentApi.pdfUrl(studentId)} />
         <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
           <Pencil className="h-4 w-4" />
           {report.exists ? "עריכה" : "מילוי הטופס"}
