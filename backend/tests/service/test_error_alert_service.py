@@ -66,7 +66,7 @@ def test_alert_carries_no_free_text_exception_detail() -> None:
     assert "message" not in notifier.alerts[0].model_dump()
 
 
-def test_alert_carries_the_institution_code() -> None:
+def test_alert_carries_the_institution_reference() -> None:
     notifier = _CapturingNotifier()
 
     _service(notifier).report(RuntimeError("boom"), "GET", "/students", "sharon")

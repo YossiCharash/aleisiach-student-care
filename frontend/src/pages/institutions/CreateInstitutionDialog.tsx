@@ -22,7 +22,6 @@ interface Props {
 
 const EMPTY_FORM = {
   name: "",
-  code: "",
   managerFullName: "",
   managerEmail: "",
   contactName: "",
@@ -39,7 +38,6 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
     mutationFn: () =>
       institutionsApi.create({
         name: form.name.trim(),
-        code: form.code.trim(),
         manager_full_name: form.managerFullName.trim(),
         manager_email: form.managerEmail.trim(),
         contact_name: form.contactName.trim() || null,
@@ -94,22 +92,6 @@ export function CreateInstitutionDialog({ open, onOpenChange }: Props): ReactNod
               minLength={2}
               autoFocus
             />
-          </div>
-          <div>
-            <Label htmlFor="institution-code">קוד המוסד</Label>
-            <Input
-              id="institution-code"
-              value={form.code}
-              onChange={(event) => setForm({ ...form, code: event.target.value })}
-              required
-              minLength={2}
-              pattern="[a-z0-9\-]+"
-              dir="ltr"
-            />
-            <p className="mt-1 text-xs text-ink-muted">
-              אותיות אנגליות קטנות, ספרות ומקפים בלבד. משמש לזיהוי פנימי ואינו ניתן
-              לשינוי.
-            </p>
           </div>
           <div>
             <Label htmlFor="institution-manager-name">שם מנהל/ת המוסד</Label>

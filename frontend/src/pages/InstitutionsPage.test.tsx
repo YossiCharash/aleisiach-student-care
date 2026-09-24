@@ -33,7 +33,6 @@ function institution(overrides: Partial<InstitutionSummary> = {}): InstitutionSu
   return {
     id: "i1",
     name: "בית ספר אלף",
-    code: "alef",
     is_active: true,
     created_at: "2026-09-01T00:00:00Z",
     contact_name: null,
@@ -92,7 +91,6 @@ describe("InstitutionsPage", () => {
     createMock.mockResolvedValue({
       id: "i2",
       name: "בית ספר בית",
-      code: "bet",
       is_active: true,
       contact_name: null,
       contact_phone: null,
@@ -104,7 +102,6 @@ describe("InstitutionsPage", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /מוסד חדש/ }));
     await userEvent.type(screen.getByLabelText("שם המוסד"), "בית ספר בית");
-    await userEvent.type(screen.getByLabelText("קוד המוסד"), "bet");
     await userEvent.type(screen.getByLabelText("שם מנהל/ת המוסד"), "רותי");
     await userEvent.type(screen.getByLabelText("דוא״ל מנהל/ת המוסד"), "ruti@example.org");
     await userEvent.click(screen.getByRole("button", { name: "הקמת המוסד" }));
@@ -112,7 +109,6 @@ describe("InstitutionsPage", () => {
     await waitFor(() =>
       expect(createMock).toHaveBeenCalledWith({
         name: "בית ספר בית",
-        code: "bet",
         manager_full_name: "רותי",
         manager_email: "ruti@example.org",
         contact_name: null,
@@ -126,7 +122,6 @@ describe("InstitutionsPage", () => {
     deactivateMock.mockResolvedValue({
       id: "i1",
       name: "בית ספר אלף",
-      code: "alef",
       is_active: false,
       contact_name: null,
       contact_phone: null,
@@ -168,7 +163,6 @@ describe("InstitutionsPage — contact and invitations", () => {
     updateMock.mockResolvedValue({
       id: "i1",
       name: "שם חדש",
-      code: "alef",
       is_active: true,
       contact_name: "יוסי",
       contact_phone: "03-1111111",
@@ -200,7 +194,6 @@ describe("InstitutionsPage — contact and invitations", () => {
     resendMock.mockResolvedValue({
       id: "i1",
       name: "בית ספר אלף",
-      code: "alef",
       is_active: true,
       contact_name: null,
       contact_phone: null,
@@ -269,7 +262,6 @@ describe("InstitutionsPage — failed actions", () => {
     resendMock.mockResolvedValue({
       id: "i1",
       name: "בית ספר אלף",
-      code: "alef",
       is_active: true,
       contact_name: null,
       contact_phone: null,

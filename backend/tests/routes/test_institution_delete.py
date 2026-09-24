@@ -41,7 +41,7 @@ def test_super_admin_deletes_institution_with_correct_password(
     seed_user: SeedUser,
     db_session: Session,
 ) -> None:
-    target = seed_institution("בית ספר ב", "school-b")
+    target = seed_institution("בית ספר ב")
     target_id = target.id
     member_id = seed_user("member", UserRole.MANAGER, institution_id=target_id).id
 
@@ -59,7 +59,7 @@ def test_wrong_password_keeps_the_institution(
     admin_headers: dict[str, str],
     seed_institution: SeedInstitution,
 ) -> None:
-    target_id = seed_institution("בית ספר ב", "school-b").id
+    target_id = seed_institution("בית ספר ב").id
     assert api.get(f"/institutions/{target_id}", headers=admin_headers).status_code == 200
 
     response = _delete(api, target_id, "nope", admin_headers)
@@ -74,7 +74,7 @@ def test_managers_cannot_delete_institutions(
     seed_user: SeedUser,
     auth_headers: AuthHeaders,
 ) -> None:
-    target = seed_institution("בית ספר ב", "school-b")
+    target = seed_institution("בית ספר ב")
     seed_user("boss", UserRole.MANAGER)
 
     response = _delete(api, target.id, "password123", auth_headers(api, "boss"))

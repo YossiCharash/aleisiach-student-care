@@ -62,9 +62,7 @@ def db_session() -> Iterator[Session]:
     Base.metadata.create_all(engine)
     factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
     session = factory()
-    session.add(
-        Institution(id=DEFAULT_INSTITUTION_ID, name="מוסד בדיקה", code="test", is_active=True)
-    )
+    session.add(Institution(id=DEFAULT_INSTITUTION_ID, name="מוסד בדיקה", is_active=True))
     session.flush()
     TenantBinding.bind(session, DEFAULT_INSTITUTION_ID)
     try:
@@ -106,8 +104,8 @@ class _NoOpRateLimiter(RateLimiter):
 
 @pytest.fixture
 def seed_institution(db_session: Session) -> Callable[..., Institution]:
-    def _seed(name: str, code: str, is_active: bool = True) -> Institution:
-        institution = Institution(id=uuid.uuid4(), name=name, code=code, is_active=is_active)
+    def _seed(name: str, is_active: bool = True) -> Institution:
+        institution = Institution(id=uuid.uuid4(), name=name, is_active=is_active)
         db_session.add(institution)
         db_session.flush()
         return institution

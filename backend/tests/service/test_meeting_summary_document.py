@@ -21,13 +21,18 @@ def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
     )
 
 
-def _meeting(area_name: str = "רחיצת ידיים", summary: str = "סיכום הישיבה") -> MeetingResponse:
+def _meeting(
+    area_name: str = "רחיצת ידיים",
+    summary: str = "סיכום הישיבה",
+    participants: str = "דנה מדריכה",
+) -> MeetingResponse:
     now = datetime.now(UTC)
     return MeetingResponse(
         id=uuid.uuid4(),
         student_id=uuid.uuid4(),
         author_id=uuid.uuid4(),
         meeting_date=date(2026, 8, 15),
+        participants=participants,
         summary=summary,
         created_at=now,
         updated_at=now,
@@ -61,6 +66,8 @@ def test_html_is_rtl_and_contains_content() -> None:
     assert "תרגול יומי" in html
     assert "15/08/2026" in html
     assert "סיכום הישיבה" in html
+    assert "משתתפים" in html
+    assert "דנה מדריכה" in html
 
 
 def test_html_escapes_snapshot_text() -> None:

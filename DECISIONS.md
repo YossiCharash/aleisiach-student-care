@@ -848,6 +848,41 @@ container/CI, not on Windows dev machines (GTK libraries absent).
 
 ---
 
+## ADR-033 — Drop the institution code; student search; team-meeting participants + date-tile history
+
+**Status:** accepted (2026-09-24). Requested by the user.
+
+**Decisions (per the user):**
+1. **No institution code.** The `code` field is removed from the institution — it was only an internal
+   identifier and the login screen never used it (usernames are platform-unique, ADR-018). The column
+   is dropped from the database (migration `0035`); institutions are identified by name and `id`.
+2. **Student search.** The students list gains a **search box** that filters the (workshop-grouped)
+   list by student name, client-side. A no-match state shows a search-specific empty message.
+3. **Team-meeting participants.** A team meeting stores **who participated** as a single
+   `participants` string (migration `0036`). On the new-meeting form a **manager** may click
+   institution-instructor chips to append their names or type any names freely; an **instructor**
+   sees the free-text field only (the instructor list endpoint is manager-only, so no new endpoint
+   was added). Participants is editable together with the summary, appears in the meeting's PDF, and
+   is included in the create/update audit changes.
+4. **Team-meeting history as date tiles.** The meeting history is a grid of **date tiles**; clicking
+   a tile opens a **floating dialog** with that meeting's participants, personal plan and summary,
+   plus the edit action and per-meeting PDF export (replacing the earlier stacked cards).
+
+**Implementation:**
+- Backend: `Institution.code` removed (model, `InstitutionResponse`, `InstitutionCreateRequest`,
+  `InstitutionProvisioningCommand`, repository `get_by_code`, `InstitutionCodeTakenError`, demo
+  seeder/credentials). The per-request tenant state key became `institution_ref` = the institution
+  `id` (error-alert metadata; no PII). `TeamMeeting.participants` (Text) added, threaded through the
+  meeting schemas, service and `MeetingSummaryDocument`.
+- Frontend: `code` removed from institution types and the create dialog; `StudentsPage` search box;
+  `ParticipantsField` (instructor chips for managers + free text); `MeetingsTab` reworked into date
+  tiles + a floating detail dialog.
+
+**Consequences:** Creating an institution no longer asks for a code, and duplicate-code errors no
+longer exist. Team meetings now record attendance; the meeting history reads as a compact calendar.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

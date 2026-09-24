@@ -126,7 +126,7 @@ def test_request_reaches_every_institution_holding_the_address(
     db_session: Session, seed_institution: Callable[..., Institution]
 ) -> None:
     hasher = PasswordHasher()
-    other = seed_institution("מוסד אחר", "other")
+    other = seed_institution("מוסד אחר")
     _seed_active_user(db_session, hasher)
     db_session.add(
         User(

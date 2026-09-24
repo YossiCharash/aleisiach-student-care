@@ -13,6 +13,7 @@ class MeetingResponse(BaseModel):
     student_id: uuid.UUID
     author_id: uuid.UUID
     meeting_date: date
+    participants: str
     summary: str
     created_at: datetime
     updated_at: datetime

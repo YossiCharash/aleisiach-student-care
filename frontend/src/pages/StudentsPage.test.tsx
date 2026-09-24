@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import type { WorkshopResponse, StudentResponse } from "@/lib/api/types";
 import { renderWithClient } from "@/test/renderWithClient";
@@ -136,5 +136,38 @@ describe("StudentsPage", () => {
       "href",
       "/students"
     );
+  });
+
+  it("filters the students by name through the search box", async () => {
+    listStudents.mockResolvedValue(studentsInBothWorkshops);
+    listClasses.mockResolvedValue(classes);
+
+    render();
+
+    await screen.findByText("איתי");
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("חיפוש חניך לפי שם"), {
+        target: { value: "נוע" },
+      });
+    });
+
+    expect(screen.getByText("נועה")).toBeInTheDocument();
+    expect(screen.queryByText("איתי")).not.toBeInTheDocument();
+  });
+
+  it("shows a search-specific empty message when no name matches", async () => {
+    listStudents.mockResolvedValue(studentsInBothWorkshops);
+    listClasses.mockResolvedValue(classes);
+
+    render();
+
+    await screen.findByText("איתי");
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("חיפוש חניך לפי שם"), {
+        target: { value: "לא קיים" },
+      });
+    });
+
+    expect(screen.getByText("לא נמצאו חניכים בשם זה.")).toBeInTheDocument();
   });
 });

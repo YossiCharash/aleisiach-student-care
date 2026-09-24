@@ -21,7 +21,7 @@ from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.contact_info import ContactInfo
 from backend.app.seed.demo_credentials import (
     ALL_ACCOUNTS,
-    DEMO_INSTITUTION_CODE,
+    DEMO_INSTITUTION_NAME,
     DEMO_PASSWORD,
     INSTRUCTOR,
 )
@@ -131,7 +131,7 @@ def test_every_seeded_row_belongs_to_the_demo_institution(db_session: Session) -
 
     with TenantBinding.platform(db_session):
         institution = db_session.scalars(
-            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+            select(Institution).where(Institution.name == DEMO_INSTITUTION_NAME)
         ).one()
         owners = {
             model.__name__: {row.institution_id for row in db_session.scalars(select(model)).all()}
@@ -146,7 +146,7 @@ def test_seeded_users_belong_to_the_demo_institution(db_session: Session) -> Non
 
     with TenantBinding.platform(db_session):
         institution = db_session.scalars(
-            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+            select(Institution).where(Institution.name == DEMO_INSTITUTION_NAME)
         ).one()
         owners = {user.institution_id for user in db_session.scalars(select(User)).all()}
 
@@ -161,7 +161,7 @@ def test_seeding_states_the_institution_without_relying_on_the_orm_filter(
 
     with TenantBinding.platform(db_session):
         institution = db_session.scalars(
-            select(Institution).where(Institution.code == DEMO_INSTITUTION_CODE)
+            select(Institution).where(Institution.name == DEMO_INSTITUTION_NAME)
         ).one()
         classes = db_session.scalars(select(Workshop)).all()
         students = db_session.scalars(select(Student)).all()

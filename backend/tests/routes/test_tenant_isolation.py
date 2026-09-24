@@ -48,7 +48,7 @@ class ForeignData:
 
 @pytest.fixture
 def foreign(db_session: Session, seed_institution: SeedInstitution) -> ForeignData:
-    owner = seed_institution("מוסד זר", "foreign").id
+    owner = seed_institution("מוסד זר").id
     entities = [
         Workshop(name="סדנה זרה", institution_id=owner),
         Label(name="תווית זרה", order=0, institution_id=owner),

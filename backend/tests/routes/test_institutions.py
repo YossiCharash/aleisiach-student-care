@@ -20,7 +20,6 @@ AuthHeaders = Callable[..., dict[str, str]]
 
 NEW_INSTITUTION = {
     "name": "בית ספר חדש",
-    "code": "new-school",
     "manager_full_name": "מנהלת חדשה",
     "manager_email": "principal@example.org",
 }
@@ -43,7 +42,7 @@ def test_super_admin_lists_institutions_with_counts(
 
     assert response.status_code == 200
     body = response.json()
-    assert [item["code"] for item in body] == ["test"]
+    assert [item["name"] for item in body] == ["מוסד בדיקה"]
     assert body[0]["user_count"] == 1
     assert body[0]["student_count"] == 0
 
@@ -88,23 +87,6 @@ def test_creating_an_institution_seeds_its_detail_options(
         "בינונית",
         "מורכבת",
     ]
-
-
-def test_duplicate_code_is_rejected(api: TestClient, admin_headers: dict[str, str]) -> None:
-    api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION)
-
-    response = api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION)
-
-    assert response.status_code == 409
-    assert response.json()["code"] == "institution_code_taken"
-
-
-def test_code_must_be_url_safe(api: TestClient, admin_headers: dict[str, str]) -> None:
-    response = api.post(
-        "/institutions", headers=admin_headers, json={**NEW_INSTITUTION, "code": "בית ספר"}
-    )
-
-    assert response.status_code == 422
 
 
 def test_institution_can_be_renamed(api: TestClient, admin_headers: dict[str, str]) -> None:
@@ -158,7 +140,7 @@ def test_new_institution_starts_without_students_or_taxonomy(
     api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION)
 
     listed = api.get("/institutions", headers=admin_headers).json()
-    created = [item for item in listed if item["code"] == "new-school"][0]
+    created = [item for item in listed if item["name"] == "בית ספר חדש"][0]
 
     assert created["student_count"] == 0
     assert created["user_count"] == 1
@@ -196,7 +178,7 @@ def test_listing_shows_the_pending_manager_invitation(
     api.post("/institutions", headers=admin_headers, json=NEW_INSTITUTION)
 
     listed = api.get("/institutions", headers=admin_headers).json()
-    created = [item for item in listed if item["code"] == "new-school"][0]
+    created = [item for item in listed if item["name"] == "בית ספר חדש"][0]
 
     assert created["pending_manager_email"] == NEW_INSTITUTION["manager_email"]
 

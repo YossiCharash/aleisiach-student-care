@@ -26,9 +26,6 @@ class InstitutionRepository:
     def get(self, institution_id: uuid.UUID) -> Institution | None:
         return self._session.get(Institution, institution_id)
 
-    def get_by_code(self, code: str) -> Institution | None:
-        return self._session.scalar(select(Institution).where(Institution.code == code))
-
     def list_all(self) -> list[Institution]:
         return list(self._session.scalars(select(Institution).order_by(Institution.name)).all())
 

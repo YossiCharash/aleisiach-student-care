@@ -23,7 +23,6 @@ from backend.app.models.client.user_status import UserStatus
 from backend.app.models.client.workshop import Workshop
 from backend.app.seed.demo_credentials import (
     ALL_ACCOUNTS,
-    DEMO_INSTITUTION_CODE,
     DEMO_INSTITUTION_NAME,
     DEMO_PASSWORD,
     INSTRUCTOR,
@@ -54,7 +53,7 @@ class DemoSeeder:
         self._seed_social_note(students["נועה כהן"].id, institution.id)
 
     def _seed_institution(self) -> Institution:
-        institution = Institution(name=DEMO_INSTITUTION_NAME, code=DEMO_INSTITUTION_CODE)
+        institution = Institution(name=DEMO_INSTITUTION_NAME)
         self._session.add(institution)
         self._session.flush()
         TenantBinding.bind(self._session, institution.id)

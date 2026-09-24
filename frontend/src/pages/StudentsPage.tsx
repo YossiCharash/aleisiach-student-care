@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { workshopsApi, studentsApi } from "@/lib/api/endpoints";
 import { queryKeys } from "@/lib/api/queryKeys";
 import type { WorkshopResponse } from "@/lib/api/types";
@@ -11,6 +11,7 @@ import { groupByWorkshop, type WorkshopGroup } from "@/lib/students/groupByWorks
 import { studentCountLabel } from "@/lib/utils/hebrew";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { StudentLinkCard } from "@/components/StudentLinkCard";
@@ -22,6 +23,7 @@ export function StudentsPage(): ReactNode {
   const [searchParams] = useSearchParams();
   const workshopFilter = searchParams.get("workshop");
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const studentsQuery = useQuery({
     queryKey: queryKeys.students,
     queryFn: studentsApi.list,
@@ -36,8 +38,11 @@ export function StudentsPage(): ReactNode {
   const error = studentsQuery.error ?? workshopsQuery.error;
   const isReady = studentsQuery.data !== undefined && workshopsQuery.data !== undefined;
 
+  const query = search.trim().toLowerCase();
   const visibleStudents = (studentsQuery.data ?? []).filter(
-    (student) => workshopFilter === null || student.workshop_id === workshopFilter
+    (student) =>
+      (workshopFilter === null || student.workshop_id === workshopFilter) &&
+      (query === "" || student.full_name.toLowerCase().includes(query))
   );
 
   return (
@@ -72,10 +77,30 @@ export function StudentsPage(): ReactNode {
         <WorkshopFilters workshops={workshopsQuery.data} activeId={workshopFilter} />
       )}
 
+      {isReady && (
+        <div className="relative mb-6 max-w-sm">
+          <Search
+            className="pointer-events-none absolute inset-y-0 end-3 my-auto h-4 w-4 text-ink-muted"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="חיפוש חניך לפי שם…"
+            aria-label="חיפוש חניך לפי שם"
+            className="pe-9"
+          />
+        </div>
+      )}
+
       {isLoading && <LoadingState />}
       {error && <ErrorState error={error} />}
       {!isLoading && !error && isReady && (
-        <StudentGroups groups={groupByWorkshop(visibleStudents, workshopsQuery.data)} />
+        <StudentGroups
+          groups={groupByWorkshop(visibleStudents, workshopsQuery.data)}
+          searching={query !== ""}
+        />
       )}
 
       {canCreate && (
@@ -142,9 +167,19 @@ function FilterChip({
   );
 }
 
-function StudentGroups({ groups }: { groups: WorkshopGroup[] }): ReactNode {
+function StudentGroups({
+  groups,
+  searching,
+}: {
+  groups: WorkshopGroup[];
+  searching: boolean;
+}): ReactNode {
   if (groups.length === 0) {
-    return <EmptyState>אין חניכים להצגה עדיין.</EmptyState>;
+    return (
+      <EmptyState>
+        {searching ? "לא נמצאו חניכים בשם זה." : "אין חניכים להצגה עדיין."}
+      </EmptyState>
+    );
   }
 
   return (

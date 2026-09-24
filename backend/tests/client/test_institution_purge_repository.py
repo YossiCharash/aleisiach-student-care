@@ -23,7 +23,7 @@ _OTHER_INSTITUTION_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
 
 def _seed_institution(session: Session) -> uuid.UUID:
     tag = uuid.uuid4().hex[:8]
-    institution = Institution(id=uuid.uuid4(), name=f"Inst-{tag}", code=f"code-{tag}")
+    institution = Institution(id=uuid.uuid4(), name=f"Inst-{tag}")
     session.add(institution)
     session.flush()
     session.add(Workshop(name=f"W-{tag}", institution_id=institution.id))

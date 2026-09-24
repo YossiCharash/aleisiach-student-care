@@ -241,14 +241,15 @@ on purpose: it has no access to any of these.
 
 - **Login screen** — username + password + a "forgot password" link. (2–3 design variations.)
 - **Institutions console** (`super_admin` only) — the list of institutions with their user and
-  student counts and contact person; create an institution (name · code · first manager's name
+  student counts and contact person; create an institution (name · first manager's name
   and e-mail · optional contact), edit name and contact, re-send a pending manager invitation,
   deactivate and reactivate, and **permanently delete an institution with all its data**
   (password-confirmed, irreversible — ADR-031). Shows no institution content.
 - **Invitation-acceptance screen** — reached from the email link; set username + password (+ confirm).
 - **Forgot-password screen** — enter email; neutral confirmation message either way.
-- **Main screen** — top-right: worker name + list of students assigned to their class; clicking
-  a student → student screen.
+- **Main screen** — top-right: worker name + list of students assigned to their class, grouped by
+  workshop, with a **search box** that filters the list by student name; clicking a student →
+  student screen.
 - **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
   §3 permission matrix). The UI display order (decided 2026-09-08; reception report inserted
   2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027) is: **details ·
@@ -291,16 +292,21 @@ on purpose: it has no access to any of these.
     meetings still do not feed Tab 1.)
   - Tab 2 — **Team meetings** (organized **by date**): a **"ישיבת צוות חדשה"** button opens a form
     that shows the student's **current areas-to-strengthen and personal plan read-only** (a frozen
-    snapshot taken at that moment) and a large **summary** (סיכום) free-text field, plus a **date
-    picker** (defaults to today). On screen the snapshot shows **only תוכנית אישית — both מוקדי כוח
-    and מוקדים לחיזוק are hidden** (both still stored in the snapshot and still printed in the PDF).
-    The form also shows the **previous meeting for reference** (its summary + תוכנית אישית,
-    read-only), when one exists. Saving stores the meeting with its dated snapshot; the history lists
-    meetings newest first, each showing its plan + summary, an **edit-summary** action (the snapshot
-    stays frozen), and a **per-meeting PDF** export. (Changed 2026-09-09, ADR-022 — replaced the
-    earlier accordion rating form + solutions; team meetings still do not feed Tab 1, they read from
-    it. On-screen strengths hidden + previous-meeting reference added 2026-09-22, ADR-028; on-screen
-    narrowed to the plan only 2026-09-22, ADR-030.)
+    snapshot taken at that moment), a **participants** (משתתפים) field, and a large **summary**
+    (סיכום) free-text field, plus a **date picker** (defaults to today). **Participants** is stored
+    as a single string; on the form a **manager** may click institution-instructor chips to append
+    their names or type any names freely, while an instructor sees the free-text field only. On
+    screen the snapshot shows **only תוכנית אישית — both מוקדי כוח and מוקדים לחיזוק are hidden**
+    (both still stored in the snapshot and still printed in the PDF). The form also shows the
+    **previous meeting for reference** (its summary + תוכנית אישית, read-only), when one exists.
+    Saving stores the meeting with its dated snapshot; the history is a grid of **date tiles** —
+    clicking a tile opens a **floating dialog** showing that meeting's participants, plan and
+    summary, with an **edit** action (participants + summary; the snapshot stays frozen) and a
+    **per-meeting PDF** export. (Changed 2026-09-09, ADR-022 — replaced the earlier accordion rating
+    form + solutions; team meetings still do not feed Tab 1, they read from it. On-screen strengths
+    hidden + previous-meeting reference added 2026-09-22, ADR-028; on-screen narrowed to the plan
+    only 2026-09-22, ADR-030. Participants field + date-tile/floating-dialog history added
+    2026-09-24, ADR-033.)
   - Tab 3 — **Social worker note** (organized **by date**): a **dated, append-only series of
     notes** (not a single editable note). A **"הערה חדשה"** button opens a form with a **date
     picker** (defaults to today) and a free-text note; saving appends a new dated entry, and the
