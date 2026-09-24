@@ -2,7 +2,6 @@ import uuid
 
 from backend.app.client.database.tenant_scope import TenantScope
 from backend.app.client.institutions.institution_repository import InstitutionRepository
-from backend.app.errors.service.institution_code_taken_error import InstitutionCodeTakenError
 from backend.app.errors.service.no_pending_manager_invitation_error import (
     NoPendingManagerInvitationError,
 )
@@ -45,12 +44,9 @@ class InstitutionProvisioningService:
     def provision(
         self, command: InstitutionProvisioningCommand, actor_id: uuid.UUID
     ) -> InstitutionResponse:
-        if self._institutions.get_by_code(command.code) is not None:
-            raise InstitutionCodeTakenError
         institution = self._institutions.add(
             Institution(
                 name=command.name,
-                code=command.code,
                 is_active=True,
                 contact_name=command.contact_name,
                 contact_phone=command.contact_phone,
@@ -72,7 +68,7 @@ class InstitutionProvisioningService:
                 action=AuditAction.CREATE,
                 entity_type=_ENTITY_TYPE,
                 entity_id=institution.id,
-                changes=["name", "code"],
+                changes=["name"],
             )
         )
         return InstitutionResponse.model_validate(institution)

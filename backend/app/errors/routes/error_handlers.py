@@ -20,7 +20,7 @@ _HTTP_MESSAGES: dict[int, str] = {
     409: "הפעולה מתנגשת עם המצב הקיים.",
 }
 _HTTP_FALLBACK_MESSAGE = "הבקשה נכשלה."
-_INSTITUTION_STATE_KEY = "institution_code"
+_INSTITUTION_STATE_KEY = "institution_ref"
 
 
 def _json(status_code: int, body: ErrorResponse) -> JSONResponse:

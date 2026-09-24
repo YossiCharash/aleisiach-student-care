@@ -9,7 +9,6 @@ class InstitutionResponse(BaseModel):
 
     id: uuid.UUID
     name: str
-    code: str
     is_active: bool
     contact_name: str | None
     contact_phone: str | None

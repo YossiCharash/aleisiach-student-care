@@ -54,6 +54,7 @@ class MeetingService:
         meeting = TeamMeeting(
             student_id=student_id,
             meeting_date=request.meeting_date,
+            participants=request.participants,
             summary=request.summary,
             author_id=author_id,
         )
@@ -66,7 +67,7 @@ class MeetingService:
                 action=AuditAction.CREATE,
                 entity_type=_ENTITY_TYPE,
                 entity_id=meeting.id,
-                changes=["meeting_date", "summary", "foci", "plan"],
+                changes=["meeting_date", "participants", "summary", "foci", "plan"],
             )
         )
         return self._to_response(meeting)
@@ -83,6 +84,7 @@ class MeetingService:
         meeting = self._meetings.get(meeting_id)
         if meeting is None or meeting.student_id != student_id:
             raise NotFoundError("meeting")
+        meeting.participants = request.participants
         meeting.summary = request.summary
         self._meetings.flush()
         self._audit.record(
@@ -91,7 +93,7 @@ class MeetingService:
                 action=AuditAction.UPDATE,
                 entity_type=_ENTITY_TYPE,
                 entity_id=meeting.id,
-                changes=["summary"],
+                changes=["participants", "summary"],
             )
         )
         return self._to_response(meeting)
@@ -168,6 +170,7 @@ class MeetingService:
             student_id=meeting.student_id,
             author_id=meeting.author_id,
             meeting_date=meeting.meeting_date,
+            participants=meeting.participants,
             summary=meeting.summary,
             created_at=meeting.created_at,
             updated_at=meeting.updated_at,

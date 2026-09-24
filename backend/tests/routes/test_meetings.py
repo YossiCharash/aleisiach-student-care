@@ -33,8 +33,8 @@ def _seed_domain(session: Session, workshop_id: uuid.UUID) -> _Domain:
     return _Domain(workshop_id, student.id)
 
 
-def _body(summary: str = "סיכום הישיבה") -> dict[str, str]:
-    return {"meeting_date": "2026-08-15", "summary": summary}
+def _body(summary: str = "סיכום הישיבה", participants: str = "דנה מדריכה") -> dict[str, str]:
+    return {"meeting_date": "2026-08-15", "summary": summary, "participants": participants}
 
 
 def test_instructor_creates_meeting_for_own_workshop(
@@ -51,6 +51,7 @@ def test_instructor_creates_meeting_for_own_workshop(
     payload = response.json()
     assert payload["meeting_date"] == "2026-08-15"
     assert payload["summary"] == "סיכום הישיבה"
+    assert payload["participants"] == "דנה מדריכה"
     assert payload["strengths"] == []
     assert payload["plan_entries"] == []
 

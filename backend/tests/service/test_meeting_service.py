@@ -117,8 +117,10 @@ def _setup(session: Session) -> _Fixture:
     return _Fixture(service, session, student.id, bare_student.id, author_id, program)
 
 
-def _request(summary: str = "סיכום") -> MeetingCreateRequest:
-    return MeetingCreateRequest(meeting_date=date(2026, 8, 15), summary=summary)
+def _request(summary: str = "סיכום", participants: str = "") -> MeetingCreateRequest:
+    return MeetingCreateRequest(
+        meeting_date=date(2026, 8, 15), summary=summary, participants=participants
+    )
 
 
 def test_create_snapshots_current_foci_and_latest_plan(db_session: Session) -> None:
@@ -179,6 +181,31 @@ def test_update_summary_changes_text_without_touching_the_snapshot(db_session: S
     assert updated.summary == "מעודכן"
     assert [strength.skill_name for strength in updated.strengths] == ["הבעה"]
     assert updated.plan_entries[0].solutions[0].solution_text_snapshot == "תרגול יומי"
+
+
+def test_create_stores_participants(db_session: Session) -> None:
+    fx = _setup(db_session)
+
+    meeting = fx.service.create(
+        fx.student_id, _request(participants="דנה, יוסי, אורח חיצוני"), _ALL, fx.author_id
+    )
+
+    assert meeting.participants == "דנה, יוסי, אורח חיצוני"
+
+
+def test_update_summary_changes_participants(db_session: Session) -> None:
+    fx = _setup(db_session)
+    meeting = fx.service.create(fx.student_id, _request(participants="דנה"), _ALL, fx.author_id)
+
+    updated = fx.service.update_summary(
+        fx.student_id,
+        meeting.id,
+        MeetingUpdateRequest(summary="מעודכן", participants="דנה, יוסי"),
+        _ALL,
+        fx.author_id,
+    )
+
+    assert updated.participants == "דנה, יוסי"
 
 
 def test_update_summary_is_audited_as_update(db_session: Session) -> None:

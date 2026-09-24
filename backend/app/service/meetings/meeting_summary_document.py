@@ -24,12 +24,17 @@ class MeetingSummaryDocument:
     def to_html(self, meeting: MeetingResponse, issue: IssueContext) -> str:
         meta = DocumentMeta.build("סיכום ישיבת צוות", issue, meeting.meeting_date)
         body = (
+            f"{self._participants_section(meeting.participants)}"
             f"{self._strengths_section(meeting.strengths)}"
             f"{self._areas_section(meeting.areas_to_strengthen)}"
             f"{self._plan_section(meeting.plan_entries)}"
             f"{self._summary_section(meeting.summary)}"
         )
         return self._shell.render(self._css(), meta, body)
+
+    def _participants_section(self, participants: str) -> str:
+        text = escape(participants).strip() or "—"
+        return f'<h2>משתתפים</h2><p class="summary">{text}</p>'
 
     def _strengths_section(self, strengths: list[ProgramStrength]) -> str:
         if not strengths:

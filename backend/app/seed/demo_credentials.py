@@ -4,7 +4,6 @@ from backend.app.models.client.user_role import UserRole
 
 DEMO_PASSWORD = "demo1234"
 DEMO_INSTITUTION_NAME = "מוסד הדגמה"
-DEMO_INSTITUTION_CODE = "demo"
 
 
 @dataclass(frozen=True)

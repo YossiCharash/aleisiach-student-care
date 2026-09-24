@@ -18,6 +18,7 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { PlanEntriesCard } from "@/pages/student/meetings/PlanEntriesCard";
 import { PreviousMeetingCard } from "@/pages/student/meetings/PreviousMeetingCard";
+import { ParticipantsField } from "@/pages/student/meetings/ParticipantsField";
 
 interface Props {
   studentId: string;
@@ -59,6 +60,7 @@ function AddMeetingForm({
 }): ReactNode {
   const queryClient = useQueryClient();
   const [meetingDate, setMeetingDate] = useState(today);
+  const [participants, setParticipants] = useState("");
   const [summary, setSummary] = useState("");
 
   const [plansQuery, meetingsQuery] = useQueries({
@@ -76,7 +78,7 @@ function AddMeetingForm({
 
   const mutation = useMutation({
     mutationFn: () =>
-      meetingsApi.create(studentId, { meeting_date: meetingDate, summary }),
+      meetingsApi.create(studentId, { meeting_date: meetingDate, participants, summary }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.meetings(studentId) });
       onDone();
@@ -104,6 +106,12 @@ function AddMeetingForm({
           onChange={(event) => setMeetingDate(event.target.value)}
         />
       </div>
+
+      <ParticipantsField
+        id="meeting-participants"
+        value={participants}
+        onChange={setParticipants}
+      />
 
       {previousMeeting && <PreviousMeetingCard meeting={previousMeeting} />}
 

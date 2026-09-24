@@ -8,6 +8,11 @@ import type { MeetingResponse, PlanResponse } from "@/lib/api/types";
 vi.mock("@/lib/api/endpoints", () => ({
   programPlansApi: { list: vi.fn() },
   meetingsApi: { create: vi.fn(), list: vi.fn() },
+  usersApi: { list: vi.fn().mockResolvedValue([]) },
+}));
+
+vi.mock("@/lib/auth/AuthContext", () => ({
+  useAuth: () => ({ user: { id: "u1", full_name: "מור", role: "manager" } }),
 }));
 
 const plan: PlanResponse = {
@@ -30,6 +35,7 @@ const previousMeeting: MeetingResponse = {
   student_id: "s1",
   author_id: "u1",
   meeting_date: "2026-07-01",
+  participants: "דנה",
   summary: "סיכום קודם",
   created_at: "2026-07-01T00:00:00Z",
   updated_at: "2026-07-01T00:00:00Z",

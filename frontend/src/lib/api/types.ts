@@ -28,7 +28,6 @@ export interface LoginResponse {
 export interface InstitutionResponse {
   id: string;
   name: string;
-  code: string;
   is_active: boolean;
   contact_name: string | null;
   contact_phone: string | null;
@@ -43,7 +42,6 @@ export interface InstitutionSummary extends InstitutionResponse {
 
 export interface InstitutionCreateRequest {
   name: string;
-  code: string;
   manager_full_name: string;
   manager_email: string;
   contact_name: string | null;
@@ -205,6 +203,7 @@ export interface MeetingResponse {
   student_id: string;
   author_id: string;
   meeting_date: string;
+  participants: string;
   summary: string;
   created_at: string;
   updated_at: string;
@@ -215,10 +214,12 @@ export interface MeetingResponse {
 
 export interface MeetingCreateRequest {
   meeting_date: string;
+  participants: string;
   summary: string;
 }
 
 export interface MeetingUpdateRequest {
+  participants: string;
   summary: string;
 }
 

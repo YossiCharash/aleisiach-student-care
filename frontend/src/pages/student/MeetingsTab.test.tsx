@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithClient } from "@/test/renderWithClient";
 import { MeetingsTab } from "@/pages/student/MeetingsTab";
-import { meetingsApi } from "@/lib/api/endpoints";
+import { meetingsApi, usersApi } from "@/lib/api/endpoints";
 import type { MeetingResponse, UserResponse, UserRole } from "@/lib/api/types";
 
 const useAuth = vi.hoisted(() => vi.fn());
@@ -14,6 +14,9 @@ vi.mock("@/lib/api/endpoints", () => ({
     pdfUrl: vi.fn(() => ""),
     updateSummary: vi.fn(),
   },
+  usersApi: {
+    list: vi.fn(),
+  },
 }));
 
 const meeting: MeetingResponse = {
@@ -21,6 +24,7 @@ const meeting: MeetingResponse = {
   student_id: "s1",
   author_id: "u1",
   meeting_date: "2026-08-15",
+  participants: "דנה",
   summary: "סיכום קיים",
   created_at: "2026-08-15T00:00:00Z",
   updated_at: "2026-08-15T00:00:00Z",
@@ -37,6 +41,7 @@ const meeting: MeetingResponse = {
 };
 
 const updateMock = vi.mocked(meetingsApi.updateSummary);
+const usersMock = vi.mocked(usersApi.list);
 
 vi.mock("@/pages/student/meetings/AddMeetingDialog", () => ({
   AddMeetingDialog: ({ open }: { open: boolean }) =>
@@ -55,6 +60,10 @@ function renderTab(props: {
   onAutoOpenConsumed?: () => void;
 }): void {
   renderWithClient(<MeetingsTab studentId="s1" {...props} />);
+}
+
+async function openMeetingTile(): Promise<void> {
+  fireEvent.click(await screen.findByRole("button", { name: /ישיבת צוות מתאריך/ }));
 }
 
 describe("MeetingsTab auto-open", () => {
@@ -97,41 +106,55 @@ describe("MeetingsTab history", () => {
     useAuth.mockReset();
     listMock.mockReset();
     updateMock.mockReset();
+    usersMock.mockReset();
     listMock.mockResolvedValue([meeting]);
     updateMock.mockResolvedValue(meeting);
+    usersMock.mockResolvedValue([]);
   });
 
-  it("renders only the dated personal plan and the summary (no foci)", async () => {
+  it("opens a floating dialog from the date tile with the plan, participants and summary", async () => {
     signedInAs("professional_teacher");
     renderTab({});
 
-    expect(await screen.findByText(/2026/)).toBeInTheDocument();
-    expect(screen.getByText("תוכנית אישית")).toBeInTheDocument();
+    await openMeetingTile();
+
+    expect(await screen.findByText("תוכנית אישית")).toBeInTheDocument();
     expect(screen.getByText("תרגול יומי")).toBeInTheDocument();
     expect(screen.getByText("סיכום קיים")).toBeInTheDocument();
+    expect(screen.getByText("דנה")).toBeInTheDocument();
     expect(screen.queryByText("מוקדים לחיזוק")).not.toBeInTheDocument();
     expect(screen.queryByText("מוקדי כוח")).not.toBeInTheDocument();
   });
 
-  it("hides the edit-summary control from a read-only professional teacher", async () => {
+  it("hides the edit control from a read-only professional teacher", async () => {
     signedInAs("professional_teacher");
     renderTab({});
 
+    await openMeetingTile();
+
     await screen.findByText("סיכום קיים");
-    expect(screen.queryByText("עריכת סיכום")).not.toBeInTheDocument();
+    expect(screen.queryByText("עריכה")).not.toBeInTheDocument();
   });
 
-  it("lets a writer edit and save the summary", async () => {
+  it("lets a writer edit and save the participants and summary", async () => {
     signedInAs("manager");
     renderTab({});
 
-    fireEvent.click(await screen.findByText("עריכת סיכום"));
-    const textarea = screen.getByRole("textbox");
-    fireEvent.change(textarea, { target: { value: "סיכום מעודכן" } });
+    await openMeetingTile();
+    fireEvent.click(await screen.findByText("עריכה"));
+    fireEvent.change(screen.getByLabelText("סיכום"), {
+      target: { value: "סיכום מעודכן" },
+    });
+    fireEvent.change(screen.getByLabelText("משתתפים"), {
+      target: { value: "דנה, יוסי" },
+    });
     fireEvent.click(screen.getByText("שמירה"));
 
     await waitFor(() =>
-      expect(updateMock).toHaveBeenCalledWith("s1", "m1", { summary: "סיכום מעודכן" })
+      expect(updateMock).toHaveBeenCalledWith("s1", "m1", {
+        participants: "דנה, יוסי",
+        summary: "סיכום מעודכן",
+      })
     );
   });
 });

@@ -118,8 +118,8 @@ def session() -> Iterator[Session]:
     opened = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)()
     opened.add_all(
         [
-            Institution(id=HOME, name="home", code="home", is_active=True),
-            Institution(id=AWAY, name="away", code="away", is_active=True),
+            Institution(id=HOME, name="home", is_active=True),
+            Institution(id=AWAY, name="away", is_active=True),
         ]
     )
     opened.flush()

@@ -9,6 +9,7 @@ function meeting(overrides: Partial<MeetingResponse> = {}): MeetingResponse {
     student_id: "s1",
     author_id: "u1",
     meeting_date: "2026-07-01",
+    participants: "דנה",
     summary: "סיכום קודם",
     created_at: "2026-07-01T00:00:00Z",
     updated_at: "2026-07-01T00:00:00Z",
