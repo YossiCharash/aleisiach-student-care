@@ -7,7 +7,6 @@ import type { WorkshopResponse } from "@/lib/api/types";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
-import { SettingsListCard } from "@/pages/settings/SettingsList";
 import { WorkshopDialog } from "@/pages/settings/WorkshopDialog";
 
 export function WorkshopsArea(): ReactNode {
@@ -69,7 +68,7 @@ export function WorkshopsArea(): ReactNode {
           (activeQuery.data.length === 0 ? (
             <EmptyState>אין סדנאות עדיין.</EmptyState>
           ) : (
-            <SettingsListCard>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {activeQuery.data.map((workshop) => (
                 <WorkshopRow
                   key={workshop.id}
@@ -77,7 +76,7 @@ export function WorkshopsArea(): ReactNode {
                   onEdit={() => openEdit(workshop)}
                 />
               ))}
-            </SettingsListCard>
+            </ul>
           ))}
 
         {showArchived && (
@@ -89,11 +88,11 @@ export function WorkshopsArea(): ReactNode {
               (archivedQuery.data.length === 0 ? (
                 <EmptyState>אין סדנאות בארכיון.</EmptyState>
               ) : (
-                <SettingsListCard>
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {archivedQuery.data.map((workshop) => (
                     <ArchivedWorkshopRow key={workshop.id} workshop={workshop} />
                   ))}
-                </SettingsListCard>
+                </ul>
               ))}
           </div>
         )}
@@ -125,14 +124,19 @@ function WorkshopRow({
   });
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2">
+    <li className="group relative flex items-center gap-3 overflow-hidden rounded-card border border-slate-200 bg-white p-3 pe-2 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-card">
       <span
-        className="inline-block h-4 w-4 shrink-0 rounded-full border border-slate-300"
+        className="absolute inset-y-0 start-0 w-1.5"
+        style={{ backgroundColor: workshop.color }}
+        aria-hidden
+      />
+      <span
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-2 ring-white ring-offset-1 ring-offset-slate-100"
         style={{ backgroundColor: workshop.color }}
         aria-hidden
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-ink">{workshop.name}</p>
+        <p className="truncate font-semibold text-ink">{workshop.name}</p>
         <p className="truncate text-xs text-ink-muted">
           {workshop.instructor_name ?? "ללא מדריך"}
         </p>
@@ -140,20 +144,28 @@ function WorkshopRow({
       {archive.isError && (
         <span className="text-xs text-rating-red">לא ניתן להעביר לארכיון</span>
       )}
-      <Button type="button" size="sm" variant="ghost" onClick={onEdit} aria-label="עריכה">
-        <Pencil className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant="ghost"
-        onClick={() => archive.mutate()}
-        disabled={archive.isPending}
-        aria-label="העברה לארכיון"
-      >
-        <Archive className="h-4 w-4" />
-      </Button>
-    </div>
+      <div className="flex items-center opacity-60 transition-opacity group-hover:opacity-100">
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={onEdit}
+          aria-label="עריכה"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => archive.mutate()}
+          disabled={archive.isPending}
+          aria-label="העברה לארכיון"
+        >
+          <Archive className="h-4 w-4" />
+        </Button>
+      </div>
+    </li>
   );
 }
 
@@ -165,9 +177,14 @@ function ArchivedWorkshopRow({ workshop }: { workshop: WorkshopResponse }): Reac
   });
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2">
+    <li className="relative flex items-center gap-3 overflow-hidden rounded-card border border-dashed border-slate-300 bg-slate-50/60 p-3 pe-2">
       <span
-        className="inline-block h-4 w-4 shrink-0 rounded-full border border-slate-300"
+        className="absolute inset-y-0 start-0 w-1.5 opacity-50"
+        style={{ backgroundColor: workshop.color }}
+        aria-hidden
+      />
+      <span
+        className="h-10 w-10 shrink-0 rounded-full opacity-50 grayscale"
         style={{ backgroundColor: workshop.color }}
         aria-hidden
       />
@@ -184,6 +201,6 @@ function ArchivedWorkshopRow({ workshop }: { workshop: WorkshopResponse }): Reac
         <RotateCcw className="h-4 w-4" />
         שחזור
       </Button>
-    </div>
+    </li>
   );
 }
