@@ -97,7 +97,7 @@ function MeetingGrid({
   }
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-3">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-3">
       {meetings.map((meeting) => (
         <MeetingTile key={meeting.id} meeting={meeting} onSelect={onSelect} />
       ))}
@@ -112,18 +112,16 @@ function MeetingTile({
   meeting: MeetingResponse;
   onSelect: (id: string) => void;
 }): ReactNode {
-  const [year, month, day] = meeting.meeting_date.split("-");
-
   return (
     <button
       type="button"
       onClick={() => onSelect(meeting.id)}
-      className="flex aspect-square flex-col items-center justify-center rounded-xl border border-slate-200 bg-white text-ink shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+      className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-ink shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
       aria-label={`ישיבת צוות מתאריך ${formatDate(meeting.meeting_date)}`}
     >
-      <span className="tnum text-2xl font-bold leading-none">{day}</span>
-      <span className="tnum mt-1 text-sm text-ink-muted">
-        {month}/{year}
+      <span className="font-semibold text-ink">ישיבת צוות</span>
+      <span className="tnum text-sm text-ink-muted">
+        {formatDate(meeting.meeting_date)}
       </span>
     </button>
   );
@@ -146,10 +144,7 @@ function MeetingDetailDialog({
         <DialogHeader>
           <div className="flex items-center justify-between gap-4 pe-8">
             <DialogTitle>ישיבת צוות — {formatDate(meeting.meeting_date)}</DialogTitle>
-            <PdfButton
-              url={meetingsApi.pdfUrl(studentId, meeting.id)}
-              label="ייצוא PDF"
-            />
+            <PdfButton url={meetingsApi.pdfUrl(studentId, meeting.id)} />
           </div>
         </DialogHeader>
         <div className="space-y-4">

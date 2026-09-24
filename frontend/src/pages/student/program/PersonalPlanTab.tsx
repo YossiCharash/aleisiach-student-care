@@ -121,7 +121,7 @@ function PlanCard({
             </span>
           )}
         </CardTitle>
-        <PdfButton url={programPlansApi.pdfUrl(studentId, plan.id)} label="ייצוא PDF" />
+        <PdfButton url={programPlansApi.pdfUrl(studentId, plan.id)} />
       </CardHeader>
       <CardContent>
         <ul className="space-y-3">

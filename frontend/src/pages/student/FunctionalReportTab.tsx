@@ -75,7 +75,7 @@ export function FunctionalReportTab({ studentId }: { studentId: string }): React
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <PdfButton url={functionalReportApi.pdfUrl(studentId)} label="ייצוא PDF" />
+        <PdfButton url={functionalReportApi.pdfUrl(studentId)} />
         {canWrite && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />

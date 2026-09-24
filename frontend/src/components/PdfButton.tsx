@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from "react";
-import { FileDown, Download } from "lucide-react";
-import { openAuthedPdf, downloadAuthedPdf } from "@/lib/api/pdf";
+import { Download, Printer } from "lucide-react";
+import { downloadAuthedPdf, printAuthedPdf } from "@/lib/api/pdf";
 import { Button } from "@/components/ui/Button";
 
 const DEFAULT_ERROR = "שגיאה בהפקת ה-PDF.";
 
-type PdfAction = "open" | "download";
+type PdfAction = "download" | "print";
 
-export function PdfButton({ url, label }: { url: string; label: string }): ReactNode {
+export function PdfButton({ url, label }: { url: string; label?: string }): ReactNode {
   const [pending, setPending] = useState<PdfAction | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +15,7 @@ export function PdfButton({ url, label }: { url: string; label: string }): React
     setError(null);
     setPending(action);
     try {
-      await (action === "open" ? openAuthedPdf(url) : downloadAuthedPdf(url));
+      await (action === "download" ? downloadAuthedPdf(url) : printAuthedPdf(url));
     } catch (caught) {
       setError(
         caught instanceof Error && caught.message ? caught.message : DEFAULT_ERROR
@@ -30,20 +30,19 @@ export function PdfButton({ url, label }: { url: string; label: string }): React
   return (
     <div className="inline-flex flex-col items-start gap-1">
       <div className="inline-flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => run("open")} disabled={busy}>
-          <FileDown className="h-4 w-4" />
-          {pending === "open" ? "מפיק…" : label}
-        </Button>
+        {label && <span className="text-sm font-medium text-ink-muted">{label}</span>}
         <Button
           variant="outline"
           size="sm"
           onClick={() => run("download")}
           disabled={busy}
-          aria-label="הורדת PDF"
-          title="הורדת PDF"
         >
           <Download className="h-4 w-4" />
           {pending === "download" ? "מוריד…" : "הורדה"}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => run("print")} disabled={busy}>
+          <Printer className="h-4 w-4" />
+          {pending === "print" ? "מכין להדפסה…" : "הדפסה"}
         </Button>
       </div>
       {error && <span className="text-xs text-rating-red">{error}</span>}
