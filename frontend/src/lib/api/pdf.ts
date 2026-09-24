@@ -36,20 +36,26 @@ export async function printAuthedPdf(url: string): Promise<void> {
   const objectUrl = URL.createObjectURL(blob);
   const iframe = document.createElement("iframe");
   iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
   iframe.style.width = "0";
   iframe.style.height = "0";
   iframe.style.border = "0";
-  iframe.style.visibility = "hidden";
   iframe.src = objectUrl;
-  iframe.onload = () => {
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-  };
-  document.body.appendChild(iframe);
-  setTimeout(() => {
+
+  const cleanup = (): void => {
     iframe.remove();
     URL.revokeObjectURL(objectUrl);
-  }, 60_000);
+  };
+
+  iframe.onload = () => {
+    const printWindow = iframe.contentWindow;
+    printWindow?.addEventListener("afterprint", cleanup, { once: true });
+    printWindow?.focus();
+    printWindow?.print();
+  };
+  document.body.appendChild(iframe);
+  setTimeout(cleanup, 60_000);
 }
 
 export async function downloadAuthedPdf(url: string): Promise<void> {
