@@ -52,4 +52,78 @@
   .leaf-tick {
     @apply inline-block h-4 w-1.5 shrink-0 rounded-full bg-brand;
   }
+
+  .brand-logo {
+    position: relative;
+    display: inline-block;
+    aspect-ratio: 156 / 87;
+    overflow: hidden;
+  }
+
+  .brand-logo img {
+    display: block;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+  }
+
+  .brand-logo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 34%,
+      rgba(255, 255, 255, 0.85) 50%,
+      transparent 64%
+    );
+    -webkit-mask: url("/logo.png") center / contain no-repeat;
+    mask: url("/logo.png") center / contain no-repeat;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes logo-sweep {
+  0% {
+    transform: translateX(120%);
+  }
+  55%,
+  100% {
+    transform: translateX(-120%);
+  }
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(18px, 14px) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brand-logo.is-animated {
+    animation: logo-float 4.6s ease-in-out infinite;
+  }
+  .brand-logo.is-animated::after {
+    animation: logo-sweep 4.4s ease-in-out infinite;
+  }
+  .animate-blob {
+    animation: blob-drift 9s ease-in-out infinite;
+  }
 }

@@ -9,6 +9,7 @@ import { roleLabels } from "@/lib/utils/hebrew";
 import { initials } from "@/lib/utils/initials";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/Button";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export function Sidebar(): ReactNode {
   const { user, institutionName, logout } = useAuth();
@@ -35,7 +36,7 @@ export function Sidebar(): ReactNode {
         to={homePath(user)}
         className="mb-6 flex flex-col gap-2.5 rounded-card border border-slate-200/70 bg-white px-3.5 py-3 shadow-soft"
       >
-        <img src="/logo.png" alt="עלי שיח" className="h-9 w-auto self-start" />
+        <BrandLogo className="w-28 self-start" />
         <span className="flex items-center gap-1.5 border-t border-slate-100 pt-2 text-xs font-medium text-ink-soft">
           <span className="leaf-tick !h-3 !w-1" aria-hidden />
           {subtitle}

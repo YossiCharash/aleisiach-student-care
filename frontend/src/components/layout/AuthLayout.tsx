@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export function AuthLayout({
   title,
@@ -10,53 +11,32 @@ export function AuthLayout({
   children: ReactNode;
 }): ReactNode {
   return (
-    <div className="flex min-h-screen">
-      <aside className="relative hidden w-[44%] max-w-2xl flex-col justify-between overflow-hidden bg-brand p-14 text-white md:flex">
-        <span
-          className="absolute -start-40 -top-40 h-[34rem] w-[34rem] rounded-full border border-white/10"
-          aria-hidden
-        />
-        <span
-          className="absolute -start-24 -top-24 h-[26rem] w-[26rem] rounded-full border border-white/10"
-          aria-hidden
-        />
-        <span
-          className="absolute -bottom-32 -end-28 h-[30rem] w-[30rem] rounded-full bg-accent/25 blur-3xl"
-          aria-hidden
-        />
-        <span
-          className="absolute inset-0 bg-[radial-gradient(120%_80%_at_0%_0%,rgba(133,196,65,0.30),transparent_55%)]"
-          aria-hidden
-        />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-12 bg-[radial-gradient(130%_100%_at_100%_0%,#F6FBEE_0%,#EFF6E2_45%,#E4EFD2_100%)]">
+      <span
+        className="animate-blob absolute -start-24 -top-24 h-96 w-96 rounded-full bg-accent/30 blur-3xl"
+        aria-hidden
+      />
+      <span
+        className="animate-blob absolute -bottom-28 -end-20 h-80 w-80 rounded-full bg-brand/15 blur-3xl [animation-delay:2s]"
+        aria-hidden
+      />
+      <span
+        className="absolute inset-y-0 start-0 w-1.5 bg-gradient-to-b from-accent to-brand"
+        aria-hidden
+      />
 
-        <span className="relative inline-flex w-fit items-center rounded-2xl bg-white px-4 py-3 shadow-lift">
-          <img src="/logo.png" alt="עלי שיח" className="h-10 w-auto" />
-        </span>
-
-        <div className="relative">
-          <p className="eyebrow text-accent-200">מפעל עבודה שיקומי</p>
-          <h2 className="mt-4 text-4xl font-light leading-[1.15] tracking-tight text-white">
-            מערכת ניהול
-            <br />
-            <span className="font-semibold">תיק מקבל שרות</span>
-          </h2>
+      <div className="relative w-full max-w-md animate-fade-up rounded-[22px] border border-white/70 bg-white/75 p-9 text-center shadow-lift backdrop-blur-md">
+        <div className="flex justify-center">
+          <BrandLogo className="w-52" />
         </div>
 
-        <div className="relative flex items-center gap-2.5 text-xs text-brand-200">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-          עלי שיח · ליווי וקידום אישי
-        </div>
-      </aside>
+        <p className="eyebrow mt-6 block">מפעל עבודה שיקומי</p>
+        <h1 className="mt-2 text-[1.75rem] font-semibold tracking-tight text-ink">
+          {title}
+        </h1>
+        {subtitle && <p className="mt-2 text-sm text-ink-muted">{subtitle}</p>}
 
-      <div className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm animate-fade-up">
-          <p className="eyebrow">עלי שיח</p>
-          <h1 className="mt-3 text-[1.75rem] font-semibold tracking-tight text-ink">
-            {title}
-          </h1>
-          {subtitle && <p className="mt-2 text-sm text-ink-muted">{subtitle}</p>}
-          <div className="mt-8">{children}</div>
-        </div>
+        <div className="mt-8 text-start">{children}</div>
       </div>
     </div>
   );

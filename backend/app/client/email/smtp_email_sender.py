@@ -3,35 +3,35 @@ import ssl
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 
+from backend.app.client.email.branded_email_renderer import BrandedEmailRenderer
 from backend.app.client.email.email_sender import EmailSender
 from backend.app.configuration.email.email_settings import EmailSettings
+from backend.app.schema.client.email.rendered_email import RenderedEmail
 from backend.app.schema.service.password_reset_message import PasswordResetMessage
-
-_INVITE_SUBJECT = "הזמנה למערכת עלי שיח"
-_RESET_SUBJECT = "איפוס סיסמה — עלי שיח"
 
 
 class SmtpEmailSender(EmailSender):
     def __init__(self, settings: EmailSettings) -> None:
         self._settings = settings
+        self._renderer = BrandedEmailRenderer(settings)
 
     def send_invitation(self, email: str, link: str) -> None:
-        body = f"הוזמנת למערכת עלי שיח. להשלמת ההרשמה: {link}"
-        self._deliver(self._message(email, _INVITE_SUBJECT, body))
+        self._deliver(self._message(email, self._renderer.invitation(link)))
 
     def send_password_reset(self, message: PasswordResetMessage) -> None:
-        account = f"{message.username} · {message.institution_name}"
-        body = f"התקבלה בקשה לאיפוס סיסמה עבור החשבון {account}. לאיפוס: {message.link}"
-        self._deliver(self._message(message.email, _RESET_SUBJECT, body))
+        rendered = self._renderer.password_reset(message)
+        self._deliver(self._message(message.email, rendered))
 
-    def _message(self, to: str, subject: str, body: str) -> EmailMessage:
+    def _message(self, to: str, rendered: RenderedEmail) -> EmailMessage:
         message = EmailMessage()
         message["From"] = self._settings.from_address
         message["To"] = to
-        message["Subject"] = subject
+        message["Subject"] = rendered.subject
         message["Date"] = formatdate(localtime=True)
         message["Message-ID"] = make_msgid(domain=self._sender_domain())
-        message.set_content(body)
+        message["Auto-Submitted"] = "auto-generated"
+        message.set_content(rendered.text_body)
+        message.add_alternative(rendered.html_body, subtype="html")
         return message
 
     def _sender_domain(self) -> str:
