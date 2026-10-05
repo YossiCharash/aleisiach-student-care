@@ -16,6 +16,18 @@ class _CapturingSmtpSender(SmtpEmailSender):
         self.sent.append(message)
 
 
+def _text_part(message: EmailMessage) -> str:
+    part = message.get_body(preferencelist=("plain",))
+    assert part is not None
+    return str(part.get_content())
+
+
+def _html_part(message: EmailMessage) -> str:
+    part = message.get_body(preferencelist=("html",))
+    assert part is not None
+    return str(part.get_content())
+
+
 def test_invitation_message_composition() -> None:
     sender = _CapturingSmtpSender(EmailSettings(from_address="no-reply@example.com"))
 
@@ -24,8 +36,11 @@ def test_invitation_message_composition() -> None:
     message = sender.sent[0]
     assert message["To"] == "user@example.com"
     assert message["From"] == "no-reply@example.com"
+    assert message["Auto-Submitted"] == "auto-generated"
     assert "עלי שיח" in message["Subject"]
-    assert "abc123" in message.get_content()
+    assert "abc123" in _text_part(message)
+    assert "abc123" in _html_part(message)
+    assert "נא לא להשיב" in _html_part(message)
     assert message["Date"]
     assert message["Message-ID"].strip().endswith("@example.com>")
 
@@ -44,7 +59,8 @@ def test_reset_message_composition() -> None:
 
     message = sender.sent[0]
     assert "איפוס" in message["Subject"]
-    assert "xyz789" in message.get_content()
+    assert "xyz789" in _text_part(message)
+    assert "xyz789" in _html_part(message)
 
 
 def test_bootstrap_selects_smtp_when_configured() -> None:
