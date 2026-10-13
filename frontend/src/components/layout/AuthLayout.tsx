@@ -11,27 +11,30 @@ export function AuthLayout({
   children: ReactNode;
 }): ReactNode {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-12 bg-[radial-gradient(130%_100%_at_100%_0%,#F6FBEE_0%,#EFF6E2_45%,#E4EFD2_100%)]">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-12 bg-[linear-gradient(135deg,#356E1A_0%,#3F8420_45%,#4E9A28_100%)]">
       <span
-        className="animate-blob absolute -start-24 -top-24 h-96 w-96 rounded-full bg-accent/30 blur-3xl"
+        className="animate-blob absolute -start-28 -top-32 h-[28rem] w-[28rem] rounded-full bg-accent/55 blur-[38px]"
         aria-hidden
       />
       <span
-        className="animate-blob absolute -bottom-28 -end-20 h-80 w-80 rounded-full bg-brand/15 blur-3xl [animation-delay:2s]"
+        className="animate-blob absolute -bottom-36 -end-28 h-96 w-96 rounded-full bg-[#2C5E14]/60 blur-[38px] [animation-delay:2.5s]"
         aria-hidden
       />
       <span
-        className="absolute inset-y-0 start-0 w-1.5 bg-gradient-to-b from-accent to-brand"
+        className="animate-blob absolute start-[30%] top-[38%] h-80 w-80 rounded-full bg-white/15 blur-[38px] [animation-delay:1.2s]"
         aria-hidden
       />
 
-      <div className="relative w-full max-w-md animate-fade-up rounded-[22px] border border-white/70 bg-white/75 p-9 text-center shadow-lift backdrop-blur-md">
+      <span className="eyebrow absolute start-8 top-7 text-white/90" aria-hidden>
+        עלי שיח
+      </span>
+
+      <div className="relative w-full max-w-sm animate-fade-up rounded-[22px] bg-white p-9 text-center shadow-[0_30px_70px_-30px_rgba(0,0,0,0.5)]">
         <div className="flex justify-center">
-          <BrandLogo className="w-52" />
+          <BrandLogo className="w-48" />
         </div>
 
-        <p className="eyebrow mt-6 block">מפעל עבודה שיקומי</p>
-        <h1 className="mt-2 text-[1.75rem] font-semibold tracking-tight text-ink">
+        <h1 className="mt-6 text-[1.75rem] font-semibold tracking-tight text-ink">
           {title}
         </h1>
         {subtitle && <p className="mt-2 text-sm text-ink-muted">{subtitle}</p>}
