@@ -297,7 +297,8 @@ on purpose: it has no access to any of these.
     as a single string; on the form a **manager** may click institution-instructor chips to append
     their names or type any names freely, while an instructor sees the free-text field only. On
     screen the snapshot shows **only תוכנית אישית — both מוקדי כוח and מוקדים לחיזוק are hidden**
-    (both still stored in the snapshot and still printed in the PDF). The form also shows the
+    (both still stored in the snapshot, but the PDF now prints **only תוכנית אישית** too — ADR-034).
+    The form also shows the
     **previous meeting for reference** (its summary + תוכנית אישית, read-only), when one exists.
     Saving stores the meeting with its dated snapshot; the history is a grid of **date tiles** —
     clicking a tile opens a **floating dialog** showing that meeting's participants, plan and
