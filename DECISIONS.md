@@ -883,6 +883,23 @@ longer exist. Team meetings now record attendance; the meeting history reads as 
 
 ---
 
+## ADR-034 — Team-meeting PDF shows only the personal plan
+
+**Decision (per the user):** The team-meeting summary PDF now prints **only תוכנית אישית**, matching
+the on-screen snapshot (ADR-030). The **מוקדי כוח** and **מוקדים לחיזוק** sections are removed from
+the document, which now prints **משתתפים · תוכנית אישית · סיכום**. This reverses the part of ADR-028
+/ ADR-030 that kept the foci in the PDF while hiding them on screen; the foci are **still frozen into
+the stored meeting snapshot** (`MeetingResponse.strengths` / `areas_to_strengthen`), only no longer
+rendered in the export.
+
+**Implementation:** `MeetingSummaryDocument._strengths_section` and `_areas_section` (and their now
+unused imports and `ul.foci` CSS) were removed; the document body is participants + plan + summary.
+
+**Consequences:** The printed meeting document matches what the writer sees on screen. The snapshot
+data is retained, so the choice is reversible by re-adding the two sections.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

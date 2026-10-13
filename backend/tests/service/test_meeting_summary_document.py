@@ -60,7 +60,6 @@ def test_html_is_rtl_and_contains_content() -> None:
     html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue())
 
     assert 'dir="rtl"' in html
-    assert "הבעה" in html
     assert "רחיצת ידיים" in html
     assert "בהשגחה" in html
     assert "תרגול יומי" in html
@@ -68,6 +67,15 @@ def test_html_is_rtl_and_contains_content() -> None:
     assert "סיכום הישיבה" in html
     assert "משתתפים" in html
     assert "דנה מדריכה" in html
+
+
+def test_html_omits_strengths_and_areas_sections() -> None:
+    html = MeetingSummaryDocument(BrandSettings()).to_html(_meeting(), _issue())
+
+    assert "מוקדי כוח" not in html
+    assert "מוקדים לחיזוק" not in html
+    assert "הבעה" not in html
+    assert "תוכנית אישית" in html
 
 
 def test_html_escapes_snapshot_text() -> None:
