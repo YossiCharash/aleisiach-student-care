@@ -86,12 +86,15 @@ describe("AddMeetingDialog", () => {
     );
   });
 
-  it("shows the previous meeting summary and plan for reference", async () => {
+  it("shows the previous meeting summary with a link to its plan", async () => {
     meetingsListMock.mockResolvedValue([previousMeeting]);
     renderWithClient(<AddMeetingDialog studentId="s1" open onOpenChange={() => {}} />);
 
     expect(await screen.findByText(/^הישיבה הקודמת/)).toBeInTheDocument();
     expect(screen.getByText("סיכום קודם")).toBeInTheDocument();
-    expect(screen.getByText("תרגול מהעבר")).toBeInTheDocument();
+    expect(screen.queryByText("תרגול מהעבר")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "התוכנית האישית בזמן הישיבה הקודמת" })
+    ).toBeInTheDocument();
   });
 });

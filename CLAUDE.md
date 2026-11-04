@@ -299,7 +299,9 @@ on purpose: it has no access to any of these.
     screen the snapshot shows **only תוכנית אישית — both מוקדי כוח and מוקדים לחיזוק are hidden**
     (both still stored in the snapshot, but the PDF now prints **only תוכנית אישית** too — ADR-034).
     The form also shows the
-    **previous meeting for reference** (its summary + תוכנית אישית, read-only), when one exists.
+    **previous meeting for reference** (its summary, read-only, plus a **link** that opens that
+    meeting's תוכנית אישית in a floating dialog — the plan is not shown inline; 2026-11-04), when
+    one exists.
     Saving stores the meeting with its dated snapshot; the history is a grid of **date tiles** —
     clicking a tile opens a **floating dialog** showing that meeting's participants, plan and
     summary, with an **edit** action (participants + summary; the snapshot stays frozen) and a
