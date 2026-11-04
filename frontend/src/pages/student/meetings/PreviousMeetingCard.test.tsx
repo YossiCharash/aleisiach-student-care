@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { PreviousMeetingCard } from "@/pages/student/meetings/PreviousMeetingCard";
 import type { MeetingResponse } from "@/lib/api/types";
 
@@ -28,11 +29,26 @@ function meeting(overrides: Partial<MeetingResponse> = {}): MeetingResponse {
 }
 
 describe("PreviousMeetingCard", () => {
-  it("shows the previous meeting summary and plan", () => {
+  it("shows the previous meeting summary with a link instead of the plan", () => {
     render(<PreviousMeetingCard meeting={meeting()} />);
 
     expect(screen.getByText(/^הישיבה הקודמת/)).toBeInTheDocument();
     expect(screen.getByText("סיכום קודם")).toBeInTheDocument();
+    expect(screen.queryByText("תרגול יומי")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "התוכנית האישית בזמן הישיבה הקודמת" })
+    ).toBeInTheDocument();
+  });
+
+  it("opens the previous meeting plan in a dialog from the link", async () => {
+    render(<PreviousMeetingCard meeting={meeting()} />);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "התוכנית האישית בזמן הישיבה הקודמת" })
+    );
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("רחיצת ידיים")).toBeInTheDocument();
     expect(screen.getByText("תרגול יומי")).toBeInTheDocument();
   });
 
