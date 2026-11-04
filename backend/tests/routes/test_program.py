@@ -147,3 +147,34 @@ def test_program_requires_authentication(api: TestClient, db_session: Session) -
 
     response = api.get(f"/students/{domain.student_id}/program")
     assert response.status_code == 401
+
+
+def test_program_pdf_is_served(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    workshop_id = _seed_workshop(db_session, "Aleph")
+    domain = _seed_domain(db_session, workshop_id)
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    api.put(
+        f"/students/{domain.student_id}/program", headers=headers, json=_green_body(domain.skill_id)
+    )
+
+    response = api.get(f"/students/{domain.student_id}/program/pdf", headers=headers)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+
+
+def test_instructor_cannot_get_other_workshop_program_pdf(
+    api: TestClient, db_session: Session, seed_user: SeedUser, auth_headers: AuthHeaders
+) -> None:
+    own_workshop = _seed_workshop(db_session, "Aleph")
+    other_workshop = _seed_workshop(db_session, "Bet")
+    domain = _seed_domain(db_session, other_workshop)
+    seed_user("inst", UserRole.INSTRUCTOR, workshop_id=own_workshop)
+    headers = auth_headers(api, "inst")
+
+    response = api.get(f"/students/{domain.student_id}/program/pdf", headers=headers)
+
+    assert response.status_code == 404

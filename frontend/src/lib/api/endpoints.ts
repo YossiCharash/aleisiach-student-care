@@ -146,6 +146,8 @@ export const programApi = {
     apiClient.get<ProgramResponse>(`/students/${studentId}/program`),
   upsert: (studentId: string, body: ProgramUpsertRequest): Promise<ProgramResponse> =>
     apiClient.put<ProgramResponse>(`/students/${studentId}/program`, body),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/program/pdf`),
 };
 
 export const programPlansApi = {

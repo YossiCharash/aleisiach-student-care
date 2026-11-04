@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState } from "@/components/ui/ErrorState";
 import { RatingPill } from "@/components/RatingPill";
+import { PdfButton } from "@/components/PdfButton";
 import { ProgramForm } from "@/pages/student/program/ProgramForm";
 import { PersonalPlanTab } from "@/pages/student/program/PersonalPlanTab";
 
@@ -123,21 +124,24 @@ function FocusPanel({
             ? "מוקדי הכוח והמוקדים לחיזוק של החניך."
             : "עדיין לא סומנו מוקדים לחניך."}
         </p>
-        {canWrite && (
-          <Button onClick={() => setEditing(true)}>
-            {program.exists ? (
-              <>
-                <Pencil className="h-4 w-4" />
-                עריכת מוקדים
-              </>
-            ) : (
-              <>
-                <Plus className="h-4 w-4" />
-                יצירת מוקדים
-              </>
-            )}
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {program.exists && <PdfButton url={programApi.pdfUrl(studentId)} />}
+          {canWrite && (
+            <Button onClick={() => setEditing(true)}>
+              {program.exists ? (
+                <>
+                  <Pencil className="h-4 w-4" />
+                  עריכת מוקדים
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  יצירת מוקדים
+                </>
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {program.exists && (
