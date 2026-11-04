@@ -279,6 +279,8 @@ on purpose: it has no access to any of these.
       עצמאי/בהשגחה/בתלות labels).
       **No solutions here** — the sub-tab shows only strengths and areas to strengthen, with no
       solution text. (Uses program-only rating components — the meeting form of Tab 2 is unchanged.)
+      **PDF export** (download + print) of the current foci — strengths list + areas to strengthen
+      with their rating (server-side WeasyPrint, shared `DocumentShell`; added 2026-11-04).
     - **Sub-tab B — personal plan** (תוכנית אישית): a **dated, versioned series**. Shows the latest
       plan or "אין תוכנית" + a **"יצירת תוכנית"** button. Creating a plan pulls the **latest foci's
       areas to strengthen** and lets the manager pick the **solution paths** (sourced from Settings,

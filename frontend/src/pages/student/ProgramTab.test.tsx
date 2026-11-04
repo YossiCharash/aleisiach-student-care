@@ -10,7 +10,7 @@ const useAuth = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/auth/AuthContext", () => ({ useAuth }));
 
 vi.mock("@/lib/api/endpoints", () => ({
-  programApi: { get: vi.fn() },
+  programApi: { get: vi.fn(), pdfUrl: (id: string) => `/pdf/${id}` },
 }));
 
 vi.mock("@/pages/student/program/ProgramForm", () => ({
@@ -115,5 +115,25 @@ describe("ProgramTab", () => {
     expect(await screen.findByText("מוקדי כוח")).toBeInTheDocument();
     expect(screen.queryByText("עריכת מוקדים")).not.toBeInTheDocument();
     expect(screen.queryByText("יצירת מוקדים")).not.toBeInTheDocument();
+  });
+
+  it("offers download and print of the foci once they exist", async () => {
+    signedInAs("professional_teacher");
+    getMock.mockResolvedValue(filledProgram);
+
+    renderWithClient(<ProgramTab studentId="s1" />);
+
+    expect(await screen.findByText("הורדה")).toBeInTheDocument();
+    expect(screen.getByText("הדפסה")).toBeInTheDocument();
+  });
+
+  it("hides the PDF actions when no foci exist", async () => {
+    signedInAs("manager");
+    getMock.mockResolvedValue(emptyProgram);
+
+    renderWithClient(<ProgramTab studentId="s1" />);
+
+    expect(await screen.findByText("יצירת מוקדים")).toBeInTheDocument();
+    expect(screen.queryByText("הורדה")).not.toBeInTheDocument();
   });
 });
