@@ -97,4 +97,16 @@ describe("AddMeetingDialog", () => {
       screen.getByRole("button", { name: "התוכנית האישית בזמן הישיבה הקודמת" })
     ).toBeInTheDocument();
   });
+
+  it("opens the previous meeting's plan from the link above the form", async () => {
+    meetingsListMock.mockResolvedValue([previousMeeting]);
+    renderWithClient(<AddMeetingDialog studentId="s1" open onOpenChange={() => {}} />);
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: "התוכנית האישית בזמן הישיבה הקודמת" })
+    );
+
+    expect(await screen.findByText("תרגול מהעבר")).toBeInTheDocument();
+    expect(screen.getByText(/^התוכנית האישית · הישיבה מיום/)).toBeInTheDocument();
+  });
 });

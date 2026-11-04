@@ -40,7 +40,7 @@ export function PreviousMeetingCard({
       </CardContent>
 
       <Dialog open={planOpen} onOpenChange={setPlanOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>התוכנית האישית · הישיבה מיום {meetingDate}</DialogTitle>
           </DialogHeader>
