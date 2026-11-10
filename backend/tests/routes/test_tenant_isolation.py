@@ -129,7 +129,15 @@ def test_foreign_student_is_not_found(
 
 @pytest.mark.parametrize(
     "suffix",
-    ["details", "social-note", "functional-report", "program", "extra-sections", "meetings"],
+    [
+        "details",
+        "social-note",
+        "functional-report",
+        "incident-reports",
+        "program",
+        "extra-sections",
+        "meetings",
+    ],
 )
 def test_foreign_student_sub_resources_are_not_found(
     api: TestClient, foreign: ForeignData, manager_headers: dict[str, str], suffix: str
@@ -270,6 +278,8 @@ def test_manager_cannot_promote_a_user_to_super_admin(
         ("post", "/social-note"),
         ("post", "/functional-report"),
         ("get", "/functional-report/pdf"),
+        ("post", "/incident-reports"),
+        ("get", "/incident-reports/pdf"),
     ],
 )
 def test_foreign_student_write_paths_are_not_found(
@@ -284,6 +294,7 @@ def test_foreign_student_write_paths_are_not_found(
         "/details": {},
         "/social-note": {"note_date": "2026-06-01", "content": "נחטף"},
         "/functional-report": {"report_date": "2026-06-01", "general_background": "נחטף"},
+        "/incident-reports": {"event_date": "2026-06-01", "description": "נחטף"},
         "/meetings": {"meeting_date": "2026-06-01", "summary": "נחטף"},
     }.get(suffix)
     call = getattr(api, method)

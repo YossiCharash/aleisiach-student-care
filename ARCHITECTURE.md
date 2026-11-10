@@ -123,6 +123,7 @@ erDiagram
     STUDENT ||--o{ TEAM_MEETING : "meetings (Tab 2)"
     STUDENT ||--o{ SOCIAL_NOTE_ENTRY : "social notes (Tab 3, dated series)"
     STUDENT ||--o{ FUNCTIONAL_REPORT_ENTRY : "functional reports (Tab 5, dated series)"
+    STUDENT ||--o{ INCIDENT_REPORT : "incident reports (Form 35, dated series)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
     MEETING_FOCI_ENTRY }o--|| SKILL : "ref"
@@ -243,6 +244,12 @@ erDiagram
   `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
   Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
   communication fields; **superseded — ADR-020**.)
+- **Incident report ("אירוע חריג", Form 35) is a dated series** — own table `INCIDENT_REPORT`
+  (many per student, newest first by event date; ADR-037): the Form 35 fields, with the nature of the
+  event and the "referred to" decision stored as JSON lists of enum values and the report type as a
+  string enum. The recipient line (name · national id) is resolved at read time. Managers and
+  instructors (own workshop) write; professional teachers read; archive is manager-only. Per-report
+  and combined PDFs through `DocumentShell`.
 - **Tab 2 (Team meetings) is a dated read-only snapshot + summary** (decided 2026-09-09, ADR-022):
   one `TEAM_MEETING` per dated meeting with `meeting_date` and an editable `summary`, plus frozen
   copies of the foci (`MEETING_FOCI_ENTRY`) and the latest personal plan (`MEETING_PLAN_ENTRY` +

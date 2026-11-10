@@ -15,6 +15,9 @@ import type {
   FunctionalReportEntryResponse,
   FunctionalReportHistoryResponse,
   FunctionalReportSections,
+  IncidentReportEntryResponse,
+  IncidentReportFields,
+  IncidentReportHistoryResponse,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
   SupportedEmploymentResponse,
@@ -277,6 +280,38 @@ export const functionalReportApi = {
     buildPdfUrl(`/students/${studentId}/functional-report/${entryId}/pdf`),
   combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/functional-report/pdf`),
+};
+
+export const incidentReportApi = {
+  list: (studentId: string): Promise<IncidentReportHistoryResponse> =>
+    apiClient.get<IncidentReportHistoryResponse>(
+      `/students/${studentId}/incident-reports`
+    ),
+  create: (
+    studentId: string,
+    body: IncidentReportFields
+  ): Promise<IncidentReportEntryResponse> =>
+    apiClient.post<IncidentReportEntryResponse>(
+      `/students/${studentId}/incident-reports`,
+      body
+    ),
+  update: (
+    studentId: string,
+    reportId: string,
+    body: IncidentReportFields
+  ): Promise<IncidentReportEntryResponse> =>
+    apiClient.put<IncidentReportEntryResponse>(
+      `/students/${studentId}/incident-reports/${reportId}`,
+      body
+    ),
+  archive: (studentId: string, reportId: string): Promise<IncidentReportEntryResponse> =>
+    apiClient.post<IncidentReportEntryResponse>(
+      `/students/${studentId}/incident-reports/${reportId}/archive`
+    ),
+  pdfUrl: (studentId: string, reportId: string): string =>
+    buildPdfUrl(`/students/${studentId}/incident-reports/${reportId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/incident-reports/pdf`),
 };
 
 export const receptionReportApi = {

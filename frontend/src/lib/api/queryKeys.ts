@@ -10,6 +10,8 @@ export const queryKeys = {
   socialNote: (studentId: string) => ["students", studentId, "social-note"] as const,
   functionalReport: (studentId: string) =>
     ["students", studentId, "functional-report"] as const,
+  incidentReports: (studentId: string) =>
+    ["students", studentId, "incident-reports"] as const,
   receptionReport: (studentId: string) =>
     ["students", studentId, "reception-report"] as const,
   supportedEmployment: (studentId: string) =>

@@ -943,6 +943,41 @@ existing report into the first history entry**, dated by its last `updated_at`. 
 
 ---
 
+## ADR-037 — Incident report ("אירוע חריג", Form 35): a dated, archivable series per student
+
+**Date:** 2026-11-10
+**Decision (per the user):** A new student tab **"אירוע חריג"**, modeled on the client's Form 35
+("דו״ח אירוע חריג"), placed **after the functional report**. Like the functional report (ADR-036) it
+is a **dated series with history** (newest first, the newest expanded), with **edit**, archive-only
+**delete**, a **per-report PDF** and a **combined PDF** of all reports (shared `DocumentShell`,
+ADR-032 — same font and layout as every other document).
+
+- **Recipient auto-filled:** "שם מקבל השירות המעורב באירוע" is the student's name + national ID,
+  resolved at read time from `STUDENT` / `STUDENT_DETAILS` — not stored on the report.
+- **Fields (from the form):** event date (required, defaults to today) · time · place · reporter name
+  and role · report type (internal / external, single choice) · nature of the event (**multi-select**:
+  accident/injury/death · violence · property damage · prohibited substances · other + free text) ·
+  description (**required**) · staff present · affected service recipients · warning signs · actions
+  taken · decision — "referred to" (**multi-select**: internal event · guardian/decision supporter ·
+  welfare social worker · statutory social worker · police · framework supervisor · other + free
+  text) · reasons · manager/professional manager updated on date + time · lessons learned (causes ·
+  preventable? · lessons · corrective action plan) · form filler role (free text; the filler's
+  name is not recorded — "הופק על ידי" in the PDF header already names the exporting user). The PDF prints an **empty signature line** for a hand signature
+  and the form's note about attaching a clinic/police report (no file upload).
+- **Access (decided):** managers write any student; **instructors write students in their own
+  workshop** (server-side scope, other workshop = 404); professional teachers **read only**. **Delete
+  (archive) is manager-only.**
+
+**Data model:** `incident_reports` (migration `0038_incident_reports`): `id`, `student_id`,
+`event_date`, `event_time`, `report_type` (string enum), `natures` / `referrals` (JSON lists of enum
+values), the free-text columns, `manager_updated_date` / `manager_updated_time`, `author_id`,
+timestamps, archive columns; `TenantScoped` with the composite `(student_id, institution_id)` FK.
+Purged with the student (ADR-031). Audit entries list field names only. API:
+`GET/POST /students/{id}/incident-reports`, `PUT /{report_id}`, `POST /{report_id}/archive`,
+`GET /pdf` (combined) and `GET /{report_id}/pdf`.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.
