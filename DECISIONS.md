@@ -918,6 +918,31 @@ sees and writes that workshop's students under the existing ADR-025 scope.
 
 ---
 
+## ADR-036 — Tab 5 (Functional report) becomes a dated, archivable series with history
+
+**Date:** 2026-11-10
+**Decision (per the user):** The functional report (Form 33) is no longer one report per student
+updated in place. It now follows the social-worker-note pattern (ADR-024): a **"דוח תפקודי חדש"**
+button opens an **empty form** (decided — not pre-filled from the previous report) with a **date
+picker** (defaults to today) and the six sections; saving **appends a new dated report** to the
+student's history, listed newest first (the newest expanded, older ones collapsed). A manager may
+**edit** a report's sections (its date and author stay) and **delete** one — **archive-only**
+(soft-delete, kept in the audit log). Each report exports to a **per-report PDF**, and the tab offers a
+**combined PDF of all dates** (shared `DocumentShell`, ADR-032). At least one section must be filled.
+Access is unchanged: managers write; instructors and professional teachers read.
+
+This **supersedes the single-report shape of ADR-020**.
+
+**Data model:** `functional_reports` (PK `student_id`) is replaced by `functional_report_entries`
+(migration `0037_functional_report_entries`): `id`, `student_id`, `report_date`, the six section
+columns, `author_id`, `created_at`, `updated_at`, `is_archived` / `archived_at` / `archived_by`;
+`TenantScoped` with the composite `(student_id, institution_id)` FK. The migration **copies each
+existing report into the first history entry**, dated by its last `updated_at`. API:
+`GET/POST /students/{id}/functional-report`, `PATCH /{entry_id}`, `POST /{entry_id}/archive`,
+`GET /pdf` (combined) and `GET /{entry_id}/pdf`. The identity header is still resolved at read time.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.students.student_purge_repository import StudentPurgeRepository
 from backend.app.models.base import Base
 from backend.app.models.client.extra_section_type import ExtraSectionType
-from backend.app.models.client.functional_report import FunctionalReport
+from backend.app.models.client.functional_report_entry import FunctionalReportEntry
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
 from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
@@ -154,11 +154,11 @@ def _seed_full_subtree(session: Session) -> uuid.UUID:
     )
     now = datetime.now(UTC)
     session.add(
-        FunctionalReport(
+        FunctionalReportEntry(
             student_id=student.id,
             institution_id=_INSTITUTION_ID,
-            updated_by=author.id,
-            updated_at=now,
+            report_date=date.today(),
+            author_id=author.id,
         )
     )
     session.add(
@@ -211,7 +211,7 @@ def test_purge_removes_the_whole_student_subtree(db_session: Session) -> None:
         ProgramPlanEntry,
         ProgramPlanSolution,
         SocialNoteEntry,
-        FunctionalReport,
+        FunctionalReportEntry,
         ReceptionReport,
         SupportedEmployment,
         StudentExtraSection,

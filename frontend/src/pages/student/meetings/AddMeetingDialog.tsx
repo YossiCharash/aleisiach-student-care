@@ -19,18 +19,12 @@ import { ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { PlanEntriesCard } from "@/pages/student/meetings/PlanEntriesCard";
 import { PreviousMeetingCard } from "@/pages/student/meetings/PreviousMeetingCard";
 import { ParticipantsField } from "@/pages/student/meetings/ParticipantsField";
+import { todayIso } from "@/lib/utils/dates";
 
 interface Props {
   studentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function today(): string {
-  const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
 }
 
 export function AddMeetingDialog({ studentId, open, onOpenChange }: Props): ReactNode {
@@ -59,7 +53,7 @@ function AddMeetingForm({
   onDone: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [meetingDate, setMeetingDate] = useState(today);
+  const [meetingDate, setMeetingDate] = useState(todayIso);
   const [participants, setParticipants] = useState("");
   const [summary, setSummary] = useState("");
 

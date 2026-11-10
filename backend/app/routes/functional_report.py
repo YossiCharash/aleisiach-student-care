@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
@@ -12,9 +12,17 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.routes.pdf import BrandDep, Issue, RendererDep
 from backend.app.routes.security import CurrentUser, Manager, require_tenant
-from backend.app.schema.routes.functional_report_response import FunctionalReportResponse
-from backend.app.schema.routes.functional_report_upsert_request import (
-    FunctionalReportUpsertRequest,
+from backend.app.schema.routes.functional_report_create_request import (
+    FunctionalReportCreateRequest,
+)
+from backend.app.schema.routes.functional_report_entry_response import (
+    FunctionalReportEntryResponse,
+)
+from backend.app.schema.routes.functional_report_history_response import (
+    FunctionalReportHistoryResponse,
+)
+from backend.app.schema.routes.functional_report_update_request import (
+    FunctionalReportUpdateRequest,
 )
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.reports.functional_report_document import FunctionalReportDocument
@@ -47,25 +55,56 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=FunctionalReportResponse)
-def get_functional_report(
+def _pdf_response(pdf: bytes, student_name: str, document_name: str) -> Response:
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": pdf_content_disposition(student_name, document_name)},
+    )
+
+
+@router.get("", response_model=FunctionalReportHistoryResponse)
+def list_functional_reports(
     student_id: uuid.UUID, service: ServiceDep, user: CurrentUser
-) -> FunctionalReportResponse:
-    return service.get(student_id, StudentAccessPolicy.scope_for(user))
+) -> FunctionalReportHistoryResponse:
+    return service.history(student_id, StudentAccessPolicy.scope_for(user))
 
 
-@router.put("", response_model=FunctionalReportResponse)
-def upsert_functional_report(
+@router.post("", response_model=FunctionalReportEntryResponse, status_code=status.HTTP_201_CREATED)
+def create_functional_report(
     student_id: uuid.UUID,
-    request: FunctionalReportUpsertRequest,
+    request: FunctionalReportCreateRequest,
     service: ServiceDep,
     manager: Manager,
-) -> FunctionalReportResponse:
-    return service.upsert(student_id, request, StudentAccessPolicy.scope_for(manager), manager.id)
+) -> FunctionalReportEntryResponse:
+    return service.create(student_id, request, StudentAccessPolicy.scope_for(manager), manager.id)
+
+
+@router.patch("/{entry_id}", response_model=FunctionalReportEntryResponse)
+def update_functional_report(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    request: FunctionalReportUpdateRequest,
+    service: ServiceDep,
+    manager: Manager,
+) -> FunctionalReportEntryResponse:
+    scope = StudentAccessPolicy.scope_for(manager)
+    return service.update(student_id, entry_id, request, scope, manager.id)
+
+
+@router.post("/{entry_id}/archive", response_model=FunctionalReportEntryResponse)
+def archive_functional_report(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    service: ServiceDep,
+    manager: Manager,
+) -> FunctionalReportEntryResponse:
+    scope = StudentAccessPolicy.scope_for(manager)
+    return service.archive(student_id, entry_id, scope, manager.id)
 
 
 @router.get("/pdf")
-def get_functional_report_pdf(
+def get_functional_reports_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
     user: CurrentUser,
@@ -73,11 +112,21 @@ def get_functional_report_pdf(
     renderer: RendererDep,
     brand: BrandDep,
 ) -> Response:
-    report = service.get(student_id, StudentAccessPolicy.scope_for(user))
-    html = FunctionalReportDocument(brand).to_html(report, issue)
-    pdf = renderer.render(html)
-    return Response(
-        content=pdf,
-        media_type="application/pdf",
-        headers={"Content-Disposition": pdf_content_disposition(issue.student_name, "דוח תפקודי")},
-    )
+    history = service.history(student_id, StudentAccessPolicy.scope_for(user))
+    pdf = renderer.render(FunctionalReportDocument(brand).combined_html(history, issue))
+    return _pdf_response(pdf, issue.student_name, "דוחות תפקודיים")
+
+
+@router.get("/{entry_id}/pdf")
+def get_functional_report_pdf(
+    student_id: uuid.UUID,
+    entry_id: uuid.UUID,
+    service: ServiceDep,
+    user: CurrentUser,
+    issue: Issue,
+    renderer: RendererDep,
+    brand: BrandDep,
+) -> Response:
+    history = service.entry_history(student_id, entry_id, StudentAccessPolicy.scope_for(user))
+    pdf = renderer.render(FunctionalReportDocument(brand).single_html(history, issue))
+    return _pdf_response(pdf, issue.student_name, "דוח תפקודי")
