@@ -420,29 +420,35 @@ export interface SocialNoteUpdateRequest {
   content: string;
 }
 
-export interface FunctionalReportResponse {
+export interface FunctionalReportSections {
+  general_background: string;
+  vocational_domain: string;
+  behavioral_emotional_domain: string;
+  communication_social_domain: string;
+  independence_life_skills_domain: string;
+  summary_recommendations: string;
+}
+
+export interface FunctionalReportEntryResponse extends FunctionalReportSections {
+  id: string;
   student_id: string;
-  exists: boolean;
+  report_date: string;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FunctionalReportHistoryResponse {
+  student_id: string;
   student_name: string;
   national_id: string | null;
   date_of_birth: string | null;
-  general_background: string;
-  vocational_domain: string;
-  behavioral_emotional_domain: string;
-  communication_social_domain: string;
-  independence_life_skills_domain: string;
-  summary_recommendations: string;
-  written_by_name: string | null;
-  updated_at: string | null;
+  entries: FunctionalReportEntryResponse[];
 }
 
-export interface FunctionalReportUpsertRequest {
-  general_background: string;
-  vocational_domain: string;
-  behavioral_emotional_domain: string;
-  communication_social_domain: string;
-  independence_life_skills_domain: string;
-  summary_recommendations: string;
+export interface FunctionalReportCreateRequest extends FunctionalReportSections {
+  report_date: string;
 }
 
 export interface ReceptionChecklistItem {

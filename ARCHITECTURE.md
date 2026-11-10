@@ -122,7 +122,7 @@ erDiagram
     EXTRA_SECTION_TYPE ||--o{ STUDENT_EXTRA_SECTION : "heading"
     STUDENT ||--o{ TEAM_MEETING : "meetings (Tab 2)"
     STUDENT ||--o{ SOCIAL_NOTE_ENTRY : "social notes (Tab 3, dated series)"
-    STUDENT ||--|| FUNCTIONAL_REPORT : "functional report (Tab 5)"
+    STUDENT ||--o{ FUNCTIONAL_REPORT_ENTRY : "functional reports (Tab 5, dated series)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
     MEETING_FOCI_ENTRY }o--|| SKILL : "ref"
@@ -235,9 +235,10 @@ erDiagram
   as the "path to solution", plus a separate personal-plan card listing those paths.
   (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it** — since
   ADR-022 they instead read a snapshot *from* it.)
-- **Tab 5 (Functional report, "Form 33") is a manager-authored document** — own table
-  `FUNCTIONAL_REPORT` (one per student, `student_id` PK), six free-text sections plus
-  `updated_by`/`updated_at`, mirroring `SOCIAL_NOTE` widened. The identity header (name · national id ·
+- **Tab 5 (Functional report, "Form 33") is a manager-authored, dated series** — own table
+  `FUNCTIONAL_REPORT_ENTRY` (many per student, newest first; ADR-035): `report_date`, six free-text
+  sections, `author_id`, timestamps and archive-only soft-delete columns, mirroring
+  `SOCIAL_NOTE_ENTRY` widened. Per-report and combined PDFs. The identity header (name · national id ·
   date of birth) and the issuer name are **resolved at read time** from `STUDENT` / `STUDENT_DETAILS` /
   `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
   Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
@@ -488,7 +489,7 @@ flowchart LR
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
 only, managers write Tab 3; Tab 1 is a manually authored stored program (manager only, ADR-019);
-Tab 5 is a manager-authored functional report / Form 33 (ADR-020); Tab 4 extra
+Tab 5 is a manager-authored, dated series of functional reports / Form 33 (ADR-020 → ADR-035); Tab 4 extra
 sections = normalized tables; taxonomy history = snapshot + soft-delete; students archive-only
 (manager); audit log records changes only; stack locked (Vite SPA + FastAPI); auth =
 username/password with email invite + reset._

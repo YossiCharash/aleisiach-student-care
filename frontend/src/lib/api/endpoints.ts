@@ -11,8 +11,10 @@ import type {
   InstitutionSummary,
   InstitutionUpdateRequest,
   DiagnosisCatalogUpdate,
-  FunctionalReportResponse,
-  FunctionalReportUpsertRequest,
+  FunctionalReportCreateRequest,
+  FunctionalReportEntryResponse,
+  FunctionalReportHistoryResponse,
+  FunctionalReportSections,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
   SupportedEmploymentResponse,
@@ -246,17 +248,34 @@ export const socialNoteApi = {
 };
 
 export const functionalReportApi = {
-  get: (studentId: string): Promise<FunctionalReportResponse> =>
-    apiClient.get<FunctionalReportResponse>(`/students/${studentId}/functional-report`),
-  upsert: (
+  list: (studentId: string): Promise<FunctionalReportHistoryResponse> =>
+    apiClient.get<FunctionalReportHistoryResponse>(
+      `/students/${studentId}/functional-report`
+    ),
+  create: (
     studentId: string,
-    body: FunctionalReportUpsertRequest
-  ): Promise<FunctionalReportResponse> =>
-    apiClient.put<FunctionalReportResponse>(
+    body: FunctionalReportCreateRequest
+  ): Promise<FunctionalReportEntryResponse> =>
+    apiClient.post<FunctionalReportEntryResponse>(
       `/students/${studentId}/functional-report`,
       body
     ),
-  pdfUrl: (studentId: string): string =>
+  update: (
+    studentId: string,
+    entryId: string,
+    body: FunctionalReportSections
+  ): Promise<FunctionalReportEntryResponse> =>
+    apiClient.patch<FunctionalReportEntryResponse>(
+      `/students/${studentId}/functional-report/${entryId}`,
+      body
+    ),
+  archive: (studentId: string, entryId: string): Promise<FunctionalReportEntryResponse> =>
+    apiClient.post<FunctionalReportEntryResponse>(
+      `/students/${studentId}/functional-report/${entryId}/archive`
+    ),
+  pdfUrl: (studentId: string, entryId: string): string =>
+    buildPdfUrl(`/students/${studentId}/functional-report/${entryId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/functional-report/pdf`),
 };
 
