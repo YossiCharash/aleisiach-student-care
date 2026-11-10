@@ -27,8 +27,7 @@ function workshop(overrides: Partial<WorkshopResponse>): WorkshopResponse {
     id: "w1",
     name: "סדנה א׳",
     color: "#3F8420",
-    instructor_id: null,
-    instructor_name: null,
+    instructors: [],
     ...overrides,
   };
 }
@@ -54,15 +53,20 @@ describe("WorkshopsArea", () => {
     usersListMock.mockResolvedValue([instructor()]);
   });
 
-  it("lists workshops with their instructor name", async () => {
+  it("lists workshops with all their instructor names", async () => {
     listMock.mockResolvedValue([
-      workshop({ instructor_id: "u1", instructor_name: "דנה" }),
+      workshop({
+        instructors: [
+          { id: "u1", full_name: "דנה" },
+          { id: "u2", full_name: "יעל" },
+        ],
+      }),
     ]);
 
     renderWithClient(<WorkshopsArea />);
 
     expect(await screen.findByText("סדנה א׳")).toBeInTheDocument();
-    expect(screen.getByText("דנה")).toBeInTheDocument();
+    expect(screen.getByText("דנה, יעל")).toBeInTheDocument();
   });
 
   it("shows a placeholder when a workshop has no instructor", async () => {

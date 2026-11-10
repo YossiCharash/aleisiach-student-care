@@ -28,15 +28,13 @@ const classes: WorkshopResponse[] = [
     id: "c1",
     name: "סדנה א׳",
     color: "#3F8420",
-    instructor_id: null,
-    instructor_name: null,
+    instructors: [],
   },
   {
     id: "c2",
     name: "סדנה ב׳",
     color: "#E6B800",
-    instructor_id: null,
-    instructor_name: null,
+    instructors: [],
   },
 ];
 

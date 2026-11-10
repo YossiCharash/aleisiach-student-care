@@ -22,7 +22,7 @@ def test_manager_creates_lists_and_updates_workshop(
     assert created.status_code == 201
     body = created.json()
     assert body["color"] == _COLOR
-    assert body["instructor_id"] is None
+    assert body["instructors"] == []
     workshop_id = body["id"]
 
     listing = api.get("/workshops", headers=headers)
@@ -39,21 +39,26 @@ def test_manager_creates_lists_and_updates_workshop(
     assert updated.json()["color"] == "#85C441"
 
 
-def test_manager_assigns_an_instructor_to_the_workshop(
+def test_manager_assigns_several_instructors_to_the_workshop(
     api: TestClient, seed_user: SeedUser, auth_headers: AuthHeaders
 ) -> None:
     seed_user("boss", UserRole.MANAGER)
     teacher = seed_user("teacher", UserRole.INSTRUCTOR)
+    helper = seed_user("helper", UserRole.INSTRUCTOR)
     headers = auth_headers(api, "boss")
 
     created = api.post(
         "/workshops",
-        json={"name": "Aleph", "color": _COLOR, "instructor_id": str(teacher.id)},
+        json={
+            "name": "Aleph",
+            "color": _COLOR,
+            "instructor_ids": [str(teacher.id), str(helper.id)],
+        },
         headers=headers,
     )
     assert created.status_code == 201
-    assert created.json()["instructor_id"] == str(teacher.id)
-    assert created.json()["instructor_name"] == teacher.full_name
+    assigned = {row["id"] for row in created.json()["instructors"]}
+    assert assigned == {str(teacher.id), str(helper.id)}
 
 
 def test_create_rejects_an_invalid_color(

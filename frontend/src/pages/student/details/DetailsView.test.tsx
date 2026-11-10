@@ -45,7 +45,7 @@ describe("DetailsView empty handling", () => {
   it("hides empty fields and empty section cards", () => {
     renderWithClient(<DetailsView details={details()} />);
 
-    expect(screen.getByText("אבחונים")).toBeInTheDocument();
+    expect(screen.getByText("אבחנות")).toBeInTheDocument();
     expect(screen.getByText("123456789")).toBeInTheDocument();
 
     expect(screen.queryByText("כתובת")).not.toBeInTheDocument();

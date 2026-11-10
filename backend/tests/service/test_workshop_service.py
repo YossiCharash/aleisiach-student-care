@@ -35,9 +35,9 @@ def _create(
     service: WorkshopService,
     name: str,
     color: str = _COLOR,
-    instructor_id: uuid.UUID | None = None,
+    instructor_ids: list[uuid.UUID] | None = None,
 ) -> uuid.UUID:
-    request = WorkshopCreateRequest(name=name, color=color, instructor_id=instructor_id)
+    request = WorkshopCreateRequest(name=name, color=color, instructor_ids=instructor_ids or [])
     return service.create(request, _ACTOR).id
 
 
@@ -115,24 +115,69 @@ def test_create_assigns_the_chosen_instructor(db_session: Session) -> None:
     service = _service(db_session)
     instructor = _add_instructor(db_session, "Dana")
 
-    result = _create(service, "Aleph", instructor_id=instructor.id)
+    result = _create(service, "Aleph", instructor_ids=[instructor.id])
 
     db_session.refresh(instructor)
     assert instructor.workshop_id == result
     listed = service.list_active(_ALL)
-    assert listed[0].instructor_id == instructor.id
-    assert listed[0].instructor_name == "Dana"
+    assert [(row.id, row.full_name) for row in listed[0].instructors] == [(instructor.id, "Dana")]
+
+
+def test_create_assigns_several_instructors(db_session: Session) -> None:
+    service = _service(db_session)
+    dana = _add_instructor(db_session, "Dana")
+    yael = _add_instructor(db_session, "Yael")
+
+    result = _create(service, "Aleph", instructor_ids=[yael.id, dana.id, dana.id])
+
+    db_session.refresh(dana)
+    db_session.refresh(yael)
+    assert dana.workshop_id == result
+    assert yael.workshop_id == result
+    listed = service.list_active(_ALL)
+    assert [row.full_name for row in listed[0].instructors] == ["Dana", "Yael"]
+
+
+def test_update_keeps_listed_instructors_and_frees_the_rest(db_session: Session) -> None:
+    service = _service(db_session)
+    dana = _add_instructor(db_session, "Dana")
+    yael = _add_instructor(db_session, "Yael")
+    noa = _add_instructor(db_session, "Noa")
+    workshop_id = _create(service, "Aleph", instructor_ids=[dana.id, yael.id])
+
+    response = service.update(
+        workshop_id,
+        WorkshopUpdateRequest(name="Aleph", color=_COLOR, instructor_ids=[yael.id, noa.id]),
+        _ACTOR,
+    )
+
+    db_session.refresh(dana)
+    assert dana.workshop_id is None
+    assert [row.full_name for row in response.instructors] == ["Noa", "Yael"]
+
+
+def test_assigning_an_instructor_moves_them_from_another_workshop(db_session: Session) -> None:
+    service = _service(db_session)
+    dana = _add_instructor(db_session, "Dana")
+    first = _create(service, "Aleph", instructor_ids=[dana.id])
+
+    second = _create(service, "Bet", instructor_ids=[dana.id])
+
+    db_session.refresh(dana)
+    assert dana.workshop_id == second
+    by_id = {row.id: row for row in service.list_active(_ALL)}
+    assert by_id[first].instructors == []
 
 
 def test_update_reassigns_instructor_and_frees_the_previous_one(db_session: Session) -> None:
     service = _service(db_session)
     first = _add_instructor(db_session, "First")
     second = _add_instructor(db_session, "Second")
-    workshop_id = _create(service, "Aleph", instructor_id=first.id)
+    workshop_id = _create(service, "Aleph", instructor_ids=[first.id])
 
     service.update(
         workshop_id,
-        WorkshopUpdateRequest(name="Aleph", color=_COLOR, instructor_id=second.id),
+        WorkshopUpdateRequest(name="Aleph", color=_COLOR, instructor_ids=[second.id]),
         _ACTOR,
     )
 
@@ -145,7 +190,7 @@ def test_update_reassigns_instructor_and_frees_the_previous_one(db_session: Sess
 def test_clearing_instructor_frees_the_holder(db_session: Session) -> None:
     service = _service(db_session)
     instructor = _add_instructor(db_session, "Dana")
-    workshop_id = _create(service, "Aleph", instructor_id=instructor.id)
+    workshop_id = _create(service, "Aleph", instructor_ids=[instructor.id])
 
     service.update(workshop_id, WorkshopUpdateRequest(name="Aleph", color=_COLOR), _ACTOR)
 
@@ -158,7 +203,7 @@ def test_unknown_instructor_raises(db_session: Session) -> None:
 
     with pytest.raises(NotFoundError):
         service.create(
-            WorkshopCreateRequest(name="Aleph", color=_COLOR, instructor_id=uuid.uuid4()),
+            WorkshopCreateRequest(name="Aleph", color=_COLOR, instructor_ids=[uuid.uuid4()]),
             _ACTOR,
         )
 
@@ -171,7 +216,7 @@ def test_disabled_instructor_cannot_be_assigned(db_session: Session) -> None:
 
     with pytest.raises(NotFoundError):
         service.create(
-            WorkshopCreateRequest(name="Aleph", color=_COLOR, instructor_id=instructor.id),
+            WorkshopCreateRequest(name="Aleph", color=_COLOR, instructor_ids=[instructor.id]),
             _ACTOR,
         )
 
