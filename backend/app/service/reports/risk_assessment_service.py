@@ -2,17 +2,12 @@ import uuid
 
 from backend.app.client.reports.risk_assessment_repository import RiskAssessmentRepository
 from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
-from backend.app.client.users.user_repository import UserRepository
-from backend.app.errors.service.invalid_responsible_user_error import (
-    InvalidResponsibleUserError,
-)
 from backend.app.errors.service.invalid_risk_domain_error import InvalidRiskDomainError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.risk_assessment import RiskAssessment
 from backend.app.models.client.risk_domain import RiskDomain
 from backend.app.models.client.student import Student
-from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.risk_assessment_entry_response import RiskAssessmentEntryResponse
 from backend.app.schema.routes.risk_assessment_history_response import (
     RiskAssessmentHistoryResponse,
@@ -26,6 +21,7 @@ from backend.app.schema.service.audit_entry import AuditEntry
 from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.app.service.users.responsible_user_resolver import ResponsibleUserResolver
 from backend.app.utils.service.clock import Clock
 
 _ENTITY_TYPE = "risk_assessment"
@@ -36,14 +32,14 @@ class RiskAssessmentService:
         self,
         assessment_repository: RiskAssessmentRepository,
         domain_repository: RiskDomainRepository,
-        user_repository: UserRepository,
+        responsible_resolver: ResponsibleUserResolver,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
         clock: Clock,
     ) -> None:
         self._assessments = assessment_repository
         self._domains = domain_repository
-        self._users = user_repository
+        self._responsible = responsible_resolver
         self._guard = access_guard
         self._audit = audit_logger
         self._clock = clock
@@ -63,12 +59,7 @@ class RiskAssessmentService:
     def responsible_candidates(
         self, student_id: uuid.UUID, scope: StudentAccessScope
     ) -> list[StaffMemberResponse]:
-        student = self._guard.require(student_id, scope)
-        return [
-            StaffMemberResponse(id=user.id, full_name=user.full_name)
-            for user in self._users.list_all()
-            if user.institution_id == student.institution_id and user.status != UserStatus.DISABLED
-        ]
+        return self._responsible.candidates(self._guard.require(student_id, scope))
 
     def create(
         self,
@@ -174,16 +165,8 @@ class RiskAssessmentService:
         items: list[RiskItemFields],
         already_assigned: set[uuid.UUID],
     ) -> dict[uuid.UUID, str | None]:
-        names: dict[uuid.UUID, str | None] = {}
         user_ids = {user_id for item in items for user_id in item.responsible_user_ids}
-        for user_id in user_ids:
-            user = self._users.get(user_id)
-            if user is None or user.institution_id != student.institution_id:
-                raise InvalidResponsibleUserError()
-            if user.status == UserStatus.DISABLED and user_id not in already_assigned:
-                raise InvalidResponsibleUserError()
-            names[user_id] = user.full_name
-        return names
+        return self._responsible.validate(student, user_ids, already_assigned)
 
     def _changes(
         self,
@@ -260,7 +243,7 @@ class RiskAssessmentService:
                 self._item_response(item, cache) for item in self._stored_items(assessment, catalog)
             ],
             author_id=assessment.author_id,
-            author_name=self._user_name(assessment.author_id, cache),
+            author_name=self._responsible.name(assessment.author_id, cache),
             created_at=assessment.created_at,
             updated_at=assessment.updated_at,
         )
@@ -268,15 +251,5 @@ class RiskAssessmentService:
     def _item_response(
         self, item: RiskItemFields, cache: dict[uuid.UUID, str | None]
     ) -> RiskItemResponse:
-        responsible = [
-            StaffMemberResponse(id=user_id, full_name=name)
-            for user_id in item.responsible_user_ids
-            if (name := self._user_name(user_id, cache)) is not None
-        ]
+        responsible = self._responsible.members(item.responsible_user_ids, cache)
         return RiskItemResponse(**item.model_dump(), responsible=responsible)
-
-    def _user_name(self, user_id: uuid.UUID, cache: dict[uuid.UUID, str | None]) -> str | None:
-        if user_id not in cache:
-            user = self._users.get(user_id)
-            cache[user_id] = user.full_name if user is not None else None
-        return cache[user_id]

@@ -675,6 +675,42 @@ export interface RiskDomainUpdate {
   is_active?: boolean;
 }
 
+export type HealthSessionType = "individual" | "group";
+
+export interface HealthDomainInfo {
+  id: string;
+  name: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface HealthRecordRequest {
+  domain_id: string;
+  record_date: string;
+  session_type: HealthSessionType | null;
+  support_given: string;
+  responsible_user_ids: string[];
+  notes: string;
+  execution_review: string;
+}
+
+export interface HealthRecordResponse extends HealthRecordRequest {
+  id: string;
+  student_id: string;
+  responsible: StaffMember[];
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HealthRecordHistoryResponse {
+  student_id: string;
+  student_name: string;
+  domains: HealthDomainInfo[];
+  entries: HealthRecordResponse[];
+}
+
 export interface StaffMember {
   id: string;
   full_name: string;

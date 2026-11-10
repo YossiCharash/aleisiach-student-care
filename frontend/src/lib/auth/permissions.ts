@@ -16,6 +16,11 @@ export const permissions = {
   canWriteRiskAssessments: (user: UserResponse): boolean =>
     user.role === "manager" || user.role === "instructor",
   canArchiveRiskAssessments: (user: UserResponse): boolean => user.role === "manager",
+  canWriteHealthRecords: (user: UserResponse): boolean =>
+    user.role === "manager" ||
+    user.role === "instructor" ||
+    user.role === "professional_teacher",
+  canArchiveHealthRecords: (user: UserResponse): boolean => user.role === "manager",
   canAccessReceptionReport: (user: UserResponse): boolean => user.role === "manager",
   canAccessMedicalSummary: (user: UserResponse): boolean => user.role === "manager",
   canAccessSupportedEmployment: (user: UserResponse): boolean => user.role === "manager",

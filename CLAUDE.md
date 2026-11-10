@@ -141,13 +141,15 @@ on purpose: it has no access to any of these.
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
 | Incident report (Form 35) | Read/Write · archive | Read/Write (own class) | Read |
 | Risk management | Read/Write · archive | Read/Write (own class) | Read |
+| Health-professions documentation | Read/Write · archive | Read/Write (own class) | **Read/Write** (all students) |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
-| Settings — management (users · classes · taxonomy · diagnoses · risk domains · Tab 4 headings) | ✔ | ✘ | ✘ |
+| Settings — management (users · classes · taxonomy · diagnoses · risk domains · health domains · Tab 4 headings) | ✔ | ✘ | ✘ |
 | Settings — "my account" tab (change own password) | ✔ | ✔ | ✔ |
 | Institutions console | ✘ | ✘ | ✘ |
 
-> **Professional teacher = read-only everywhere** (decided): sees all students, reads Tabs 1, 2
+> **Professional teacher = read-only everywhere** (decided) — **one exception: the
+> health-professions documentation tab, which every role writes** (ADR-041, 2026-11-10): sees all students, reads Tabs 1, 2
 > and the non-sensitive part of Tab 4; blocked from Tab 3 and from the guardianship/legal-status
 > section of Tab 4; no write anywhere; no management Settings (may still open the Settings page
 > to reach the **"my account"** tab and change their own password).
@@ -258,7 +260,7 @@ on purpose: it has no access to any of these.
   2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027; medical summary inserted
   2026-11-10, ADR-038) is: **details · medical information summary (managers only) ·
   reception report (managers only) · program · team meetings · social-worker note ·
-  functional-report summary · incident report · risk management · supported employment (managers only)**, and **details is the
+  functional-report summary · incident report · risk management · health-professions documentation · supported employment (managers only)**, and **details is the
   default tab**.
   - **Medical information summary** (סיכום מידע רפואי — "מידע ונתונים בריאותיים"): a
     **manager-only** tab (read + write manager-only; instructors and professional teachers are
@@ -382,6 +384,16 @@ on purpose: it has no access to any of these.
     חוזקה / דילמות / עמדת הצוות rows are omitted. History newest first, **edit**, archive-only
     **delete (manager only)**, **per-table + combined PDF**. **Every role reads; managers write any
     student; instructors write their own workshop's students.** (Added 2026-11-10, ADR-039.)
+  - **Health-professions documentation** (תיעוד אישי – מקצועות הבריאות): placed **after risk
+    management**. Modeled on the client's handwritten form: **one table per health domain** (תחום),
+    where the domains (e.g. פיזיותרפיה) are **managed per institution in Settings → "תחומי מקצועות
+    הבריאות"** (add · rename · deactivate; a new institution starts with an **empty** list). Each
+    table row: **תאריך · אישי/קבוצתי** (choice) **· תמיכה שניתנה** (free text) **· אחראי ביצוע**
+    (multi-select of the institution's users) **· הערות · בקרת ביצוע** (free text). Rows are listed
+    oldest first, **added and edited by every role** (managers any student, instructors their own
+    workshop, **professional teachers any student** — the one write exception for that role), and
+    **deleted (archive-only) by managers only**. **PDF per domain** and a **combined PDF of all
+    domains**. (Added 2026-11-10, ADR-041.)
   - **Supported employment** (עבודה נתמכת — טופס 46): a **manager-only** tab (read + write
     manager-only; instructors and professional teachers are blocked, so the tab is hidden and the
     API answers 403), placed **last, after the functional report**. **One stored record per
