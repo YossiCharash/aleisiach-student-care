@@ -45,7 +45,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
         </dl>
       </Section>
 
-      <Section title="אבחנות" contentClassName="space-y-2">
+      <Section title="אבחונים" contentClassName="space-y-2">
         <div className="rounded-xl border border-slate-200 px-3.5 py-2.5">
           <div className="font-medium text-ink">{IDD_DIAGNOSIS_NAME}</div>
           {filled(details.idd_severity) && (

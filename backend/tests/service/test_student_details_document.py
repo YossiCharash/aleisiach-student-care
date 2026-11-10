@@ -116,7 +116,7 @@ def test_empty_fields_and_sections_are_omitted() -> None:
     assert "זהות" in html
     assert "123456789" in html
     assert "כתובת" not in html
-    assert "אבחנות" in html
+    assert "אבחונים" in html
     assert "אוטיזם" not in html
     assert "אנשי קשר לחירום" not in html
     assert "פרופיל רפואי ובטיחותי קריטי" not in html

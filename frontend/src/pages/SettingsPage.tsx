@@ -88,7 +88,7 @@ export function SettingsPage(): ReactNode {
             <>
               <TabsTrigger value="workshops">סדנאות</TabsTrigger>
               <TabsTrigger value="taxonomy">כישורים-מיומנויות</TabsTrigger>
-              <TabsTrigger value="diagnoses">אבחנות</TabsTrigger>
+              <TabsTrigger value="diagnoses">אבחונים</TabsTrigger>
               <TabsTrigger value="detail-options">עריכת פרטי חניך</TabsTrigger>
             </>
           )}

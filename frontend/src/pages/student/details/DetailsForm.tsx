@@ -386,7 +386,7 @@ function DiagnosesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>אבחנות</CardTitle>
+        <CardTitle>אבחונים</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

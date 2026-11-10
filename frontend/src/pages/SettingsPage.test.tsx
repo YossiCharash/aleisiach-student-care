@@ -15,7 +15,7 @@ vi.mock("@/pages/settings/TaxonomyArea", () => ({
   TaxonomyArea: () => <div>אזור כישורים</div>,
 }));
 vi.mock("@/pages/settings/DiagnosesArea", () => ({
-  DiagnosesArea: () => <div>אזור אבחנות</div>,
+  DiagnosesArea: () => <div>אזור אבחונים</div>,
 }));
 vi.mock("@/pages/settings/DetailOptionsArea", () => ({
   DetailOptionsArea: () => <div>אזור פרטי חניך</div>,
@@ -37,7 +37,7 @@ function renderSettings(path = "/settings"): void {
   );
 }
 
-const managerTabs = ["סדנאות", "כישורים-מיומנויות", "אבחנות", "עריכת פרטי חניך"];
+const managerTabs = ["סדנאות", "כישורים-מיומנויות", "אבחונים", "עריכת פרטי חניך"];
 
 describe("SettingsPage", () => {
   beforeEach(() => useAuth.mockReset());
