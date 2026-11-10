@@ -8,8 +8,8 @@ import type {
   HealthSessionType,
   StaffMember,
 } from "@/lib/api/types";
-import { cn } from "@/lib/utils/cn";
-import { toggled } from "@/lib/utils/arrays";
+import { StaffChipPicker } from "@/components/StaffChipPicker";
+import { withAssigned } from "@/lib/utils/staff";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -123,34 +123,12 @@ export function HealthRecordForm({
             לא ניתן לטעון את רשימת המשתמשים: {errorMessage(candidatesQuery.error)}
           </Alert>
         )}
-        <div className="mt-1 flex flex-wrap gap-1.5">
-          {candidates.map((member) => {
-            const selected = draft.responsible_user_ids.includes(member.id);
-            return (
-              <button
-                key={member.id}
-                type="button"
-                aria-pressed={selected}
-                onClick={() =>
-                  update({
-                    responsible_user_ids: toggled(
-                      draft.responsible_user_ids,
-                      member.id,
-                      !selected
-                    ),
-                  })
-                }
-                className={cn(
-                  "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                  selected
-                    ? "border-brand-500 bg-brand-500 text-white"
-                    : "border-slate-200 bg-white text-ink-muted hover:border-brand-300 hover:text-ink"
-                )}
-              >
-                {member.full_name}
-              </button>
-            );
-          })}
+        <div className="mt-1">
+          <StaffChipPicker
+            candidates={candidates}
+            selected={draft.responsible_user_ids}
+            onChange={(selected) => update({ responsible_user_ids: selected })}
+          />
         </div>
       </div>
 
@@ -203,9 +181,4 @@ function TextField({
       />
     </div>
   );
-}
-
-function withAssigned(candidates: StaffMember[], assigned: StaffMember[]): StaffMember[] {
-  const known = new Set(candidates.map((member) => member.id));
-  return [...candidates, ...assigned.filter((member) => !known.has(member.id))];
 }

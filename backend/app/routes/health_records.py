@@ -23,6 +23,7 @@ from backend.app.service.reports.health_record_document import TITLE, HealthReco
 from backend.app.service.reports.health_record_service import HealthRecordService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.service.students.student_access_policy import StudentAccessPolicy
+from backend.app.service.users.responsible_user_resolver import ResponsibleUserResolver
 from backend.app.utils.routes.pdf_disposition import pdf_content_disposition
 from backend.app.utils.service.clock import Clock
 
@@ -33,7 +34,7 @@ def get_health_record_service(
     return HealthRecordService(
         HealthRecordRepository(session),
         HealthDomainRepository(session),
-        UserRepository(session),
+        ResponsibleUserResolver(UserRepository(session)),
         StudentAccessGuard(StudentRepository(session)),
         AuditLogger(AuditLogRepository(session)),
         Clock(),

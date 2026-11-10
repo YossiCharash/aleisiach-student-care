@@ -21,7 +21,9 @@ class HealthRecordRepository:
     def get(self, record_id: uuid.UUID) -> HealthRecord | None:
         return self._session.get(HealthRecord, record_id)
 
-    def list_for_student(self, student_id: uuid.UUID) -> list[HealthRecord]:
+    def list_for_student(
+        self, student_id: uuid.UUID, domain_id: uuid.UUID | None = None
+    ) -> list[HealthRecord]:
         statement = (
             select(HealthRecord)
             .where(
@@ -34,4 +36,6 @@ class HealthRecordRepository:
                 HealthRecord.id.asc(),
             )
         )
+        if domain_id is not None:
+            statement = statement.where(HealthRecord.domain_id == domain_id)
         return list(self._session.scalars(statement).all())

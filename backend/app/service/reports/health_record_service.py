@@ -2,17 +2,12 @@ import uuid
 
 from backend.app.client.reports.health_domain_repository import HealthDomainRepository
 from backend.app.client.reports.health_record_repository import HealthRecordRepository
-from backend.app.client.users.user_repository import UserRepository
 from backend.app.errors.service.invalid_health_domain_error import InvalidHealthDomainError
-from backend.app.errors.service.invalid_responsible_user_error import (
-    InvalidResponsibleUserError,
-)
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.health_domain import HealthDomain
 from backend.app.models.client.health_record import HealthRecord
 from backend.app.models.client.student import Student
-from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.health_domain_response import HealthDomainResponse
 from backend.app.schema.routes.health_record_history_response import (
     HealthRecordHistoryResponse,
@@ -24,6 +19,7 @@ from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.audit.entity_audit_recorder import EntityAuditRecorder
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.app.service.users.responsible_user_resolver import ResponsibleUserResolver
 from backend.app.utils.service.clock import Clock
 
 _ENTITY_TYPE = "health_record"
@@ -44,14 +40,14 @@ class HealthRecordService:
         self,
         record_repository: HealthRecordRepository,
         domain_repository: HealthDomainRepository,
-        user_repository: UserRepository,
+        responsible_resolver: ResponsibleUserResolver,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
         clock: Clock,
     ) -> None:
         self._records = record_repository
         self._domains = domain_repository
-        self._users = user_repository
+        self._responsible = responsible_resolver
         self._guard = access_guard
         self._audit = EntityAuditRecorder(audit_logger, _ENTITY_TYPE)
         self._clock = clock
@@ -63,20 +59,13 @@ class HealthRecordService:
         domain_id: uuid.UUID | None = None,
     ) -> HealthRecordHistoryResponse:
         student = self._guard.require(student_id, scope)
-        records = self._records.list_for_student(student_id)
-        if domain_id is not None:
-            records = [record for record in records if record.domain_id == domain_id]
+        records = self._records.list_for_student(student_id, domain_id)
         return self._build_history(student, records, domain_id)
 
     def responsible_candidates(
         self, student_id: uuid.UUID, scope: StudentAccessScope
     ) -> list[StaffMemberResponse]:
-        student = self._guard.require(student_id, scope)
-        return [
-            StaffMemberResponse(id=user.id, full_name=user.full_name)
-            for user in self._users.list_all()
-            if user.institution_id == student.institution_id and user.status != UserStatus.DISABLED
-        ]
+        return self._responsible.candidates(self._guard.require(student_id, scope))
 
     def create(
         self,
@@ -87,7 +76,7 @@ class HealthRecordService:
     ) -> HealthRecordResponse:
         student = self._guard.require(student_id, scope)
         self._require_domain(request.domain_id, None)
-        names = self._validate_responsible(student, request.responsible_user_ids, set())
+        names = self._responsible.validate(student, request.responsible_user_ids, set())
         record = HealthRecord(student_id=student_id, author_id=author_id)
         self._apply(record, request)
         self._records.add(record)
@@ -106,7 +95,7 @@ class HealthRecordService:
         record = self._require(student_id, record_id)
         self._require_domain(request.domain_id, record.domain_id)
         already_assigned = {uuid.UUID(value) for value in record.responsible_user_ids}
-        names = self._validate_responsible(student, request.responsible_user_ids, already_assigned)
+        names = self._responsible.validate(student, request.responsible_user_ids, already_assigned)
         before = self._snapshot(record)
         self._apply(record, request)
         changes = [field for field in _EDITABLE_FIELDS if before[field] != getattr(record, field)]
@@ -149,22 +138,6 @@ class HealthRecordService:
             raise InvalidHealthDomainError()
         if not domain.is_active and domain_id != current_domain_id:
             raise InvalidHealthDomainError()
-
-    def _validate_responsible(
-        self,
-        student: Student,
-        user_ids: list[uuid.UUID],
-        already_assigned: set[uuid.UUID],
-    ) -> dict[uuid.UUID, str | None]:
-        names: dict[uuid.UUID, str | None] = {}
-        for user_id in user_ids:
-            user = self._users.get(user_id)
-            if user is None or user.institution_id != student.institution_id:
-                raise InvalidResponsibleUserError()
-            if user.status == UserStatus.DISABLED and user_id not in already_assigned:
-                raise InvalidResponsibleUserError()
-            names[user_id] = user.full_name
-        return names
 
     def _require(self, student_id: uuid.UUID, record_id: uuid.UUID) -> HealthRecord:
         record = self._records.get(record_id)
@@ -210,21 +183,11 @@ class HealthRecordService:
             session_type=record.session_type,
             support_given=record.support_given,
             responsible_user_ids=user_ids,
-            responsible=[
-                StaffMemberResponse(id=user_id, full_name=name)
-                for user_id in user_ids
-                if (name := self._user_name(user_id, cache)) is not None
-            ],
+            responsible=self._responsible.members(user_ids, cache),
             notes=record.notes,
             execution_review=record.execution_review,
             author_id=record.author_id,
-            author_name=self._user_name(record.author_id, cache),
+            author_name=self._responsible.name(record.author_id, cache),
             created_at=record.created_at,
             updated_at=record.updated_at,
         )
-
-    def _user_name(self, user_id: uuid.UUID, cache: dict[uuid.UUID, str | None]) -> str | None:
-        if user_id not in cache:
-            user = self._users.get(user_id)
-            cache[user_id] = user.full_name if user is not None else None
-        return cache[user_id]

@@ -31,6 +31,7 @@ from backend.app.schema.service.student_access_scope import StudentAccessScope
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.reports.risk_assessment_service import RiskAssessmentService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
+from backend.app.service.users.responsible_user_resolver import ResponsibleUserResolver
 from backend.app.utils.service.clock import Clock
 from backend.tests.support.seeding import seed_actor, seed_risk_domains
 
@@ -49,7 +50,7 @@ class _Setup:
         self.service = RiskAssessmentService(
             RiskAssessmentRepository(session),
             RiskDomainRepository(session),
-            UserRepository(session),
+            ResponsibleUserResolver(UserRepository(session)),
             StudentAccessGuard(StudentRepository(session)),
             AuditLogger(AuditLogRepository(session)),
             Clock(),
