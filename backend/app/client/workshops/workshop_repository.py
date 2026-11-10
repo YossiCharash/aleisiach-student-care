@@ -51,7 +51,7 @@ class WorkshopRepository:
             return None
         return user
 
-    def instructor_for(self, workshop_id: uuid.UUID) -> User | None:
+    def instructors_for(self, workshop_id: uuid.UUID) -> list[User]:
         statement = (
             select(User)
             .where(
@@ -61,29 +61,29 @@ class WorkshopRepository:
             )
             .order_by(User.full_name)
         )
-        return self._session.scalars(statement).first()
+        return list(self._session.scalars(statement).all())
 
-    def instructors_by_workshop(self) -> dict[uuid.UUID, User]:
-        assigned: dict[uuid.UUID, User] = {}
+    def instructors_by_workshop(self) -> dict[uuid.UUID, list[User]]:
+        assigned: dict[uuid.UUID, list[User]] = {}
         for instructor in self.list_instructors():
-            if instructor.workshop_id is not None and instructor.workshop_id not in assigned:
-                assigned[instructor.workshop_id] = instructor
+            if instructor.workshop_id is not None:
+                assigned.setdefault(instructor.workshop_id, []).append(instructor)
         return assigned
 
-    def assign_instructor(
-        self, workshop_id: uuid.UUID, instructor_id: uuid.UUID | None
+    def assign_instructors(
+        self, workshop_id: uuid.UUID, instructors: list[User]
     ) -> list[uuid.UUID]:
         affected: list[uuid.UUID] = []
+        chosen_ids = {instructor.id for instructor in instructors}
         current = self._session.scalars(
             select(User).where(User.role == UserRole.INSTRUCTOR, User.workshop_id == workshop_id)
         ).all()
         for holder in current:
-            if holder.id != instructor_id:
+            if holder.id not in chosen_ids:
                 holder.workshop_id = None
                 affected.append(holder.id)
-        if instructor_id is not None:
-            chosen = self.get_instructor(instructor_id)
-            if chosen is not None and chosen.workshop_id != workshop_id:
+        for chosen in instructors:
+            if chosen.workshop_id != workshop_id:
                 chosen.workshop_id = workshop_id
                 affected.append(chosen.id)
         self._session.flush()

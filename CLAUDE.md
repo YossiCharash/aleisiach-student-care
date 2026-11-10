@@ -330,7 +330,7 @@ on purpose: it has no access to any of these.
     header / card) when all its fields are empty. The **"תיאור המגבלה" field was removed** (field +
     its taxonomy option category). (Both 2026-09-22, ADR-029.)
   - Tab 5 — **Functional report** (דוח תפקודי): a **manager-authored form** modeled on the
-    client's official **"טופס 33"** — a **dated, versioned series** (ADR-035): a **"דוח תפקודי
+    client's official **"טופס 33"** — a **dated, versioned series** (ADR-036): a **"דוח תפקודי
     חדש"** button opens an **empty** form with a **date picker** (defaults to today); saving appends
     a new dated report to the **history** (newest first). A manager may **edit** a report's sections
     (date/author stay) and **delete** one — **archive-only**. **PDF export per report** and a
@@ -394,7 +394,7 @@ on purpose: it has no access to any of these.
       per-meeting PDF; the old accordion rating form is removed (decided 2026-09-09, ADR-022). Team
       meetings read from Tab 1 and still do not feed it.
 - [x] Tab 5 — **manager-authored functional report ("Form 33")**; a dated series with history,
-      edit + archive-only delete, per-report and combined PDFs (ADR-035, 2026-11-10; was one report
+      edit + archive-only delete, per-report and combined PDFs (ADR-036, 2026-11-10; was one report
       updated in place); six free-text sections; identity + issuer auto-filled; instructors and
       professional teachers read only; server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).
       Superseded the earlier read-only surfacing of Tab 4 cards.

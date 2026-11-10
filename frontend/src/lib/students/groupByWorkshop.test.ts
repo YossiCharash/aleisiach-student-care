@@ -7,7 +7,7 @@ function student(id: string, workshopId: string, fullName: string): StudentRespo
 }
 
 function workshop(id: string, name: string, color: string): WorkshopResponse {
-  return { id, name, color, instructor_id: null, instructor_name: null };
+  return { id, name, color, instructors: [] };
 }
 
 const workshops: WorkshopResponse[] = [

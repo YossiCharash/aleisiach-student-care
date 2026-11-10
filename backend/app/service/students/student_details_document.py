@@ -66,7 +66,7 @@ class StudentDetailsDocument:
                 text += f" — {escape(entry.note)}"
             items.append(f"<li>{text}</li>")
         return self._section(
-            "אבחונים",
+            "אבחנות",
             f"<ul>{''.join(items)}</ul>",
             self._field("אוטיזם", details.functioning_level),
         )

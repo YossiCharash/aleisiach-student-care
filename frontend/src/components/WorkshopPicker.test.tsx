@@ -22,15 +22,13 @@ describe("WorkshopPicker", () => {
         id: "c1",
         name: "סדנה א",
         color: "#3F8420",
-        instructor_id: null,
-        instructor_name: null,
+        instructors: [],
       },
       {
         id: "c2",
         name: "סדנה ב",
         color: "#85C441",
-        instructor_id: null,
-        instructor_name: null,
+        instructors: [],
       },
     ]);
 
@@ -46,8 +44,7 @@ describe("WorkshopPicker", () => {
         id: "c1",
         name: "סדנה א",
         color: "#3F8420",
-        instructor_id: null,
-        instructor_name: null,
+        instructors: [],
       },
     ]);
     const onChange = vi.fn();

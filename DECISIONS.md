@@ -720,7 +720,7 @@ and the user authorized it.
    default), so the Settings "עריכת פרטי חניך" area no longer offers a dangling "תיאור המגבלה" list.
    Migration `0034` deletes the orphaned `detail_options` rows (field = `disability_severity`, a
    `native_enum=False` VARCHAR — no DB enum to alter) and drops the `student_details` column. The
-   other אבחונים content stays: the IDD diagnosis + degree, the additional-diagnoses list, and
+   other אבחנות content stays: the IDD diagnosis + degree, the additional-diagnoses list, and
    "אוטיזם" (`functioning_level`).
 2. **The details PDF omits empty fields — and a section whose fields are all empty drops its
    header too.** `StudentDetailsDocument` no longer prints `label: —` for a blank value: `_field`
@@ -729,7 +729,7 @@ and the user authorized it.
    data simply has no such section in the exported report. The **on-screen `DetailsView` mirrors the
    same behavior** (added on the user's follow-up): each `Field` / `TextBlock` / `ListBlock` and the
    two profile cards return `null` when empty, and each section card renders only when it has
-   content. The אבחונים section always renders (the IDD diagnosis line is always present), and the
+   content. The אבחנות section always renders (the IDD diagnosis line is always present), and the
    guardianship card still shows its "מידע רגיש — אין הרשאת צפייה" notice when access is blocked.
    The form is unchanged — it already offers a "— לא צוין —" none option on optional selects.
 
@@ -900,7 +900,25 @@ data is retained, so the choice is reversible by re-adding the two sections.
 
 ---
 
-## ADR-035 — Tab 5 (Functional report) becomes a dated, archivable series with history
+## ADR-035 — A workshop may have several instructors
+
+**Decision (per the user):** A workshop can now be assigned **several instructors** instead of one.
+In Settings → workshops the single instructor dropdown is replaced by a **checkbox list** of the
+institution's active instructors, and the workshop row lists all assigned names.
+
+**Implementation:** No migration — the link already lives on the instructor (`User.workshop_id`), so
+many instructors could always point at one workshop; only the service enforced one. The API now takes
+`instructor_ids: list[uuid]` on create/update and returns `instructors: [{id, full_name}]`
+(replacing `instructor_id` / `instructor_name`). Saving sets exactly the listed instructors on the
+workshop and frees any instructor no longer listed; each change is audited as a `permission` update.
+
+**Consequences:** An instructor still belongs to **one** workshop — choosing an instructor who is
+assigned elsewhere moves them to this workshop (unchanged behavior). Every instructor of a workshop
+sees and writes that workshop's students under the existing ADR-025 scope.
+
+---
+
+## ADR-036 — Tab 5 (Functional report) becomes a dated, archivable series with history
 
 **Date:** 2026-11-10
 **Decision (per the user):** The functional report (Form 33) is no longer one report per student

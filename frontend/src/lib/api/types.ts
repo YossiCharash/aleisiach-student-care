@@ -96,18 +96,22 @@ export interface UserUpdateRequest {
   role: UserRole;
 }
 
+export interface WorkshopInstructor {
+  id: string;
+  full_name: string;
+}
+
 export interface WorkshopResponse {
   id: string;
   name: string;
   color: string;
-  instructor_id: string | null;
-  instructor_name: string | null;
+  instructors: WorkshopInstructor[];
 }
 
 export interface WorkshopUpsertRequest {
   name: string;
   color: string;
-  instructor_id: string | null;
+  instructor_ids: string[];
 }
 
 export interface StudentResponse {

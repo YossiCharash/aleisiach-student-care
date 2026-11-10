@@ -236,7 +236,7 @@ erDiagram
   (Earlier it was a derived read-model over team meetings; **team meetings no longer feed it** — since
   ADR-022 they instead read a snapshot *from* it.)
 - **Tab 5 (Functional report, "Form 33") is a manager-authored, dated series** — own table
-  `FUNCTIONAL_REPORT_ENTRY` (many per student, newest first; ADR-035): `report_date`, six free-text
+  `FUNCTIONAL_REPORT_ENTRY` (many per student, newest first; ADR-036): `report_date`, six free-text
   sections, `author_id`, timestamps and archive-only soft-delete columns, mirroring
   `SOCIAL_NOTE_ENTRY` widened. Per-report and combined PDFs. The identity header (name · national id ·
   date of birth) and the issuer name are **resolved at read time** from `STUDENT` / `STUDENT_DETAILS` /
@@ -489,7 +489,7 @@ flowchart LR
 
 _Resolved: professional-teacher access (read-only; Tab 3 + guardianship blocked); three roles
 only, managers write Tab 3; Tab 1 is a manually authored stored program (manager only, ADR-019);
-Tab 5 is a manager-authored, dated series of functional reports / Form 33 (ADR-020 → ADR-035); Tab 4 extra
+Tab 5 is a manager-authored, dated series of functional reports / Form 33 (ADR-020 → ADR-036); Tab 4 extra
 sections = normalized tables; taxonomy history = snapshot + soft-delete; students archive-only
 (manager); audit log records changes only; stack locked (Vite SPA + FastAPI); auth =
 username/password with email invite + reset._

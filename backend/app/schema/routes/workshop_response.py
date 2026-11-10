@@ -1,11 +1,12 @@
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from backend.app.schema.routes.workshop_instructor_response import WorkshopInstructorResponse
 
 
 class WorkshopResponse(BaseModel):
     id: uuid.UUID
     name: str
     color: str
-    instructor_id: uuid.UUID | None = None
-    instructor_name: str | None = None
+    instructors: list[WorkshopInstructorResponse] = Field(default_factory=list)
