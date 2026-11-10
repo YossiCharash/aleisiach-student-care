@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { WorkshopsArea } from "@/pages/settings/WorkshopsArea";
 import { TaxonomyArea } from "@/pages/settings/TaxonomyArea";
 import { DiagnosesArea } from "@/pages/settings/DiagnosesArea";
+import { RiskDomainsArea } from "@/pages/settings/RiskDomainsArea";
 import { DetailOptionsArea } from "@/pages/settings/DetailOptionsArea";
 import { AccountArea } from "@/pages/settings/AccountArea";
 import { HelpButton } from "@/components/help/HelpButton";
@@ -16,6 +17,7 @@ const allTabs = [
   "workshops",
   "taxonomy",
   "diagnoses",
+  "risk-domains",
   "detail-options",
   "account",
 ] as const;
@@ -89,6 +91,7 @@ export function SettingsPage(): ReactNode {
               <TabsTrigger value="workshops">סדנאות</TabsTrigger>
               <TabsTrigger value="taxonomy">כישורים-מיומנויות</TabsTrigger>
               <TabsTrigger value="diagnoses">אבחנות</TabsTrigger>
+              <TabsTrigger value="risk-domains">תחומי סיכון</TabsTrigger>
               <TabsTrigger value="detail-options">עריכת פרטי חניך</TabsTrigger>
             </>
           )}
@@ -104,6 +107,9 @@ export function SettingsPage(): ReactNode {
             </TabsContent>
             <TabsContent value="diagnoses">
               <DiagnosesArea />
+            </TabsContent>
+            <TabsContent value="risk-domains">
+              <RiskDomainsArea />
             </TabsContent>
             <TabsContent value="detail-options">
               <DetailOptionsArea />

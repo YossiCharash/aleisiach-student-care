@@ -10,6 +10,7 @@ from backend.app.models.client.medical_summary import MedicalSummary
 from backend.app.models.client.program import Program
 from backend.app.models.client.program_plan import ProgramPlan
 from backend.app.models.client.reception_report import ReceptionReport
+from backend.app.models.client.risk_assessment import RiskAssessment
 from backend.app.models.client.social_note_entry import SocialNoteEntry
 from backend.app.models.client.student import Student
 from backend.app.models.client.student_details import StudentDetails
@@ -29,6 +30,7 @@ _CHILD_MODELS: tuple[tuple[type[Base], InstrumentedAttribute[uuid.UUID]], ...] =
     (ReceptionReport, ReceptionReport.student_id),
     (SupportedEmployment, SupportedEmployment.student_id),
     (MedicalSummary, MedicalSummary.student_id),
+    (RiskAssessment, RiskAssessment.student_id),
 )
 
 

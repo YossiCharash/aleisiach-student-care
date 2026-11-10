@@ -21,6 +21,7 @@ from backend.app.models.client.program_plan import ProgramPlan
 from backend.app.models.client.program_plan_entry import ProgramPlanEntry
 from backend.app.models.client.program_plan_solution import ProgramPlanSolution
 from backend.app.models.client.reception_report import ReceptionReport
+from backend.app.models.client.risk_assessment import RiskAssessment
 from backend.app.models.client.skill import Skill
 from backend.app.models.client.social_note_entry import SocialNoteEntry
 from backend.app.models.client.solution import Solution
@@ -195,6 +196,14 @@ def _seed_full_subtree(session: Session) -> uuid.UUID:
             updated_at=now,
         )
     )
+    session.add(
+        RiskAssessment(
+            student_id=student.id,
+            institution_id=_INSTITUTION_ID,
+            assessment_date=date.today(),
+            author_id=author.id,
+        )
+    )
     section_type = ExtraSectionType(name=f"Heading-{tag}", institution_id=_INSTITUTION_ID)
     session.add(section_type)
     session.flush()
@@ -234,6 +243,7 @@ def test_purge_removes_the_whole_student_subtree(db_session: Session) -> None:
         ReceptionReport,
         SupportedEmployment,
         MedicalSummary,
+        RiskAssessment,
         StudentExtraSection,
     ):
         assert _row_count(db_session, model) == 0

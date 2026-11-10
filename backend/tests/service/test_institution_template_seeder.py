@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
 from backend.app.client.students.detail_option_repository import DetailOptionRepository
 from backend.app.configuration.institutions.institution_template_settings import (
     InstitutionTemplateSettings,
@@ -12,13 +13,19 @@ from backend.app.configuration.institutions.institution_template_settings import
 from backend.app.models.client.detail_option import DetailOption
 from backend.app.models.client.detail_option_field import DetailOptionField
 from backend.app.models.client.institution import Institution
+from backend.app.models.client.risk_domain import RiskDomain
 from backend.app.seed.institution_template_seeder import InstitutionTemplateSeeder
+from backend.app.seed.risk_domain_seeder import RiskDomainSeeder
 
 SeedInstitution = Callable[..., Institution]
 
 
 def _seeder(session: Session, settings: InstitutionTemplateSettings) -> InstitutionTemplateSeeder:
-    return InstitutionTemplateSeeder(DetailOptionRepository(session), settings)
+    return InstitutionTemplateSeeder(
+        DetailOptionRepository(session),
+        RiskDomainSeeder(RiskDomainRepository(session), settings.risk_domains),
+        settings,
+    )
 
 
 def _options(session: Session, institution_id: uuid.UUID) -> list[DetailOption]:
@@ -76,3 +83,18 @@ def test_an_empty_template_seeds_nothing(
     _seeder(db_session, InstitutionTemplateSettings(detail_options={})).seed(institution.id)
 
     assert _options(db_session, institution.id) == []
+
+
+def test_seeds_the_default_risk_domains(
+    db_session: Session, seed_institution: SeedInstitution
+) -> None:
+    institution = seed_institution("מוסד חדש")
+
+    _seeder(db_session, InstitutionTemplateSettings()).seed(institution.id)
+
+    with TenantBinding.platform(db_session):
+        names = db_session.scalars(
+            select(RiskDomain.name).where(RiskDomain.institution_id == institution.id)
+        ).all()
+    assert len(names) == len(InstitutionTemplateSettings().risk_domains)
+    assert "השארות בדירה באופן עצמאי" in names

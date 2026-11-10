@@ -124,6 +124,8 @@ erDiagram
     STUDENT ||--o{ SOCIAL_NOTE_ENTRY : "social notes (Tab 3, dated series)"
     STUDENT ||--o{ FUNCTIONAL_REPORT_ENTRY : "functional reports (Tab 5, dated series)"
     STUDENT ||--o{ INCIDENT_REPORT : "incident reports (Form 35, dated series)"
+    STUDENT ||--o{ RISK_ASSESSMENT : "risk management (dated series)"
+    INSTITUTION ||--o{ RISK_DOMAIN : "risk domains (Settings-managed)"
     STUDENT ||--o| MEDICAL_SUMMARY : "medical information summary (manager only)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
@@ -256,6 +258,15 @@ erDiagram
   string enum. The recipient line (name · national id) is resolved at read time. Managers and
   instructors (own workshop) write; professional teachers read; archive is manager-only. Per-report
   and combined PDFs through `DocumentShell`.
+- **Risk management ("ניהול סיכונים") is a dated series** — own table `RISK_ASSESSMENT` (many per
+  student, newest first by assessment date; ADR-039). The rows come from `RISK_DOMAIN`, an
+  institution-owned ordered taxonomy (`name` · `category` ∈ medical / behavioral / independence ·
+  `order` · `is_active`) managed in Settings and seeded from `InstitutionTemplateSettings.risk_domains`;
+  `items` is a JSON list with one entry per **filled** row, keyed by `domain_id` — nature (free text) ·
+  level (`low` / `medium` / `high` / `not_relevant`) ·
+  intervention plan (free text) · responsible user ids (validated against the student's
+  institution, names resolved at read time). Everyone reads; managers and instructors (own workshop)
+  write; archive is manager-only. Per-table and combined PDFs through `DocumentShell`.
 - **Tab 2 (Team meetings) is a dated read-only snapshot + summary** (decided 2026-09-09, ADR-022):
   one `TEAM_MEETING` per dated meeting with `meeting_date` and an editable `summary`, plus frozen
   copies of the foci (`MEETING_FOCI_ENTRY`) and the latest personal plan (`MEETING_PLAN_ENTRY` +

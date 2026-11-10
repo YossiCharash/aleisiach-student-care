@@ -140,9 +140,10 @@ on purpose: it has no access to any of these.
 | Medical information summary | Read/Write | **Blocked** | **Blocked** |
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
 | Incident report (Form 35) | Read/Write · archive | Read/Write (own class) | Read |
+| Risk management | Read/Write · archive | Read/Write (own class) | Read |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
-| Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
+| Settings — management (users · classes · taxonomy · diagnoses · risk domains · Tab 4 headings) | ✔ | ✘ | ✘ |
 | Settings — "my account" tab (change own password) | ✔ | ✔ | ✔ |
 | Institutions console | ✘ | ✘ | ✘ |
 
@@ -257,7 +258,7 @@ on purpose: it has no access to any of these.
   2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027; medical summary inserted
   2026-11-10, ADR-038) is: **details · medical information summary (managers only) ·
   reception report (managers only) · program · team meetings · social-worker note ·
-  functional-report summary · incident report · supported employment (managers only)**, and **details is the
+  functional-report summary · incident report · risk management · supported employment (managers only)**, and **details is the
   default tab**.
   - **Medical information summary** (סיכום מידע רפואי — "מידע ונתונים בריאותיים"): a
     **manager-only** tab (read + write manager-only; instructors and professional teachers are
@@ -366,6 +367,17 @@ on purpose: it has no access to any of these.
     archive-only **delete (manager only)**, **per-report + combined PDF** with an empty signature line.
     **Managers write any student; instructors write their own workshop's students; professional
     teachers read.** (Added 2026-11-10, ADR-037.)
+  - **Risk management** (ניהול סיכונים): placed **after the incident report**. A **dated, versioned
+    series**: a **"טבלת ניהול סיכונים חדשה"** button opens a table of the institution's active risk
+    domains grouped under **רפואי · התנהגותי · עצמאות**. The domains are **managed per institution in
+    Settings → "תחומי סיכון"** (add · rename · deactivate; a new institution starts with the 17 domains
+    copied from the client's form); a deactivated domain disappears from new tables but stays in tables
+    that already used it, and only filled rows are stored. Per row —
+    מהות הסיכון (free text) · רמת סיכון (**נמוך / בינוני / גבוה / לא רלוונטי**) · תוכנית התערבות
+    (free text) · **אחראי ביצוע = multi-select of the institution's users**. The form's נקודות
+    חוזקה / דילמות / עמדת הצוות rows are omitted. History newest first, **edit**, archive-only
+    **delete (manager only)**, **per-table + combined PDF**. **Every role reads; managers write any
+    student; instructors write their own workshop's students.** (Added 2026-11-10, ADR-039.)
   - **Supported employment** (עבודה נתמכת — טופס 46): a **manager-only** tab (read + write
     manager-only; instructors and professional teachers are blocked, so the tab is hidden and the
     API answers 403), placed **last, after the functional report**. **One stored record per

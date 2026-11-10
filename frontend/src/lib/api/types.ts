@@ -643,3 +643,62 @@ export interface MedicalSummaryResponse extends MedicalSummaryFields {
   written_by_name: string | null;
   updated_at: string | null;
 }
+
+export type RiskLevel = "low" | "medium" | "high" | "not_relevant";
+
+export type RiskCategory = "medical" | "behavioral" | "independence";
+
+export interface RiskDomainInfo {
+  id: string;
+  category: RiskCategory;
+  category_label: string;
+  name: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface RiskDomainUpdate {
+  name?: string;
+  order?: number;
+  is_active?: boolean;
+}
+
+export interface StaffMember {
+  id: string;
+  full_name: string;
+}
+
+export interface RiskItemFields {
+  domain_id: string;
+  nature: string;
+  level: RiskLevel | null;
+  intervention_plan: string;
+  responsible_user_ids: string[];
+}
+
+export interface RiskItemResponse extends RiskItemFields {
+  responsible: StaffMember[];
+}
+
+export interface RiskAssessmentRequest {
+  assessment_date: string;
+  items: RiskItemFields[];
+}
+
+export interface RiskAssessmentEntryResponse {
+  id: string;
+  student_id: string;
+  assessment_date: string;
+  items: RiskItemResponse[];
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RiskAssessmentHistoryResponse {
+  student_id: string;
+  student_name: string;
+  domains: RiskDomainInfo[];
+  entries: RiskAssessmentEntryResponse[];
+}

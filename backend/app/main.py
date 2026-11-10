@@ -20,6 +20,8 @@ from backend.app.routes.meetings import router as meetings_router
 from backend.app.routes.program import router as program_router
 from backend.app.routes.program_plans import router as program_plans_router
 from backend.app.routes.reception_report import router as reception_report_router
+from backend.app.routes.risk_assessment import router as risk_assessment_router
+from backend.app.routes.risk_domains import router as risk_domains_router
 from backend.app.routes.social_note import router as social_note_router
 from backend.app.routes.student_details import router as student_details_router
 from backend.app.routes.student_extra_sections import (
@@ -103,6 +105,8 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     app.include_router(social_note_router)
     app.include_router(functional_report_router)
     app.include_router(incident_report_router)
+    app.include_router(risk_assessment_router)
+    app.include_router(risk_domains_router)
     app.include_router(medical_summary_router)
     app.include_router(reception_report_router)
     app.include_router(supported_employment_router)

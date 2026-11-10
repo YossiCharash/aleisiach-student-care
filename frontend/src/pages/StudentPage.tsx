@@ -18,6 +18,7 @@ import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
 import { IncidentReportTab } from "@/pages/student/IncidentReportTab";
 import { MedicalSummaryTab } from "@/pages/student/MedicalSummaryTab";
 import { ReceptionReportTab } from "@/pages/student/ReceptionReportTab";
+import { RiskAssessmentTab } from "@/pages/student/RiskAssessmentTab";
 import { SupportedEmploymentTab } from "@/pages/student/SupportedEmploymentTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
 import { HelpButton } from "@/components/help/HelpButton";
@@ -59,6 +60,7 @@ export function StudentPage(): ReactNode {
     ...(showSocialNote ? ["social-note"] : []),
     "functional-report",
     "incident-reports",
+    "risk-assessments",
     ...(showSupportedEmployment ? ["supported-employment"] : []),
   ];
   const initialTab =
@@ -106,6 +108,7 @@ export function StudentPage(): ReactNode {
           {showSocialNote && <TabsTrigger value="social-note">סיכום עו״ס</TabsTrigger>}
           <TabsTrigger value="functional-report">דוח תפקודי</TabsTrigger>
           <TabsTrigger value="incident-reports">אירוע חריג</TabsTrigger>
+          <TabsTrigger value="risk-assessments">ניהול סיכונים</TabsTrigger>
           {showSupportedEmployment && (
             <TabsTrigger value="supported-employment">עבודה נתמכת</TabsTrigger>
           )}
@@ -144,6 +147,9 @@ export function StudentPage(): ReactNode {
         </TabsContent>
         <TabsContent value="incident-reports">
           <IncidentReportTab studentId={student.id} />
+        </TabsContent>
+        <TabsContent value="risk-assessments">
+          <RiskAssessmentTab studentId={student.id} />
         </TabsContent>
         {showSupportedEmployment && (
           <TabsContent value="supported-employment">
