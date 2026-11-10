@@ -5,6 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.app.client.database.tenant_binding import TenantBinding
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
+from backend.app.configuration.institutions.institution_template_settings import (
+    InstitutionTemplateSettings,
+)
 from backend.app.models.client.institution import Institution
 from backend.app.models.client.label import Label
 from backend.app.models.client.legal_status import LegalStatus
@@ -29,6 +33,7 @@ from backend.app.seed.demo_credentials import (
     MANAGER,
     DemoAccount,
 )
+from backend.app.seed.risk_domain_seeder import RiskDomainSeeder
 from backend.app.utils.service.password_hasher import PasswordHasher
 
 
@@ -47,6 +52,9 @@ class DemoSeeder:
         workshops = self._seed_workshops(institution.id)
         self._seed_users(workshops["סדנה א׳"].id, institution.id)
         skills = self._seed_taxonomy(institution.id)
+        RiskDomainSeeder(
+            RiskDomainRepository(self._session), InstitutionTemplateSettings().risk_domains
+        ).seed(institution.id)
         students = self._seed_students(workshops, institution.id)
         self._seed_meeting(students["נועה כהן"].id, skills, institution.id)
         self._seed_details(students["נועה כהן"].id, institution.id)

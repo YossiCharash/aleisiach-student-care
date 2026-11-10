@@ -29,6 +29,7 @@ export function RiskAssessmentForm({
   studentId,
   domains,
   initial,
+  assignedMembers = [],
   submitLabel,
   pending,
   error,
@@ -38,6 +39,7 @@ export function RiskAssessmentForm({
   studentId: string;
   domains: RiskDomainInfo[];
   initial: RiskAssessmentRequest;
+  assignedMembers?: StaffMember[];
   submitLabel: string;
   pending: boolean;
   error: unknown;
@@ -49,14 +51,14 @@ export function RiskAssessmentForm({
     queryKey: queryKeys.riskResponsibleCandidates(studentId),
     queryFn: () => riskAssessmentApi.responsibleCandidates(studentId),
   });
-  const candidates = candidatesQuery.data ?? [];
-  const byDomain = new Map(draft.items.map((item) => [item.domain, item]));
+  const candidates = withAssigned(candidatesQuery.data ?? [], assignedMembers);
+  const byDomain = new Map(draft.items.map((item) => [item.domain_id, item]));
 
   const updateItem: UpdateItem = (domain, patch) =>
     setDraft((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
-        item.domain === domain ? { ...item, ...patch } : item
+        item.domain_id === domain ? { ...item, ...patch } : item
       ),
     }));
 
@@ -74,6 +76,13 @@ export function RiskAssessmentForm({
         />
       </div>
 
+      {candidatesQuery.isError && (
+        <Alert tone="error">
+          לא ניתן לטעון את רשימת המשתמשים לבחירת אחראי ביצוע:{" "}
+          {errorMessage(candidatesQuery.error)}
+        </Alert>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -86,30 +95,32 @@ export function RiskAssessmentForm({
             </tr>
           </thead>
           <tbody>
-            {groupByCategory(domains).map((group) => (
-              <Fragment key={group.category}>
-                <tr className="bg-brand-50">
-                  <td
-                    colSpan={COLUMN_TITLES.length}
-                    className="p-2 font-semibold text-brand-700"
-                  >
-                    {group.label}
-                  </td>
-                </tr>
-                {group.domains.map((domain) => {
-                  const item = byDomain.get(domain.domain);
-                  return item ? (
-                    <RiskRow
-                      key={domain.domain}
-                      domain={domain}
-                      item={item}
-                      candidates={candidates}
-                      updateItem={updateItem}
-                    />
-                  ) : null;
-                })}
-              </Fragment>
-            ))}
+            {groupByCategory(domains.filter((domain) => byDomain.has(domain.id))).map(
+              (group) => (
+                <Fragment key={group.category}>
+                  <tr className="bg-brand-50">
+                    <td
+                      colSpan={COLUMN_TITLES.length}
+                      className="p-2 font-semibold text-brand-700"
+                    >
+                      {group.label}
+                    </td>
+                  </tr>
+                  {group.domains.map((domain) => {
+                    const item = byDomain.get(domain.id);
+                    return item ? (
+                      <RiskRow
+                        key={domain.id}
+                        domain={domain}
+                        item={item}
+                        candidates={candidates}
+                        updateItem={updateItem}
+                      />
+                    ) : null;
+                  })}
+                </Fragment>
+              )
+            )}
           </tbody>
         </table>
       </div>
@@ -130,6 +141,16 @@ export function RiskAssessmentForm({
   );
 }
 
+function withAssigned(candidates: StaffMember[], assigned: StaffMember[]): StaffMember[] {
+  const known = new Set(candidates.map((member) => member.id));
+  const missing = assigned.filter(
+    (member, index) =>
+      !known.has(member.id) &&
+      assigned.findIndex((other) => other.id === member.id) === index
+  );
+  return [...candidates, ...missing];
+}
+
 function RiskRow({
   domain,
   item,
@@ -141,27 +162,27 @@ function RiskRow({
   candidates: StaffMember[];
   updateItem: UpdateItem;
 }): ReactNode {
-  const id = `risk-${domain.domain}`;
+  const id = `risk-${domain.id}`;
 
   return (
     <tr className="border-b border-slate-200 align-top">
-      <td className="w-1/6 p-2 font-medium text-ink">{domain.label}</td>
+      <td className="w-1/6 p-2 font-medium text-ink">{domain.name}</td>
       <td className="p-2">
         <Textarea
-          aria-label={`מהות הסיכון — ${domain.label}`}
+          aria-label={`מהות הסיכון — ${domain.name}`}
           value={item.nature}
           maxLength={2000}
-          onChange={(event) => updateItem(domain.domain, { nature: event.target.value })}
+          onChange={(event) => updateItem(domain.id, { nature: event.target.value })}
           className="min-h-20"
         />
       </td>
       <td className="w-32 p-2">
         <select
           id={`${id}-level`}
-          aria-label={`רמת סיכון — ${domain.label}`}
+          aria-label={`רמת סיכון — ${domain.name}`}
           value={item.level ?? ""}
           onChange={(event) =>
-            updateItem(domain.domain, {
+            updateItem(domain.id, {
               level: event.target.value === "" ? null : (event.target.value as RiskLevel),
             })
           }
@@ -177,11 +198,11 @@ function RiskRow({
       </td>
       <td className="p-2">
         <Textarea
-          aria-label={`תוכנית התערבות — ${domain.label}`}
+          aria-label={`תוכנית התערבות — ${domain.name}`}
           value={item.intervention_plan}
           maxLength={5000}
           onChange={(event) =>
-            updateItem(domain.domain, { intervention_plan: event.target.value })
+            updateItem(domain.id, { intervention_plan: event.target.value })
           }
           className="min-h-20"
         />
@@ -195,9 +216,9 @@ function RiskRow({
                 key={member.id}
                 type="button"
                 aria-pressed={selected}
-                aria-label={`${member.full_name} — אחראי ביצוע ל${domain.label}`}
+                aria-label={`${member.full_name} — אחראי ביצוע ל${domain.name}`}
                 onClick={() =>
-                  updateItem(domain.domain, {
+                  updateItem(domain.id, {
                     responsible_user_ids: toggled(
                       item.responsible_user_ids,
                       member.id,

@@ -143,7 +143,7 @@ on purpose: it has no access to any of these.
 | Risk management | Read/Write · archive | Read/Write (own class) | Read |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
-| Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
+| Settings — management (users · classes · taxonomy · diagnoses · risk domains · Tab 4 headings) | ✔ | ✘ | ✘ |
 | Settings — "my account" tab (change own password) | ✔ | ✔ | ✔ |
 | Institutions console | ✘ | ✘ | ✘ |
 
@@ -368,8 +368,11 @@ on purpose: it has no access to any of these.
     **Managers write any student; instructors write their own workshop's students; professional
     teachers read.** (Added 2026-11-10, ADR-037.)
   - **Risk management** (ניהול סיכונים): placed **after the incident report**. A **dated, versioned
-    series**: a **"טבלת ניהול סיכונים חדשה"** button opens a table of the form's risk domains (copied
-    from the client's form, fixed in code) grouped under **רפואי · התנהגותי · עצמאות**; per row —
+    series**: a **"טבלת ניהול סיכונים חדשה"** button opens a table of the institution's active risk
+    domains grouped under **רפואי · התנהגותי · עצמאות**. The domains are **managed per institution in
+    Settings → "תחומי סיכון"** (add · rename · deactivate; a new institution starts with the 17 domains
+    copied from the client's form); a deactivated domain disappears from new tables but stays in tables
+    that already used it, and only filled rows are stored. Per row —
     מהות הסיכון (free text) · רמת סיכון (**נמוך / בינוני / גבוה / לא רלוונטי**) · תוכנית התערבות
     (free text) · **אחראי ביצוע = multi-select of the institution's users**. The form's נקודות
     חוזקה / דילמות / עמדת הצוות rows are omitted. History newest first, **edit**, archive-only

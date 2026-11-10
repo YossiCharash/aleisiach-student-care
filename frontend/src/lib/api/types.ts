@@ -649,10 +649,18 @@ export type RiskLevel = "low" | "medium" | "high" | "not_relevant";
 export type RiskCategory = "medical" | "behavioral" | "independence";
 
 export interface RiskDomainInfo {
-  domain: string;
+  id: string;
   category: RiskCategory;
   category_label: string;
-  label: string;
+  name: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface RiskDomainUpdate {
+  name?: string;
+  order?: number;
+  is_active?: boolean;
 }
 
 export interface StaffMember {
@@ -661,7 +669,7 @@ export interface StaffMember {
 }
 
 export interface RiskItemFields {
-  domain: string;
+  domain_id: string;
   nature: string;
   level: RiskLevel | null;
   intervention_plan: string;

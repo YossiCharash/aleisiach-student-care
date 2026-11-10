@@ -21,6 +21,9 @@ import type {
   RiskAssessmentEntryResponse,
   RiskAssessmentHistoryResponse,
   RiskAssessmentRequest,
+  RiskCategory,
+  RiskDomainInfo,
+  RiskDomainUpdate,
   StaffMember,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
@@ -318,6 +321,15 @@ export const incidentReportApi = {
     buildPdfUrl(`/students/${studentId}/incident-reports/${reportId}/pdf`),
   combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/incident-reports/pdf`),
+};
+
+export const riskDomainsApi = {
+  list: (includeInactive = false): Promise<RiskDomainInfo[]> =>
+    apiClient.get<RiskDomainInfo[]>(`/risk-domains?include_inactive=${includeInactive}`),
+  create: (name: string, category: RiskCategory): Promise<RiskDomainInfo> =>
+    apiClient.post<RiskDomainInfo>("/risk-domains", { name, category }),
+  update: (domainId: string, body: RiskDomainUpdate): Promise<RiskDomainInfo> =>
+    apiClient.patch<RiskDomainInfo>(`/risk-domains/${domainId}`, body),
 };
 
 export const riskAssessmentApi = {

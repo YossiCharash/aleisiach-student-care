@@ -3,7 +3,6 @@ from datetime import UTC, date, datetime
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.risk_category import RiskCategory
-from backend.app.models.client.risk_domain import RiskDomain
 from backend.app.models.client.risk_level import RiskLevel
 from backend.app.schema.routes.risk_assessment_entry_response import RiskAssessmentEntryResponse
 from backend.app.schema.routes.risk_assessment_history_response import (
@@ -15,20 +14,28 @@ from backend.app.schema.routes.staff_member_response import StaffMemberResponse
 from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.reports.risk_assessment_document import RiskAssessmentDocument
 
-_DOMAINS = [
-    RiskDomainResponse(
-        domain=RiskDomain.WEIGHT,
-        category=RiskCategory.MEDICAL,
-        category_label="רפואי",
-        label="עודף / חוסר משקל",
-    ),
-    RiskDomainResponse(
-        domain=RiskDomain.HARM,
-        category=RiskCategory.BEHAVIORAL,
-        category_label="התנהגותי",
-        label="פגיעה עצמית",
-    ),
-]
+_WEIGHT = RiskDomainResponse(
+    id=uuid.uuid4(),
+    category=RiskCategory.MEDICAL,
+    name="עודף / חוסר משקל",
+    order=0,
+    is_active=True,
+)
+_HARM = RiskDomainResponse(
+    id=uuid.uuid4(),
+    category=RiskCategory.BEHAVIORAL,
+    name="פגיעה עצמית",
+    order=0,
+    is_active=True,
+)
+_RETIRED = RiskDomainResponse(
+    id=uuid.uuid4(),
+    category=RiskCategory.BEHAVIORAL,
+    name="תחום שהושבת",
+    order=1,
+    is_active=False,
+)
+_DOMAINS = [_WEIGHT, _HARM, _RETIRED]
 
 
 def _issue() -> IssueContext:
@@ -48,7 +55,7 @@ def _entry(assessment_date: date = date(2026, 9, 1)) -> RiskAssessmentEntryRespo
         assessment_date=assessment_date,
         items=[
             RiskItemResponse(
-                domain=RiskDomain.WEIGHT,
+                domain_id=_WEIGHT.id,
                 nature="אוכל <מהר>",
                 level=RiskLevel.HIGH,
                 intervention_plan="תפריט מסודר",
@@ -81,6 +88,7 @@ def test_single_html_renders_table_with_categories_and_values() -> None:
     assert "דנה, יוסי" in html
     assert "אוכל &lt;מהר&gt;" in html
     assert "כותבת" in html
+    assert "תחום שהושבת" not in html
 
 
 def test_combined_html_shows_each_date() -> None:

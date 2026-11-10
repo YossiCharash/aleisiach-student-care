@@ -125,6 +125,7 @@ erDiagram
     STUDENT ||--o{ FUNCTIONAL_REPORT_ENTRY : "functional reports (Tab 5, dated series)"
     STUDENT ||--o{ INCIDENT_REPORT : "incident reports (Form 35, dated series)"
     STUDENT ||--o{ RISK_ASSESSMENT : "risk management (dated series)"
+    INSTITUTION ||--o{ RISK_DOMAIN : "risk domains (Settings-managed)"
     STUDENT ||--o| MEDICAL_SUMMARY : "medical information summary (manager only)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
@@ -258,9 +259,11 @@ erDiagram
   instructors (own workshop) write; professional teachers read; archive is manager-only. Per-report
   and combined PDFs through `DocumentShell`.
 - **Risk management ("ניהול סיכונים") is a dated series** — own table `RISK_ASSESSMENT` (many per
-  student, newest first by assessment date; ADR-039). The rows are a fixed catalog of risk domains
-  grouped under רפואי / התנהגותי / עצמאות (`risk_domain_catalog.py`); `items` is a JSON list with one
-  row per domain — nature (free text) · level (`low` / `medium` / `high` / `not_relevant`) ·
+  student, newest first by assessment date; ADR-039). The rows come from `RISK_DOMAIN`, an
+  institution-owned ordered taxonomy (`name` · `category` ∈ medical / behavioral / independence ·
+  `order` · `is_active`) managed in Settings and seeded from `InstitutionTemplateSettings.risk_domains`;
+  `items` is a JSON list with one entry per **filled** row, keyed by `domain_id` — nature (free text) ·
+  level (`low` / `medium` / `high` / `not_relevant`) ·
   intervention plan (free text) · responsible user ids (validated against the student's
   institution, names resolved at read time). Everyone reads; managers and instructors (own workshop)
   write; archive is manager-only. Per-table and combined PDFs through `DocumentShell`.

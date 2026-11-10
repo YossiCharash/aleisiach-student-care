@@ -1,17 +1,16 @@
 import uuid
 
 from backend.app.client.reports.risk_assessment_repository import RiskAssessmentRepository
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.errors.service.invalid_responsible_user_error import (
     InvalidResponsibleUserError,
 )
+from backend.app.errors.service.invalid_risk_domain_error import InvalidRiskDomainError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.risk_assessment import RiskAssessment
-from backend.app.models.client.risk_domain_catalog import (
-    RISK_CATEGORY_LABELS,
-    RISK_DOMAIN_CATALOG,
-)
+from backend.app.models.client.risk_domain import RiskDomain
 from backend.app.models.client.student import Student
 from backend.app.models.client.user_status import UserStatus
 from backend.app.schema.routes.risk_assessment_entry_response import RiskAssessmentEntryResponse
@@ -36,12 +35,14 @@ class RiskAssessmentService:
     def __init__(
         self,
         assessment_repository: RiskAssessmentRepository,
+        domain_repository: RiskDomainRepository,
         user_repository: UserRepository,
         access_guard: StudentAccessGuard,
         audit_logger: AuditLogger,
         clock: Clock,
     ) -> None:
         self._assessments = assessment_repository
+        self._domains = domain_repository
         self._users = user_repository
         self._guard = access_guard
         self._audit = audit_logger
@@ -77,8 +78,9 @@ class RiskAssessmentService:
         author_id: uuid.UUID,
     ) -> RiskAssessmentEntryResponse:
         student = self._guard.require(student_id, scope)
-        items = self._normalized(request.items)
-        self._validate_responsible(student, items)
+        catalog = self._domains.list(include_inactive=True)
+        items = self._normalized(request.items, catalog, set())
+        names = self._validate_responsible(student, items, set())
         assessment = RiskAssessment(
             student_id=student_id,
             author_id=author_id,
@@ -87,7 +89,7 @@ class RiskAssessmentService:
         )
         self._assessments.add(assessment)
         self._record(author_id, AuditAction.CREATE, assessment.id, ["assessment_date", "items"])
-        return self._to_response(assessment)
+        return self._to_response(assessment, catalog, names)
 
     def update(
         self,
@@ -99,14 +101,17 @@ class RiskAssessmentService:
     ) -> RiskAssessmentEntryResponse:
         student = self._guard.require(student_id, scope)
         assessment = self._require(student_id, assessment_id)
-        items = self._normalized(request.items)
-        self._validate_responsible(student, items)
-        changes = self._changes(assessment, request, items)
+        catalog = self._domains.list(include_inactive=True)
+        previous = self._stored_items(assessment, catalog)
+        items = self._normalized(request.items, catalog, {item.domain_id for item in previous})
+        already_assigned = {user_id for item in previous for user_id in item.responsible_user_ids}
+        names = self._validate_responsible(student, items, already_assigned)
+        changes = self._changes(assessment, request, previous, items)
         assessment.assessment_date = request.assessment_date
         assessment.items = self._stored(items)
         self._assessments.flush()
         self._record(actor_id, AuditAction.UPDATE, assessment.id, changes)
-        return self._to_response(assessment)
+        return self._to_response(assessment, catalog, names)
 
     def archive(
         self,
@@ -122,40 +127,80 @@ class RiskAssessmentService:
         assessment.archived_by = actor_id
         self._assessments.flush()
         self._record(actor_id, AuditAction.ARCHIVE, assessment.id, ["is_archived"])
-        return self._to_response(assessment)
+        return self._to_response(assessment, self._domains.list(include_inactive=True))
 
-    def _normalized(self, items: list[RiskItemFields]) -> list[RiskItemFields]:
-        by_domain = {item.domain: item for item in items}
+    def _normalized(
+        self,
+        items: list[RiskItemFields],
+        catalog: list[RiskDomain],
+        already_present: set[uuid.UUID],
+    ) -> list[RiskItemFields]:
+        allowed = {
+            domain.id for domain in catalog if domain.is_active or domain.id in already_present
+        }
+        by_domain = {item.domain_id: item for item in items}
+        if not by_domain.keys() <= allowed:
+            raise InvalidRiskDomainError()
         return [
-            by_domain.get(domain, RiskItemFields(domain=domain))
-            for domain, _, _ in RISK_DOMAIN_CATALOG
+            by_domain[domain.id]
+            for domain in catalog
+            if domain.id in by_domain and self._has_content(by_domain[domain.id])
         ]
 
-    def _stored_items(self, assessment: RiskAssessment) -> list[RiskItemFields]:
-        return self._normalized([RiskItemFields.model_validate(item) for item in assessment.items])
+    def _has_content(self, item: RiskItemFields) -> bool:
+        return bool(
+            item.nature.strip()
+            or item.level is not None
+            or item.intervention_plan.strip()
+            or item.responsible_user_ids
+        )
+
+    def _stored_items(
+        self, assessment: RiskAssessment, catalog: list[RiskDomain]
+    ) -> list[RiskItemFields]:
+        position = {domain.id: index for index, domain in enumerate(catalog)}
+        items = [RiskItemFields.model_validate(item) for item in assessment.items]
+        return sorted(
+            (item for item in items if item.domain_id in position),
+            key=lambda item: position[item.domain_id],
+        )
 
     def _stored(self, items: list[RiskItemFields]) -> list[dict[str, object]]:
         return [item.model_dump(mode="json") for item in items]
 
-    def _validate_responsible(self, student: Student, items: list[RiskItemFields]) -> None:
+    def _validate_responsible(
+        self,
+        student: Student,
+        items: list[RiskItemFields],
+        already_assigned: set[uuid.UUID],
+    ) -> dict[uuid.UUID, str | None]:
+        names: dict[uuid.UUID, str | None] = {}
         user_ids = {user_id for item in items for user_id in item.responsible_user_ids}
         for user_id in user_ids:
             user = self._users.get(user_id)
             if user is None or user.institution_id != student.institution_id:
                 raise InvalidResponsibleUserError()
+            if user.status == UserStatus.DISABLED and user_id not in already_assigned:
+                raise InvalidResponsibleUserError()
+            names[user_id] = user.full_name
+        return names
 
     def _changes(
         self,
         assessment: RiskAssessment,
         request: RiskAssessmentRequest,
+        previous: list[RiskItemFields],
         items: list[RiskItemFields],
     ) -> list[str]:
         changes = (
             ["assessment_date"] if assessment.assessment_date != request.assessment_date else []
         )
-        previous = {item.domain: item for item in self._stored_items(assessment)}
+        before = {item.domain_id: item for item in previous}
+        after = {item.domain_id: item for item in items}
         changes.extend(
-            f"items.{item.domain.value}" for item in items if previous.get(item.domain) != item
+            f"items.{domain_id}"
+            for domain_id in dict.fromkeys([*before, *after])
+            if before.get(domain_id) != after.get(domain_id)
         )
         return changes
 
@@ -186,27 +231,24 @@ class RiskAssessmentService:
         self, student: Student, assessments: list[RiskAssessment]
     ) -> RiskAssessmentHistoryResponse:
         names: dict[uuid.UUID, str | None] = {}
+        catalog = self._domains.list(include_inactive=True)
+        entries = [self._to_response(assessment, catalog, names) for assessment in assessments]
+        referenced = {item.domain_id for entry in entries for item in entry.items}
         return RiskAssessmentHistoryResponse(
             student_id=student.id,
             student_name=student.full_name,
-            domains=self._domains(),
-            entries=[self._to_response(assessment, names) for assessment in assessments],
+            domains=[
+                RiskDomainResponse.model_validate(domain)
+                for domain in catalog
+                if domain.is_active or domain.id in referenced
+            ],
+            entries=entries,
         )
-
-    def _domains(self) -> list[RiskDomainResponse]:
-        return [
-            RiskDomainResponse(
-                domain=domain,
-                category=category,
-                category_label=RISK_CATEGORY_LABELS[category],
-                label=label,
-            )
-            for domain, category, label in RISK_DOMAIN_CATALOG
-        ]
 
     def _to_response(
         self,
         assessment: RiskAssessment,
+        catalog: list[RiskDomain],
         names: dict[uuid.UUID, str | None] | None = None,
     ) -> RiskAssessmentEntryResponse:
         cache = names if names is not None else {}
@@ -214,7 +256,9 @@ class RiskAssessmentService:
             id=assessment.id,
             student_id=assessment.student_id,
             assessment_date=assessment.assessment_date,
-            items=[self._item_response(item, cache) for item in self._stored_items(assessment)],
+            items=[
+                self._item_response(item, cache) for item in self._stored_items(assessment, catalog)
+            ],
             author_id=assessment.author_id,
             author_name=self._user_name(assessment.author_id, cache),
             created_at=assessment.created_at,

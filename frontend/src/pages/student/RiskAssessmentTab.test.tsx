@@ -35,16 +35,28 @@ const updateMock = vi.mocked(riskAssessmentApi.update);
 
 const DOMAINS: RiskDomainInfo[] = [
   {
-    domain: "weight",
+    id: "weight",
     category: "medical",
     category_label: "רפואי",
-    label: "עודף / חוסר משקל",
+    name: "עודף / חוסר משקל",
+    order: 0,
+    is_active: true,
   },
   {
-    domain: "harm",
+    id: "harm",
     category: "behavioral",
     category_label: "התנהגותי",
-    label: "פגיעה עצמית",
+    name: "פגיעה עצמית",
+    order: 0,
+    is_active: true,
+  },
+  {
+    id: "retired",
+    category: "behavioral",
+    category_label: "התנהגותי",
+    name: "תחום שהושבת",
+    order: 1,
+    is_active: false,
   },
 ];
 
@@ -62,7 +74,7 @@ function entry(
     assessment_date: "2026-09-08",
     items: [
       {
-        domain: "weight",
+        domain_id: "weight",
         nature: "אוכל מהר",
         level: "high",
         intervention_plan: "תפריט מסודר",
@@ -70,7 +82,7 @@ function entry(
         responsible: [{ id: "u2", full_name: "דנה" }],
       },
       {
-        domain: "harm",
+        domain_id: "harm",
         nature: "",
         level: null,
         intervention_plan: "",
@@ -176,14 +188,14 @@ describe("RiskAssessmentTab", () => {
       assessment_date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
       items: [
         {
-          domain: "weight",
+          domain_id: "weight",
           nature: "",
           level: null,
           intervention_plan: "",
           responsible_user_ids: [],
         },
         {
-          domain: "harm",
+          domain_id: "harm",
           nature: "מכה בראש",
           level: "medium",
           intervention_plan: "השגחה",
@@ -210,11 +222,62 @@ describe("RiskAssessmentTab", () => {
     const request = updateMock.mock.calls[0][2];
     expect(updateMock.mock.calls[0][1]).toBe("e1");
     expect(request.items[0]).toEqual({
-      domain: "weight",
+      domain_id: "weight",
       nature: "אוכל מהר",
       level: "low",
       intervention_plan: "תפריט מסודר",
       responsible_user_ids: ["u2"],
     });
+  });
+
+  it("keeps an assigned user who is no longer a candidate removable in edit", async () => {
+    signedInAs("manager");
+    candidatesMock.mockResolvedValue([{ id: "u1", full_name: "מור" }]);
+    listMock.mockResolvedValue(history([entry({})]));
+    updateMock.mockResolvedValue(entry({}));
+
+    renderWithClient(<RiskAssessmentTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("עריכה"));
+    const assigned = await screen.findByLabelText("דנה — אחראי ביצוע לעודף / חוסר משקל");
+    expect(assigned).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(assigned);
+    await userEvent.click(screen.getByText("שמירה"));
+
+    expect(updateMock.mock.calls[0][2].items[0].responsible_user_ids).toEqual([]);
+  });
+
+  it("shows an error when the responsible candidates cannot be loaded", async () => {
+    signedInAs("manager");
+    candidatesMock.mockRejectedValue(new Error("boom"));
+    listMock.mockResolvedValue(history([]));
+
+    renderWithClient(<RiskAssessmentTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("טבלת ניהול סיכונים חדשה"));
+
+    expect(
+      await screen.findByText(/לא ניתן לטעון את רשימת המשתמשים/)
+    ).toBeInTheDocument();
+  });
+
+  it("hides an inactive domain unless the table already uses it", async () => {
+    signedInAs("manager");
+    const used = entry({ id: "used" });
+    used.items.push({
+      domain_id: "retired",
+      nature: "שורה ישנה",
+      level: "low",
+      intervention_plan: "",
+      responsible_user_ids: [],
+      responsible: [],
+    });
+    listMock.mockResolvedValue(history([used]));
+
+    renderWithClient(<RiskAssessmentTab studentId="s1" />);
+
+    expect(await screen.findByText("תחום שהושבת")).toBeInTheDocument();
+    await userEvent.click(screen.getByText("טבלת ניהול סיכונים חדשה"));
+    expect(screen.queryByLabelText("מהות הסיכון — תחום שהושבת")).not.toBeInTheDocument();
   });
 });

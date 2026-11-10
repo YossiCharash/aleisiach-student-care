@@ -1026,8 +1026,12 @@ first, the newest expanded), with **edit**, archive-only **delete**, a **per-tab
   instability), **התנהגותי** (escaping/wandering · self/environment/property harm · compulsive
   behavior · sexual-social risk · victim behavior) and **עצמאות** (community mobility · orientation
   and transport · staying home alone · unsupervised in the center · taking medication independently
-  · cleaning materials and sharp tools · leaving the center alone). They are a fixed code catalog
-  (like the medical-summary options), not Settings-managed taxonomy.
+  · cleaning materials and sharp tools · leaving the center alone). **They are Settings-managed
+  taxonomy** (CLAUDE.md rule 6, per the user): table `risk_domains` per institution, managed by
+  managers in Settings → "תחומי סיכון" (add · rename · deactivate, under a fixed category). The 17
+  domains above are the defaults seeded for every institution (`InstitutionTemplateSettings`, and the
+  migration for existing institutions). A deactivated domain is not offered in new tables but stays
+  visible and editable in tables that already used it. Only filled rows are stored.
 - **Left out on purpose (per the user):** the form's "נקודות חוזקה", "דילמות" and "עמדת הצוות" rows,
   and the form's header block (participants, plan-update date etc.) — the table's own date replaces it.
 - **Per row:** nature and intervention plan are free text; level is one of **נמוך / בינוני / גבוה /
@@ -1037,12 +1041,14 @@ first, the newest expanded), with **edit**, archive-only **delete**, a **per-tab
   in their own workshop** (other workshop = 404); professional teachers read only. **Delete (archive)
   is manager-only.** A writer-only endpoint lists the responsible-user candidates (id + name only).
 
-**Data model:** `risk_assessments` (migration `0040_risk_assessments`): `id`, `student_id`,
-`assessment_date`, `items` (JSON list, one row per catalog domain), `author_id`, timestamps, archive
+**Data model:** migration `0040_risk_assessments` creates `risk_domains` (`OrderedTaxonomyNode` +
+`category`, tenant-scoped) and `risk_assessments`: `id`, `student_id`, `assessment_date`, `items`
+(JSON list of filled rows keyed by `domain_id`), `author_id`, timestamps, archive
 columns; `TenantScoped` with the composite `(student_id, institution_id)` FK. Purged with the student
-(ADR-031). Audit entries list `assessment_date` / `items.<domain>` names only, never values. API:
+(ADR-031). Audit entries list `assessment_date` / `items.<domain_id>` names only, never values. API:
 `GET/POST /students/{id}/risk-assessments`, `GET /responsible-candidates`, `PUT /{assessment_id}`,
-`POST /{assessment_id}/archive`, `GET /pdf` (combined) and `GET /{assessment_id}/pdf`.
+`POST /{assessment_id}/archive`, `GET /pdf` (combined) and `GET /{assessment_id}/pdf`; domains:
+`GET /risk-domains` (any role) and `POST` / `PATCH /risk-domains/{id}` (manager).
 
 ---
 

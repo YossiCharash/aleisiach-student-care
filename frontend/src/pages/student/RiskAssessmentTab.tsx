@@ -232,6 +232,7 @@ function EntryCard({
               studentId={studentId}
               domains={domains}
               initial={requestOf(domains, entry)}
+              assignedMembers={entry.items.flatMap((item) => item.responsible)}
               submitLabel="שמירה"
               pending={mutation.isPending}
               error={mutation.error}

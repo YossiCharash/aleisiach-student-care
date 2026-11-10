@@ -23,9 +23,9 @@ export function levelOption(
   return RISK_LEVELS.find((option) => option.value === level);
 }
 
-export function emptyItem(domain: string): RiskItemFields {
+export function emptyItem(domainId: string): RiskItemFields {
   return {
-    domain,
+    domain_id: domainId,
     nature: "",
     level: null,
     intervention_plan: "",
@@ -39,7 +39,9 @@ export function emptyRequest(
 ): RiskAssessmentRequest {
   return {
     assessment_date: assessmentDate,
-    items: domains.map((domain) => emptyItem(domain.domain)),
+    items: domains
+      .filter((domain) => domain.is_active)
+      .map((domain) => emptyItem(domain.id)),
   };
 }
 
@@ -47,22 +49,30 @@ export function requestOf(
   domains: RiskDomainInfo[],
   entry: RiskAssessmentEntryResponse
 ): RiskAssessmentRequest {
-  const byDomain = new Map(entry.items.map((item) => [item.domain, item]));
+  const byDomain = new Map(entry.items.map((item) => [item.domain_id, item]));
   return {
     assessment_date: entry.assessment_date,
-    items: domains.map((domain) => {
-      const item = byDomain.get(domain.domain);
+    items: domainsFor(domains, entry).map((domain) => {
+      const item = byDomain.get(domain.id);
       return item
         ? {
-            domain: item.domain,
+            domain_id: item.domain_id,
             nature: item.nature,
             level: item.level,
             intervention_plan: item.intervention_plan,
             responsible_user_ids: item.responsible_user_ids,
           }
-        : emptyItem(domain.domain);
+        : emptyItem(domain.id);
     }),
   };
+}
+
+export function domainsFor(
+  domains: RiskDomainInfo[],
+  entry: RiskAssessmentEntryResponse
+): RiskDomainInfo[] {
+  const used = new Set(entry.items.map((item) => item.domain_id));
+  return domains.filter((domain) => domain.is_active || used.has(domain.id));
 }
 
 export interface RiskCategoryGroup {

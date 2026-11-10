@@ -1,9 +1,9 @@
+import uuid
 from datetime import date
 from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
-from backend.app.models.client.risk_domain import RiskDomain
-from backend.app.models.client.risk_domain_catalog import RISK_LEVEL_LABELS
+from backend.app.models.client.risk_labels import RISK_LEVEL_LABELS
 from backend.app.schema.routes.risk_assessment_entry_response import RiskAssessmentEntryResponse
 from backend.app.schema.routes.risk_assessment_history_response import (
     RiskAssessmentHistoryResponse,
@@ -63,7 +63,7 @@ class RiskAssessmentDocument:
             if show_date
             else ""
         )
-        items = {item.domain: item for item in entry.items}
+        items = {item.domain_id: item for item in entry.items}
         header = "".join(f"<th>{escape(column)}</th>" for column in _COLUMNS)
         rows = "".join(self._rows(domains, items))
         footer = self._shell.field("נכתב על ידי", entry.author_name)
@@ -75,18 +75,20 @@ class RiskAssessmentDocument:
     def _rows(
         self,
         domains: list[RiskDomainResponse],
-        items: dict[RiskDomain, RiskItemResponse],
+        items: dict[uuid.UUID, RiskItemResponse],
     ) -> list[str]:
         rows: list[str] = []
         current_category: str | None = None
         for domain in domains:
+            if not domain.is_active and domain.id not in items:
+                continue
             if domain.category != current_category:
                 current_category = domain.category
                 rows.append(
                     f'<tr class="category"><td colspan="{len(_COLUMNS)}">'
                     f"{escape(domain.category_label)}</td></tr>"
                 )
-            rows.append(self._row(domain, items.get(domain.domain)))
+            rows.append(self._row(domain, items.get(domain.id)))
         return rows
 
     def _row(self, domain: RiskDomainResponse, item: RiskItemResponse | None) -> str:
@@ -96,7 +98,7 @@ class RiskAssessmentDocument:
         responsible = (
             ", ".join(member.full_name for member in item.responsible) if item is not None else ""
         )
-        cells = (domain.label, nature, level, plan, responsible)
+        cells = (domain.name, nature, level, plan, responsible)
         return "<tr>" + "".join(f"<td>{escape(cell)}</td>" for cell in cells) + "</tr>"
 
     def _css(self) -> str:

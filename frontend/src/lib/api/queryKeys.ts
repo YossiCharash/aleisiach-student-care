@@ -29,6 +29,7 @@ export const queryKeys = {
   users: ["users"] as const,
   workshops: ["workshops"] as const,
   diagnoses: ["diagnoses"] as const,
+  riskDomains: ["risk-domains"] as const,
   detailOptions: ["detail-options"] as const,
   institutions: ["institutions"] as const,
 };

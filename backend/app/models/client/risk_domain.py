@@ -1,21 +1,16 @@
-from enum import StrEnum
+from sqlalchemy import Enum, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
+from backend.app.models.client.ordered_taxonomy_node import OrderedTaxonomyNode
+from backend.app.models.client.risk_category import RiskCategory
 
 
-class RiskDomain(StrEnum):
-    EATING_DRINKING_SWALLOWING = "eating_drinking_swallowing"
-    WEIGHT = "weight"
-    CHRONIC_CONDITIONS = "chronic_conditions"
-    MEDICAL_TREATMENT_REFUSAL = "medical_treatment_refusal"
-    INSTABILITY = "instability"
-    ESCAPING_WANDERING = "escaping_wandering"
-    HARM = "harm"
-    COMPULSIVE_BEHAVIOR = "compulsive_behavior"
-    SEXUAL_SOCIAL_RISK = "sexual_social_risk"
-    VICTIM_BEHAVIOR = "victim_behavior"
-    COMMUNITY_MOBILITY = "community_mobility"
-    ORIENTATION_TRANSPORT = "orientation_transport"
-    STAYING_HOME_ALONE = "staying_home_alone"
-    CENTER_UNSUPERVISED = "center_unsupervised"
-    INDEPENDENT_MEDICATION = "independent_medication"
-    CLEANING_SHARP_TOOLS = "cleaning_sharp_tools"
-    LEAVING_CENTER_ALONE = "leaving_center_alone"
+class RiskDomain(OrderedTaxonomyNode):
+    __tablename__ = "risk_domains"
+    __table_args__ = (
+        UniqueConstraint("id", "institution_id", name="uq_risk_domains_id_institution"),
+    )
+
+    category: Mapped[RiskCategory] = mapped_column(
+        Enum(RiskCategory, native_enum=False, length=16), nullable=False
+    )

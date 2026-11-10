@@ -8,11 +8,13 @@ from sqlalchemy.orm import Session
 
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.reports.risk_assessment_repository import RiskAssessmentRepository
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.errors.service.invalid_responsible_user_error import (
     InvalidResponsibleUserError,
 )
+from backend.app.errors.service.invalid_risk_domain_error import InvalidRiskDomainError
 from backend.app.errors.service.not_found_error import NotFoundError
 from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.audit_log import AuditLog
@@ -30,123 +32,209 @@ from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.reports.risk_assessment_service import RiskAssessmentService
 from backend.app.service.students.student_access_guard import StudentAccessGuard
 from backend.app.utils.service.clock import Clock
-from backend.tests.support.seeding import seed_actor
+from backend.tests.support.seeding import seed_actor, seed_risk_domains
 
 _ALL = StudentAccessScope(all_workshops=True)
 
 
-def _request(
-    assessment_date: date = date(2026, 9, 1),
-    responsible: list[uuid.UUID] | None = None,
-    nature: str = "אוכל מהר",
-) -> RiskAssessmentRequest:
-    return RiskAssessmentRequest(
-        assessment_date=assessment_date,
+class _Setup:
+    def __init__(self, session: Session) -> None:
+        workshop = Workshop(name="Aleph")
+        session.add(workshop)
+        session.flush()
+        student = Student(full_name="Dana", workshop_id=workshop.id)
+        session.add(student)
+        session.flush()
+        self.domains: list[RiskDomain] = seed_risk_domains(session)
+        self.service = RiskAssessmentService(
+            RiskAssessmentRepository(session),
+            RiskDomainRepository(session),
+            UserRepository(session),
+            StudentAccessGuard(StudentRepository(session)),
+            AuditLogger(AuditLogRepository(session)),
+            Clock(),
+        )
+        self.student_id = student.id
+        self.workshop_id = workshop.id
+        self.actor = seed_actor(session)
+
+    def request(
+        self,
+        assessment_date: date = date(2026, 9, 1),
+        responsible: list[uuid.UUID] | None = None,
+        nature: str = "אוכל מהר",
+        domain: RiskDomain | None = None,
+    ) -> RiskAssessmentRequest:
+        return RiskAssessmentRequest(
+            assessment_date=assessment_date,
+            items=[
+                RiskItemFields(
+                    domain_id=(domain or self.domains[0]).id,
+                    nature=nature,
+                    level=RiskLevel.MEDIUM,
+                    intervention_plan="השגחה",
+                    responsible_user_ids=responsible or [],
+                )
+            ],
+        )
+
+
+def test_create_stores_only_filled_rows_in_catalog_order(db_session: Session) -> None:
+    setup = _Setup(db_session)
+    first, second, third = setup.domains[0], setup.domains[1], setup.domains[2]
+    request = RiskAssessmentRequest(
+        assessment_date=date(2026, 9, 1),
         items=[
+            RiskItemFields(domain_id=third.id, nature="ג"),
+            RiskItemFields(domain_id=second.id),
             RiskItemFields(
-                domain=RiskDomain.EATING_DRINKING_SWALLOWING,
-                nature=nature,
-                level=RiskLevel.MEDIUM,
-                intervention_plan="השגחה",
-                responsible_user_ids=responsible or [],
-            )
+                domain_id=first.id, level=RiskLevel.MEDIUM, responsible_user_ids=[setup.actor]
+            ),
         ],
     )
 
+    created = setup.service.create(setup.student_id, request, _ALL, setup.actor)
 
-def _setup(session: Session) -> tuple[RiskAssessmentService, uuid.UUID, uuid.UUID, uuid.UUID]:
-    workshop = Workshop(name="Aleph")
-    session.add(workshop)
-    session.flush()
-    student = Student(full_name="Dana", workshop_id=workshop.id)
-    session.add(student)
-    session.flush()
-    service = RiskAssessmentService(
-        RiskAssessmentRepository(session),
-        UserRepository(session),
-        StudentAccessGuard(StudentRepository(session)),
-        AuditLogger(AuditLogRepository(session)),
-        Clock(),
-    )
-    return service, student.id, workshop.id, seed_actor(session)
-
-
-def test_create_fills_every_catalog_domain_in_order(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
-
-    created = service.create(student_id, _request(responsible=[actor]), _ALL, actor)
-
-    assert [item.domain for item in created.items] == list(RiskDomain)
-    first = created.items[0]
-    assert first.level == RiskLevel.MEDIUM
-    assert first.nature == "אוכל מהר"
-    assert [member.full_name for member in first.responsible] == ["Actor"]
-    assert created.items[1].level is None
+    assert [item.domain_id for item in created.items] == [first.id, third.id]
+    assert [member.full_name for member in created.items[0].responsible] == ["Actor"]
     assert created.author_name == "Actor"
 
 
-def test_history_carries_catalog_grouped_by_category(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
-    service.create(student_id, _request(), _ALL, actor)
+def test_history_lists_active_domains_grouped_by_category(db_session: Session) -> None:
+    setup = _Setup(db_session)
+    setup.service.create(setup.student_id, setup.request(), _ALL, setup.actor)
 
-    history = service.history(student_id, _ALL)
+    history = setup.service.history(setup.student_id, _ALL)
 
-    assert history.student_name == "Dana"
-    assert len(history.entries) == 1
     categories = [domain.category for domain in history.domains]
     assert categories[0] == RiskCategory.MEDICAL
     assert categories[-1] == RiskCategory.INDEPENDENCE
     assert history.domains[0].category_label == "רפואי"
+    assert len(history.entries) == 1
+
+
+def test_inactive_domain_is_hidden_unless_an_entry_uses_it(db_session: Session) -> None:
+    setup = _Setup(db_session)
+    used, unused = setup.domains[0], setup.domains[1]
+    setup.service.create(setup.student_id, setup.request(domain=used), _ALL, setup.actor)
+    used.is_active = False
+    unused.is_active = False
+    db_session.flush()
+
+    ids = [domain.id for domain in setup.service.history(setup.student_id, _ALL).domains]
+
+    assert used.id in ids
+    assert unused.id not in ids
+
+
+def test_new_table_rejects_inactive_domain_but_edit_keeps_it(db_session: Session) -> None:
+    setup = _Setup(db_session)
+    domain = setup.domains[0]
+    created = setup.service.create(
+        setup.student_id, setup.request(domain=domain), _ALL, setup.actor
+    )
+    domain.is_active = False
+    db_session.flush()
+
+    with pytest.raises(InvalidRiskDomainError):
+        setup.service.create(setup.student_id, setup.request(domain=domain), _ALL, setup.actor)
+    updated = setup.service.update(
+        setup.student_id, created.id, setup.request(domain=domain, nature="חנק"), _ALL, setup.actor
+    )
+
+    assert updated.items[0].domain_id == domain.id
+    assert updated.items[0].nature == "חנק"
+
+
+def test_unknown_domain_is_rejected(db_session: Session) -> None:
+    setup = _Setup(db_session)
+    request = RiskAssessmentRequest(
+        assessment_date=date(2026, 9, 1), items=[RiskItemFields(domain_id=uuid.uuid4())]
+    )
+
+    with pytest.raises(InvalidRiskDomainError):
+        setup.service.create(setup.student_id, request, _ALL, setup.actor)
 
 
 def test_history_is_newest_first(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
-    service.create(student_id, _request(date(2026, 1, 1)), _ALL, actor)
-    service.create(student_id, _request(date(2026, 6, 1)), _ALL, actor)
+    setup = _Setup(db_session)
+    setup.service.create(setup.student_id, setup.request(date(2026, 1, 1)), _ALL, setup.actor)
+    setup.service.create(setup.student_id, setup.request(date(2026, 6, 1)), _ALL, setup.actor)
 
-    dates = [entry.assessment_date for entry in service.history(student_id, _ALL).entries]
+    entries = setup.service.history(setup.student_id, _ALL).entries
 
-    assert dates == [date(2026, 6, 1), date(2026, 1, 1)]
+    assert [entry.assessment_date for entry in entries] == [date(2026, 6, 1), date(2026, 1, 1)]
 
 
 def test_update_audits_changed_domains_only(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
-    created = service.create(student_id, _request(), _ALL, actor)
+    setup = _Setup(db_session)
+    created = setup.service.create(setup.student_id, setup.request(), _ALL, setup.actor)
 
-    updated = service.update(student_id, created.id, _request(nature="חנק"), _ALL, actor)
+    setup.service.update(
+        setup.student_id, created.id, setup.request(nature="חנק"), _ALL, setup.actor
+    )
 
-    assert updated.items[0].nature == "חנק"
     log = db_session.scalars(select(AuditLog).where(AuditLog.action == AuditAction.UPDATE)).one()
-    assert log.changes == ["items.eating_drinking_swallowing"]
+    assert log.changes == [f"items.{setup.domains[0].id}"]
 
 
 def test_unknown_responsible_user_is_rejected(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
+    setup = _Setup(db_session)
 
     with pytest.raises(InvalidResponsibleUserError):
-        service.create(student_id, _request(responsible=[uuid.uuid4()]), _ALL, actor)
+        setup.service.create(
+            setup.student_id, setup.request(responsible=[uuid.uuid4()]), _ALL, setup.actor
+        )
+
+
+def test_disabled_user_cannot_be_newly_assigned_but_stays_if_already_assigned(
+    db_session: Session,
+) -> None:
+    setup = _Setup(db_session)
+    helper_id = seed_actor(db_session, "helper")
+    created = setup.service.create(
+        setup.student_id, setup.request(responsible=[helper_id]), _ALL, setup.actor
+    )
+    helper = db_session.get(User, helper_id)
+    assert helper is not None
+    helper.status = UserStatus.DISABLED
+    db_session.flush()
+
+    kept = setup.service.update(
+        setup.student_id,
+        created.id,
+        setup.request(responsible=[helper_id], nature="x"),
+        _ALL,
+        setup.actor,
+    )
+
+    assert kept.items[0].responsible_user_ids == [helper_id]
+    with pytest.raises(InvalidResponsibleUserError):
+        setup.service.create(
+            setup.student_id, setup.request(responsible=[helper_id]), _ALL, setup.actor
+        )
 
 
 def test_candidates_exclude_disabled_users(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
+    setup = _Setup(db_session)
     disabled_id = seed_actor(db_session, "gone")
     disabled = db_session.get(User, disabled_id)
     assert disabled is not None
     disabled.status = UserStatus.DISABLED
     db_session.flush()
 
-    candidates = service.responsible_candidates(student_id, _ALL)
+    candidates = setup.service.responsible_candidates(setup.student_id, _ALL)
 
-    assert [member.id for member in candidates] == [actor]
+    assert [member.id for member in candidates] == [setup.actor]
 
 
 def test_archive_hides_assessment_and_audits(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
-    created = service.create(student_id, _request(), _ALL, actor)
+    setup = _Setup(db_session)
+    created = setup.service.create(setup.student_id, setup.request(), _ALL, setup.actor)
 
-    service.archive(student_id, created.id, _ALL, actor)
+    setup.service.archive(setup.student_id, created.id, _ALL, setup.actor)
 
-    assert service.history(student_id, _ALL).entries == []
+    assert setup.service.history(setup.student_id, _ALL).entries == []
     actions = db_session.scalars(
         select(AuditLog.action).where(AuditLog.entity_type == "risk_assessment")
     ).all()
@@ -154,26 +242,26 @@ def test_archive_hides_assessment_and_audits(db_session: Session) -> None:
 
 
 def test_entry_of_another_student_is_not_found(db_session: Session) -> None:
-    service, student_id, workshop_id, actor = _setup(db_session)
-    other = Student(full_name="Other", workshop_id=workshop_id)
+    setup = _Setup(db_session)
+    other = Student(full_name="Other", workshop_id=setup.workshop_id)
     db_session.add(other)
     db_session.flush()
-    created = service.create(student_id, _request(), _ALL, actor)
+    created = setup.service.create(setup.student_id, setup.request(), _ALL, setup.actor)
 
     with pytest.raises(NotFoundError):
-        service.entry_history(other.id, created.id, _ALL)
+        setup.service.entry_history(other.id, created.id, _ALL)
 
 
 def test_instructor_scope_outside_workshop_is_not_found(db_session: Session) -> None:
-    service, student_id, _, actor = _setup(db_session)
+    setup = _Setup(db_session)
     foreign_scope = StudentAccessScope(all_workshops=False, workshop_id=uuid.uuid4())
 
     with pytest.raises(NotFoundError):
-        service.create(student_id, _request(), foreign_scope, actor)
+        setup.service.create(setup.student_id, setup.request(), foreign_scope, setup.actor)
 
 
 def test_request_rejects_duplicate_domains() -> None:
-    item = RiskItemFields(domain=RiskDomain.WEIGHT)
+    item = RiskItemFields(domain_id=uuid.uuid4())
 
     with pytest.raises(ValidationError):
         RiskAssessmentRequest(assessment_date=date(2026, 9, 1), items=[item, item])

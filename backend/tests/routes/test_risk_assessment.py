@@ -3,10 +3,13 @@ from collections.abc import Callable
 from typing import Any
 from urllib.parse import quote
 
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from backend.app.models.client.user import User
 from backend.app.models.client.user_role import UserRole
+from backend.tests.support.seeding import seed_risk_domains
 
 SeedUser = Callable[..., User]
 AuthHeaders = Callable[..., dict[str, str]]
@@ -14,12 +17,20 @@ SeedWorkshop = Callable[..., uuid.UUID]
 SeedStudent = Callable[..., uuid.UUID]
 
 
+_FIRST_DOMAIN: dict[str, str] = {}
+
+
+@pytest.fixture(autouse=True)
+def _risk_domains(db_session: Session) -> None:
+    _FIRST_DOMAIN["id"] = str(seed_risk_domains(db_session)[0].id)
+
+
 def _body(responsible: list[str] | None = None, nature: str = "אוכל מהר") -> dict[str, Any]:
     return {
         "assessment_date": "2026-09-01",
         "items": [
             {
-                "domain": "eating_drinking_swallowing",
+                "domain_id": _FIRST_DOMAIN["id"],
                 "nature": nature,
                 "level": "medium",
                 "intervention_plan": "השגחה",
@@ -60,7 +71,8 @@ def test_manager_creates_reads_updates_and_archives(
 
     history = api.get(_url(student_id), headers=headers).json()
     assert history["student_name"] == "Noa"
-    assert len(history["domains"]) == len(entry["items"])
+    assert len(history["domains"]) == 17
+    assert len(entry["items"]) == 1
     assert [item["id"] for item in history["entries"]] == [entry["id"]]
 
     updated = api.put(

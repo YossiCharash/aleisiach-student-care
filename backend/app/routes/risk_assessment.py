@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.client.audit.audit_log_repository import AuditLogRepository
 from backend.app.client.database.provider import get_session
 from backend.app.client.reports.risk_assessment_repository import RiskAssessmentRepository
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.routes.pdf import BrandDep, Issue, RendererDep
@@ -31,6 +32,7 @@ def get_risk_assessment_service(
 ) -> RiskAssessmentService:
     return RiskAssessmentService(
         RiskAssessmentRepository(session),
+        RiskDomainRepository(session),
         UserRepository(session),
         StudentAccessGuard(StudentRepository(session)),
         AuditLogger(AuditLogRepository(session)),

@@ -11,6 +11,7 @@ from backend.app.client.institutions.institution_purge_repository import (
     InstitutionPurgeRepository,
 )
 from backend.app.client.institutions.institution_repository import InstitutionRepository
+from backend.app.client.reports.risk_domain_repository import RiskDomainRepository
 from backend.app.client.students.detail_option_repository import DetailOptionRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.configuration.bootstrap import Bootstrap
@@ -28,6 +29,7 @@ from backend.app.schema.service.institution_provisioning_command import (
     InstitutionProvisioningCommand,
 )
 from backend.app.seed.institution_template_seeder import InstitutionTemplateSeeder
+from backend.app.seed.risk_domain_seeder import RiskDomainSeeder
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.auth.invitation_dispatcher_factory import InvitationDispatcherFactory
 from backend.app.service.auth.invitation_service_factory import InvitationServiceFactory
@@ -48,13 +50,22 @@ def get_institution_service(session: SessionDep) -> InstitutionService:
     )
 
 
+def _template_seeder(session: Session) -> InstitutionTemplateSeeder:
+    settings = InstitutionTemplateSettings()
+    return InstitutionTemplateSeeder(
+        DetailOptionRepository(session),
+        RiskDomainSeeder(RiskDomainRepository(session), settings.risk_domains),
+        settings,
+    )
+
+
 def get_provisioning_service(
     session: SessionDep, bootstrap: BootstrapDep
 ) -> InstitutionProvisioningService:
     return InstitutionProvisioningService(
         InstitutionRepository(session),
         TenantScope(session),
-        InstitutionTemplateSeeder(DetailOptionRepository(session), InstitutionTemplateSettings()),
+        _template_seeder(session),
         InvitationServiceFactory.create(session, bootstrap),
         InvitationDispatcherFactory.create(session, bootstrap),
         AuditLogger(AuditLogRepository(session)),

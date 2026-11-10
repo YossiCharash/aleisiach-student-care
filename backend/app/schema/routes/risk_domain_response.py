@@ -1,11 +1,23 @@
-from pydantic import BaseModel
+import uuid
+from typing import Self
+
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from backend.app.models.client.risk_category import RiskCategory
-from backend.app.models.client.risk_domain import RiskDomain
+from backend.app.models.client.risk_labels import RISK_CATEGORY_LABELS
 
 
 class RiskDomainResponse(BaseModel):
-    domain: RiskDomain
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
     category: RiskCategory
-    category_label: str
-    label: str
+    name: str
+    order: int
+    is_active: bool
+    category_label: str = ""
+
+    @model_validator(mode="after")
+    def _label_category(self) -> Self:
+        self.category_label = RISK_CATEGORY_LABELS[self.category]
+        return self

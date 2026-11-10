@@ -3,6 +3,7 @@ import type { RiskAssessmentEntryResponse, RiskDomainInfo } from "@/lib/api/type
 import { cn } from "@/lib/utils/cn";
 import {
   COLUMN_TITLES,
+  domainsFor,
   groupByCategory,
   levelOption,
 } from "@/pages/student/risks/riskLevels";
@@ -14,7 +15,7 @@ export function RiskAssessmentView({
   domains: RiskDomainInfo[];
   entry: RiskAssessmentEntryResponse;
 }): ReactNode {
-  const byDomain = new Map(entry.items.map((item) => [item.domain, item]));
+  const byDomain = new Map(entry.items.map((item) => [item.domain_id, item]));
 
   return (
     <div className="overflow-x-auto">
@@ -29,7 +30,7 @@ export function RiskAssessmentView({
           </tr>
         </thead>
         <tbody>
-          {groupByCategory(domains).map((group) => (
+          {groupByCategory(domainsFor(domains, entry)).map((group) => (
             <Fragment key={group.category}>
               <tr className="bg-brand-50">
                 <td
@@ -40,11 +41,11 @@ export function RiskAssessmentView({
                 </td>
               </tr>
               {group.domains.map((domain) => {
-                const item = byDomain.get(domain.domain);
+                const item = byDomain.get(domain.id);
                 const level = levelOption(item?.level ?? null);
                 return (
-                  <tr key={domain.domain} className="border-b border-slate-200 align-top">
-                    <td className="w-1/5 p-2 font-medium text-ink">{domain.label}</td>
+                  <tr key={domain.id} className="border-b border-slate-200 align-top">
+                    <td className="w-1/5 p-2 font-medium text-ink">{domain.name}</td>
                     <td className="whitespace-pre-wrap p-2 text-ink">{item?.nature}</td>
                     <td className="p-2">
                       {level && (
