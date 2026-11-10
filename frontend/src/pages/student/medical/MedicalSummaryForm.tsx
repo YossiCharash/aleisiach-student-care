@@ -27,6 +27,7 @@ const YES_NO: { value: boolean; label: string }[] = [
 
 export function MedicalSummaryForm({
   initial,
+  initialDate,
   identity,
   pending,
   error,
@@ -34,14 +35,17 @@ export function MedicalSummaryForm({
   onCancel,
 }: {
   initial: MedicalSummaryFields;
+  initialDate?: string;
   identity: ReactNode;
   pending: boolean;
   error: unknown;
-  onSubmit: (fields: MedicalSummaryFields) => void;
+  onSubmit: (fields: MedicalSummaryFields, summaryDate: string) => void;
   onCancel: () => void;
 }): ReactNode {
   const [draft, setDraft] = useState<MedicalSummaryFields>(initial);
+  const [summaryDate, setSummaryDate] = useState(initialDate ?? "");
   const update: Update = (key, value) => setDraft((prev) => ({ ...prev, [key]: value }));
+  const missingDate = initialDate !== undefined && !summaryDate;
 
   return (
     <div className="space-y-4">
@@ -49,6 +53,18 @@ export function MedicalSummaryForm({
         <Alert tone="error">{errorMessage(error)}</Alert>
       )}
       {identity}
+      {initialDate !== undefined && (
+        <div className="space-y-1.5">
+          <Label htmlFor="ms-summary-date">תאריך הסיכום</Label>
+          <Input
+            id="ms-summary-date"
+            type="date"
+            className="w-48"
+            value={summaryDate}
+            onChange={(event) => setSummaryDate(event.target.value)}
+          />
+        </div>
+      )}
       {SECTIONS.map((section) => (
         <Card key={section.title}>
           <CardHeader>
@@ -63,7 +79,10 @@ export function MedicalSummaryForm({
         </Card>
       ))}
       <div className="flex justify-start gap-2">
-        <Button onClick={() => onSubmit(draft)} disabled={pending}>
+        <Button
+          onClick={() => onSubmit(draft, summaryDate)}
+          disabled={pending || missingDate}
+        >
           {pending ? "שומר…" : "שמירה"}
         </Button>
         <Button variant="outline" onClick={onCancel} disabled={pending}>

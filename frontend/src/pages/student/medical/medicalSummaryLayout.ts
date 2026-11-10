@@ -1,4 +1,4 @@
-import type { MedicalSummaryFields, MedicalSummaryResponse } from "@/lib/api/types";
+import type { MedicalSummaryFields, MedicalSummaryEntryResponse } from "@/lib/api/types";
 
 type KeysOf<T> = {
   [K in keyof MedicalSummaryFields]: MedicalSummaryFields[K] extends T ? K : never;
@@ -236,18 +236,73 @@ export const SECTIONS: LayoutSection[] = [
   },
 ];
 
-const RESPONSE_ONLY_KEYS: Record<
-  Exclude<keyof MedicalSummaryResponse, keyof MedicalSummaryFields>,
+const ENTRY_ONLY_KEYS: Record<
+  Exclude<keyof MedicalSummaryEntryResponse, keyof MedicalSummaryFields>,
   true
 > = {
+  id: true,
   student_id: true,
-  exists: true,
-  student_name: true,
-  national_id: true,
-  date_of_birth: true,
-  address: true,
-  written_by_name: true,
+  summary_date: true,
+  author_id: true,
+  author_name: true,
+  created_at: true,
   updated_at: true,
+};
+
+export const EMPTY_FIELDS: MedicalSummaryFields = {
+  phone: "",
+  lives_with: [],
+  allergies: "",
+  known_syndrome: "",
+  background_diseases: "",
+  hospitalizations_surgeries: "",
+  dental_treatment: [],
+  dentures: [],
+  epilepsy_known: null,
+  epilepsy_seizure_nature: "",
+  epilepsy_seizure_frequency: "",
+  epilepsy_last_seizure: null,
+  epilepsy_seizure_treatment: "",
+  dual_diagnosis_known: null,
+  dual_diagnosis_expression: "",
+  dual_diagnosis_frequency: "",
+  dual_diagnosis_treatment: "",
+  skin_integrity: [],
+  skin_known_issues: "",
+  comprehension: [],
+  communication: [],
+  communication_other: "",
+  speech: [],
+  vision: [],
+  hearing: [],
+  functioning: [],
+  mobility: [],
+  eating: [],
+  gastrostomy_feeding: null,
+  formula: "",
+  chewing_swallowing: [],
+  food_texture: [],
+  diet: [],
+  diet_other: "",
+  continence: [],
+  loves: "",
+  calming: "",
+  angering: "",
+  frightening: "",
+  stress_behavior: "",
+  care_recommendations: "",
+  general_notes: "",
+  guardian_name: "",
+  guardian_relation: "",
+  guardian_phone: "",
+  health_fund: "",
+  supplemental_insurance: null,
+  supplemental_insurance_detail: "",
+  attending_doctor: "",
+  care_nurse: "",
+  community_social_worker: "",
+  social_worker_phone: "",
+  filler_role: "",
 };
 
 const SHORT_MAX = 300;
@@ -257,9 +312,11 @@ export function maxLength(item: { multiline?: boolean }): number {
   return item.multiline ? LONG_MAX : SHORT_MAX;
 }
 
-export function toFields(summary: MedicalSummaryResponse): MedicalSummaryFields {
-  const fields: Partial<MedicalSummaryResponse> = { ...summary };
-  for (const key of Object.keys(RESPONSE_ONLY_KEYS) as (keyof MedicalSummaryResponse)[]) {
+export function toFields(entry: MedicalSummaryEntryResponse): MedicalSummaryFields {
+  const fields: Partial<MedicalSummaryEntryResponse> = { ...entry };
+  for (const key of Object.keys(
+    ENTRY_ONLY_KEYS
+  ) as (keyof MedicalSummaryEntryResponse)[]) {
     delete fields[key];
   }
   return fields as MedicalSummaryFields;

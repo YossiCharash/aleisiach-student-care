@@ -12,6 +12,7 @@ SeedWorkshop = Callable[..., uuid.UUID]
 SeedStudent = Callable[..., uuid.UUID]
 
 _BODY = {
+    "summary_date": "2026-11-01",
     "phone": "050-0000000",
     "lives_with": ["parents"],
     "allergies": "בוטנים",
@@ -29,7 +30,7 @@ def _url(student_id: uuid.UUID, suffix: str = "") -> str:
     return f"/students/{student_id}/medical-summary{suffix}"
 
 
-def test_manager_writes_and_reads(
+def test_manager_creates_and_lists(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -40,21 +41,38 @@ def test_manager_writes_and_reads(
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
 
-    put = api.put(_url(student_id), headers=headers, json=_BODY)
-    assert put.status_code == 200
-    payload = put.json()
-    assert payload["exists"] is True
-    assert payload["student_name"] == "Noa"
+    created = api.post(_url(student_id), headers=headers, json=_BODY)
+    assert created.status_code == 201
+    payload = created.json()
+    assert payload["summary_date"] == "2026-11-01"
     assert payload["mobility"] == ["escort", "aids"]
-    assert payload["epilepsy_known"] is True
+    assert payload["author_name"] == "User"
 
-    got = api.get(_url(student_id), headers=headers).json()
-    assert got["allergies"] == "בוטנים"
-    assert got["epilepsy_last_seizure"] == "2026-10-01"
-    assert got["written_by_name"] == "User"
+    history = api.get(_url(student_id), headers=headers).json()
+    assert history["student_name"] == "Noa"
+    assert [entry["id"] for entry in history["entries"]] == [payload["id"]]
+    assert history["entries"][0]["epilepsy_last_seizure"] == "2026-10-01"
 
 
-def test_get_before_write_returns_empty(
+def test_new_summary_is_added_to_history(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    student_id = seed_student(seed_workshop("Aleph"))
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    api.post(_url(student_id), headers=headers, json=_BODY)
+    api.post(_url(student_id), headers=headers, json={**_BODY, "summary_date": "2026-11-09"})
+
+    entries = api.get(_url(student_id), headers=headers).json()["entries"]
+
+    assert [entry["summary_date"] for entry in entries] == ["2026-11-09", "2026-11-01"]
+
+
+def test_empty_history(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -67,8 +85,30 @@ def test_get_before_write_returns_empty(
     got = api.get(_url(student_id), headers=auth_headers(api, "boss"))
 
     assert got.status_code == 200
-    assert got.json()["exists"] is False
-    assert got.json()["mobility"] == []
+    assert got.json()["entries"] == []
+
+
+def test_update_and_archive(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    student_id = seed_student(seed_workshop("Aleph"))
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    entry_id = api.post(_url(student_id), headers=headers, json=_BODY).json()["id"]
+
+    updated = api.put(_url(student_id, f"/{entry_id}"), headers=headers, json={"loves": "ציור"})
+    assert updated.status_code == 200
+    assert updated.json()["loves"] == "ציור"
+    assert updated.json()["summary_date"] == "2026-11-01"
+
+    archived = api.post(_url(student_id, f"/{entry_id}/archive"), headers=headers)
+    assert archived.status_code == 200
+    assert api.get(_url(student_id), headers=headers).json()["entries"] == []
+    assert api.get(_url(student_id, f"/{entry_id}/pdf"), headers=headers).status_code == 404
 
 
 def test_unknown_option_is_rejected(
@@ -81,11 +121,28 @@ def test_unknown_option_is_rejected(
     student_id = seed_student(seed_workshop("Aleph"))
     seed_user("boss", UserRole.MANAGER)
 
-    put = api.put(
-        _url(student_id), headers=auth_headers(api, "boss"), json={"mobility": ["flying"]}
+    created = api.post(
+        _url(student_id),
+        headers=auth_headers(api, "boss"),
+        json={**_BODY, "mobility": ["flying"]},
     )
 
-    assert put.status_code == 422
+    assert created.status_code == 422
+
+
+def test_create_requires_a_date(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    student_id = seed_student(seed_workshop("Aleph"))
+    seed_user("boss", UserRole.MANAGER)
+
+    created = api.post(_url(student_id), headers=auth_headers(api, "boss"), json={"allergies": "x"})
+
+    assert created.status_code == 422
 
 
 def test_instructor_cannot_read_or_write(
@@ -101,7 +158,7 @@ def test_instructor_cannot_read_or_write(
     headers = auth_headers(api, "teacher")
 
     assert api.get(_url(student_id), headers=headers).status_code == 403
-    assert api.put(_url(student_id), headers=headers, json=_BODY).status_code == 403
+    assert api.post(_url(student_id), headers=headers, json=_BODY).status_code == 403
     assert api.get(_url(student_id, "/pdf"), headers=headers).status_code == 403
 
 
@@ -117,10 +174,10 @@ def test_professional_teacher_cannot_read_or_write(
     headers = auth_headers(api, "prof")
 
     assert api.get(_url(student_id), headers=headers).status_code == 403
-    assert api.put(_url(student_id), headers=headers, json=_BODY).status_code == 403
+    assert api.post(_url(student_id), headers=headers, json=_BODY).status_code == 403
 
 
-def test_pdf_export(
+def test_per_entry_and_combined_pdf(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -130,12 +187,15 @@ def test_pdf_export(
     student_id = seed_student(seed_workshop("Aleph"))
     seed_user("boss", UserRole.MANAGER)
     headers = auth_headers(api, "boss")
-    api.put(_url(student_id), headers=headers, json=_BODY)
+    entry_id = api.post(_url(student_id), headers=headers, json=_BODY).json()["id"]
 
-    pdf = api.get(_url(student_id, "/pdf"), headers=headers)
+    single = api.get(_url(student_id, f"/{entry_id}/pdf"), headers=headers)
+    combined = api.get(_url(student_id, "/pdf"), headers=headers)
 
-    assert pdf.status_code == 200
-    assert pdf.headers["content-type"] == "application/pdf"
+    assert single.status_code == 200
+    assert single.headers["content-type"] == "application/pdf"
+    assert combined.status_code == 200
+    assert combined.headers["content-type"] == "application/pdf"
 
 
 def test_requires_authentication(

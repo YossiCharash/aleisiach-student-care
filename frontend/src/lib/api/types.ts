@@ -633,15 +633,27 @@ export interface MedicalSummaryFields {
   filler_role: string;
 }
 
-export interface MedicalSummaryResponse extends MedicalSummaryFields {
+export interface MedicalSummaryCreateRequest extends MedicalSummaryFields {
+  summary_date: string;
+}
+
+export interface MedicalSummaryEntryResponse extends MedicalSummaryFields {
+  id: string;
   student_id: string;
-  exists: boolean;
+  summary_date: string;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MedicalSummaryHistoryResponse {
+  student_id: string;
   student_name: string;
   national_id: string | null;
   date_of_birth: string | null;
   address: string | null;
-  written_by_name: string | null;
-  updated_at: string | null;
+  entries: MedicalSummaryEntryResponse[];
 }
 
 export type RiskLevel = "low" | "medium" | "high" | "not_relevant";

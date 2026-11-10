@@ -1052,6 +1052,33 @@ columns; `TenantScoped` with the composite `(student_id, institution_id)` FK. Pu
 
 ---
 
+## ADR-040 — Medical information summary becomes a dated, archivable series with history (2026-11-10)
+
+**Decision (per the user — "keep it historically and let it be downloaded and printed historically
+like every other tab"):** the medical information summary is **no longer one record per student
+updated in place** (supersedes that part of ADR-038). Like the functional report (ADR-036), it is a
+**dated series**: a **"סיכום מידע רפואי חדש"** button opens the form with a **date picker** (defaults
+to today); saving appends a new dated summary to the **history** (newest first, the newest one
+expanded). A manager may **edit** a summary's fields (date/author stay) and **delete** one —
+**archive-only**. **PDF per summary** and a **combined PDF across all dates** (one page break per
+summary), both through `DocumentShell`.
+
+- **A new summary opens prefilled from the latest one** (unlike the functional report's empty form):
+  a medical summary is mostly stable data across ~50 fields, so the manager updates what changed and
+  the previous version stays untouched in history. The first summary opens empty.
+- Everything else from ADR-038 holds: manager-only (403 for other roles), identity auto-filled at read
+  time, the same option catalog and multi-select rows, empty signature line on the PDF.
+
+**Data model:** migration `0041_medical_summary_entries` replaces `medical_summaries` with
+`medical_summary_entries` (`id` PK, `student_id`, `summary_date`, the same field columns,
+`author_id`, `created_at`/`updated_at`, archive columns; `TenantScoped`, composite student FK) and
+copies each existing summary in as the first history entry, dated by its Israel-local update day.
+Purged with the student (ADR-031). Audit per entry (`entity_id` = entry id): all fields on create,
+changed ones on update, `is_archived` on archive. API: `GET/POST /students/{id}/medical-summary`,
+`PUT /{entry_id}`, `POST /{entry_id}/archive`, `GET /pdf` (combined), `GET /{entry_id}/pdf`.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

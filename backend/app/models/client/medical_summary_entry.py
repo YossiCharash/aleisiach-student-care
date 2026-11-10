@@ -1,24 +1,36 @@
 import uuid
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, ForeignKeyConstraint, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
 from backend.app.models.client.tenant_scoped import TenantScoped
 
 
-class MedicalSummary(TenantScoped, Base):
-    __tablename__ = "medical_summaries"
+class MedicalSummaryEntry(TenantScoped, Base):
+    __tablename__ = "medical_summary_entries"
     __table_args__ = (
         ForeignKeyConstraint(
             ["student_id", "institution_id"],
             ["students.id", "students.institution_id"],
-            name="fk_medical_summaries_student_institution",
+            name="fk_medical_summary_entries_student_institution",
         ),
+        UniqueConstraint("id", "institution_id", name="uq_medical_summary_entries_id_institution"),
     )
 
-    student_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    student_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
+    summary_date: Mapped[date] = mapped_column(Date, nullable=False)
     phone: Mapped[str] = mapped_column(Text, nullable=False, default="")
     lives_with: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     allergies: Mapped[str] = mapped_column(Text, nullable=False, default="")
@@ -72,5 +84,16 @@ class MedicalSummary(TenantScoped, Base):
     community_social_worker: Mapped[str] = mapped_column(Text, nullable=False, default="")
     social_worker_phone: Mapped[str] = mapped_column(Text, nullable=False, default="")
     filler_role: Mapped[str] = mapped_column(Text, nullable=False, default="")
-    updated_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    archived_by: Mapped[uuid.UUID | None] = mapped_column(nullable=True)

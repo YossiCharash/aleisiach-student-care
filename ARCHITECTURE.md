@@ -126,7 +126,7 @@ erDiagram
     STUDENT ||--o{ INCIDENT_REPORT : "incident reports (Form 35, dated series)"
     STUDENT ||--o{ RISK_ASSESSMENT : "risk management (dated series)"
     INSTITUTION ||--o{ RISK_DOMAIN : "risk domains (Settings-managed)"
-    STUDENT ||--o| MEDICAL_SUMMARY : "medical information summary (manager only)"
+    STUDENT ||--o{ MEDICAL_SUMMARY_ENTRY : "medical information summaries (manager only, dated series)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
     MEETING_FOCI_ENTRY }o--|| SKILL : "ref"
@@ -247,11 +247,12 @@ erDiagram
   `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
   Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
   communication fields; **superseded — ADR-020**.)
-- **Medical information summary ("סיכום מידע רפואי") is one record per student** — own table
-  `MEDICAL_SUMMARY` (PK `student_id`, updated in place; ADR-038): free-text columns, multi-select
+- **Medical information summary ("סיכום מידע רפואי") is a dated series** — own table
+  `MEDICAL_SUMMARY_ENTRY` (many per student, newest first by `summary_date`, archive-only delete; a
+  new summary is prefilled from the latest; ADR-038, ADR-040): free-text columns, multi-select
   option rows as JSON lists validated against one option catalog, nullable yes/no booleans. Identity
   (name · national id · birth date · address) is resolved at read time. Manager-only read + write;
-  PDF through `DocumentShell`.
+  per-summary and combined PDFs through `DocumentShell`.
 - **Incident report ("אירוע חריג", Form 35) is a dated series** — own table `INCIDENT_REPORT`
   (many per student, newest first by event date; ADR-037): the Form 35 fields, with the nature of the
   event and the "referred to" decision stored as JSON lists of enum values and the report type as a
