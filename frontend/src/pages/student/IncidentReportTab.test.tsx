@@ -40,7 +40,7 @@ function entry(
   overrides: Partial<IncidentReportEntryResponse>
 ): IncidentReportEntryResponse {
   return {
-    ...emptyIncidentFields("2026-09-08", "מור"),
+    ...emptyIncidentFields("2026-09-08"),
     event_time: "14:30:00",
     location: "חדר האוכל",
     natures: ["violence", "other"],
@@ -129,7 +129,6 @@ describe("IncidentReportTab", () => {
 
     await userEvent.click(await screen.findByText("דיווח אירוע חריג חדש"));
     expect(screen.getByText("נועה, ת.ז 123456782")).toBeInTheDocument();
-    expect(screen.getByLabelText("שם ממלא הטופס")).toHaveValue("מור");
     const save = screen.getByText("שמירת הדו״ח");
     expect(save).toBeDisabled();
 

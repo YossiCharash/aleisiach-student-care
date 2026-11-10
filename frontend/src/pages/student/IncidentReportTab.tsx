@@ -35,9 +35,7 @@ function recipientOf(history: IncidentReportHistoryResponse): string {
     : history.student_name;
 }
 
-const FIELD_KEYS = Object.keys(
-  emptyIncidentFields("", "")
-) as (keyof IncidentReportFields)[];
+const FIELD_KEYS = Object.keys(emptyIncidentFields("")) as (keyof IncidentReportFields)[];
 
 function fieldsOf(entry: IncidentReportEntryResponse): IncidentReportFields {
   return Object.fromEntries(
@@ -94,7 +92,6 @@ export function IncidentReportTab({ studentId }: { studentId: string }): ReactNo
         <NewReport
           studentId={studentId}
           recipient={recipient}
-          fillerName={user?.full_name ?? ""}
           onDone={() => setCreating(false)}
         />
       ) : entries.length === 0 ? (
@@ -130,12 +127,10 @@ function useInvalidate(studentId: string): () => void {
 function NewReport({
   studentId,
   recipient,
-  fillerName,
   onDone,
 }: {
   studentId: string;
   recipient: string;
-  fillerName: string;
   onDone: () => void;
 }): ReactNode {
   const invalidate = useInvalidate(studentId);
@@ -152,7 +147,7 @@ function NewReport({
     <div className="space-y-3">
       <h3 className="text-base font-semibold text-ink">דיווח אירוע חריג חדש</h3>
       <IncidentReportForm
-        initial={emptyIncidentFields(todayIso(), fillerName)}
+        initial={emptyIncidentFields(todayIso())}
         recipient={recipient}
         submitLabel="שמירת הדו״ח"
         pending={mutation.isPending}

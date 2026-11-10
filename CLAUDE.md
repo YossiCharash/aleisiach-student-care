@@ -349,7 +349,7 @@ on purpose: it has no access to any of these.
     event date (default today) · time · place · reporter · internal/external type · nature of the
     event (multi-select + "אחר" text) · description (required) · staff present · affected service
     recipients · warning signs · actions taken · "referred to" decision (multi-select + "אחר" text) ·
-    reasons · manager-updated date/time · four lessons-learned fields · form filler name + role. The
+    reasons · manager-updated date/time · four lessons-learned fields · form filler role (no filler name). The
     **recipient line (שם + ת"ז) is auto-filled** from the student. History newest first, **edit**,
     archive-only **delete (manager only)**, **per-report + combined PDF** with an empty signature line.
     **Managers write any student; instructors write their own workshop's students; professional

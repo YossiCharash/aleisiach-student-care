@@ -30,7 +30,6 @@ _TEXT_COLUMNS = (
     "was_preventable",
     "lessons_learned",
     "corrective_action_plan",
-    "filler_name",
     "filler_role",
 )
 

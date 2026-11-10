@@ -56,7 +56,6 @@ class IncidentReport(TenantScoped, Base):
     was_preventable: Mapped[str] = mapped_column(Text, nullable=False, default="")
     lessons_learned: Mapped[str] = mapped_column(Text, nullable=False, default="")
     corrective_action_plan: Mapped[str] = mapped_column(Text, nullable=False, default="")
-    filler_name: Mapped[str] = mapped_column(Text, nullable=False, default="")
     filler_role: Mapped[str] = mapped_column(Text, nullable=False, default="")
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

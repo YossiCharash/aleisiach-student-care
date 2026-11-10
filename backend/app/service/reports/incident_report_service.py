@@ -75,9 +75,12 @@ class IncidentReportService:
     ) -> IncidentReportEntryResponse:
         self._guard.require(student_id, scope)
         report = self._require_report(student_id, report_id)
+        changed = [
+            name for name in self._fields() if getattr(report, name) != getattr(request, name)
+        ]
         self._apply_fields(report, request)
         self._reports.flush()
-        self._record(actor_id, AuditAction.UPDATE, report.id, list(self._fields()))
+        self._record(actor_id, AuditAction.UPDATE, report.id, changed)
         return self._to_response(report)
 
     def archive(

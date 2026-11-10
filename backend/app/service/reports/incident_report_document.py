@@ -175,7 +175,6 @@ class IncidentReportDocument:
     def _footer(self, entry: IncidentReportEntryResponse) -> str:
         return (
             '<div class="footer">'
-            + self._shell.field("שם ממלא הטופס", entry.filler_name)
             + self._shell.field("תפקיד", entry.filler_role)
             + '<div class="field signature"><span class="label">חתימה: </span>'
             '<span class="signature-line"></span></div>'

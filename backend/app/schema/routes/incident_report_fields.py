@@ -33,7 +33,6 @@ class IncidentReportFields(BaseModel):
     was_preventable: str = Field(default="", max_length=_MAX_TEXT)
     lessons_learned: str = Field(default="", max_length=_MAX_TEXT)
     corrective_action_plan: str = Field(default="", max_length=_MAX_TEXT)
-    filler_name: str = Field(default="", max_length=_MAX_SHORT)
     filler_role: str = Field(default="", max_length=_MAX_SHORT)
 
     @field_validator("natures", "referrals")

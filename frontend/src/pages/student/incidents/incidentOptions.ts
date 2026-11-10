@@ -58,10 +58,7 @@ export const LESSON_SECTIONS: { key: TextKey; title: string }[] = [
 
 export const ATTACHMENT_NOTE = "יש לצרף לטופס דו״ח מרפאה / משטרה / אחר (אם הייתה פנייה)";
 
-export function emptyIncidentFields(
-  eventDate: string,
-  fillerName: string
-): IncidentReportFields {
+export function emptyIncidentFields(eventDate: string): IncidentReportFields {
   return {
     event_date: eventDate,
     event_time: null,
@@ -84,7 +81,6 @@ export function emptyIncidentFields(
     was_preventable: "",
     lessons_learned: "",
     corrective_action_plan: "",
-    filler_name: fillerName,
     filler_role: "",
   };
 }

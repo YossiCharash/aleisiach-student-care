@@ -27,7 +27,6 @@ _BODY: dict[str, Any] = {
     "referrals": ["guardian"],
     "manager_updated_date": "2026-09-01",
     "manager_updated_time": "16:00",
-    "filler_name": "דנה",
     "filler_role": "מדריכה",
 }
 
@@ -217,3 +216,24 @@ def test_reports_require_authentication(
     student_id = seed_student(seed_workshop("Aleph"))
 
     assert api.get(_url(student_id)).status_code == 401
+
+
+def test_instructor_cannot_edit_or_archive_other_workshop_report(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    own = seed_workshop("Aleph")
+    student_id = seed_student(seed_workshop("Bet"))
+    seed_user("boss", UserRole.MANAGER)
+    entry = _create(api, student_id, auth_headers(api, "boss"))
+    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=own)
+    headers = auth_headers(api, "teacher")
+
+    put = api.put(_url(student_id, f"/{entry['id']}"), headers=headers, json=_BODY)
+    archive = api.post(_url(student_id, f"/{entry['id']}/archive"), headers=headers)
+
+    assert put.status_code == 404
+    assert archive.status_code == 403

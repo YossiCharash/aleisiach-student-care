@@ -961,8 +961,8 @@ ADR-032 — same font and layout as every other document).
   taken · decision — "referred to" (**multi-select**: internal event · guardian/decision supporter ·
   welfare social worker · statutory social worker · police · framework supervisor · other + free
   text) · reasons · manager/professional manager updated on date + time · lessons learned (causes ·
-  preventable? · lessons · corrective action plan) · form filler name + role (free text; the name
-  defaults to the signed-in user). The PDF prints an **empty signature line** for a hand signature
+  preventable? · lessons · corrective action plan) · form filler role (free text; the filler's
+  name is not recorded — "הופק על ידי" in the PDF header already names the exporting user). The PDF prints an **empty signature line** for a hand signature
   and the form's note about attaching a clinic/police report (no file upload).
 - **Access (decided):** managers write any student; **instructors write students in their own
   workshop** (server-side scope, other workshop = 404); professional teachers **read only**. **Delete

@@ -258,25 +258,14 @@ export function IncidentReportForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-ink-muted">ימולא ע״י מי שנכח באירוע.</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="ir-filler-name">שם ממלא הטופס</Label>
-              <Input
-                id="ir-filler-name"
-                value={draft.filler_name}
-                maxLength={300}
-                onChange={(event) => update("filler_name", event.target.value)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ir-filler-role">תפקיד</Label>
-              <Input
-                id="ir-filler-role"
-                value={draft.filler_role}
-                maxLength={300}
-                onChange={(event) => update("filler_role", event.target.value)}
-              />
-            </div>
+          <div className="max-w-sm">
+            <Label htmlFor="ir-filler-role">תפקיד</Label>
+            <Input
+              id="ir-filler-role"
+              value={draft.filler_role}
+              maxLength={300}
+              onChange={(event) => update("filler_role", event.target.value)}
+            />
           </div>
           <p className="text-sm text-ink-muted">{ATTACHMENT_NOTE}</p>
         </CardContent>

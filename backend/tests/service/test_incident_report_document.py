@@ -38,7 +38,6 @@ def _entry(**overrides: object) -> IncidentReportEntryResponse:
         "manager_updated_date": date(2026, 9, 2),
         "manager_updated_time": time(16, 0),
         "lessons_learned": "לקח חשוב",
-        "filler_name": "מדריכה",
         "filler_role": "מדריכת סדנה",
         "author_id": uuid.uuid4(),
         "created_at": now,
@@ -92,6 +91,7 @@ def test_signature_line_and_attachment_note_are_printed() -> None:
     html = _document().single_html(_history(_entry()), _issue())
 
     assert 'class="signature-line"' in html
+    assert "שם ממלא הטופס" not in html
     assert "יש לצרף לטופס" in html
 
 

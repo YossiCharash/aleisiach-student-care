@@ -79,8 +79,7 @@ export function IncidentReportView({
       ))}
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-4 text-sm">
-        <Field label="שם ממלא הטופס" value={entry.filler_name} />
-        <Field label="תפקיד" value={entry.filler_role} />
+        <Field label="תפקיד ממלא הטופס" value={entry.filler_role} />
       </dl>
     </div>
   );

@@ -495,7 +495,6 @@ export interface IncidentReportFields {
   was_preventable: string;
   lessons_learned: string;
   corrective_action_plan: string;
-  filler_name: string;
   filler_role: string;
 }
 

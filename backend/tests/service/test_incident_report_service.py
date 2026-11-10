@@ -42,7 +42,6 @@ def _request(
         natures=[IncidentNature.VIOLENCE],
         description=description,
         referrals=[IncidentReferral.GUARDIAN, IncidentReferral.POLICE],
-        filler_name="מדריכה",
     )
 
 
@@ -151,3 +150,30 @@ def test_request_deduplicates_choices() -> None:
     )
 
     assert request.natures == [IncidentNature.VIOLENCE]
+
+
+def test_update_audits_only_changed_fields(db_session: Session) -> None:
+    service, student_id, _, actor = _setup(db_session)
+    created = service.create(student_id, _request(), _ALL, actor)
+    edited = _request().model_copy(update={"location": "חצר"})
+
+    service.update(student_id, created.id, edited, _ALL, actor)
+
+    update_log = db_session.scalars(
+        select(AuditLog).where(AuditLog.action == AuditAction.UPDATE)
+    ).one()
+    assert update_log.changes == ["location"]
+
+
+def test_other_text_is_dropped_when_other_is_not_chosen() -> None:
+    request = IncidentReportRequest(
+        event_date=date(2026, 9, 1),
+        description="x",
+        natures=[IncidentNature.VIOLENCE],
+        nature_other="ישן",
+        referrals=[IncidentReferral.OTHER],
+        referral_other="עירייה",
+    )
+
+    assert request.nature_other == ""
+    assert request.referral_other == "עירייה"
