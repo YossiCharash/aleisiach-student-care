@@ -18,6 +18,10 @@ import type {
   IncidentReportEntryResponse,
   IncidentReportFields,
   IncidentReportHistoryResponse,
+  RiskAssessmentEntryResponse,
+  RiskAssessmentHistoryResponse,
+  RiskAssessmentRequest,
+  StaffMember,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
   MedicalSummaryFields,
@@ -314,6 +318,45 @@ export const incidentReportApi = {
     buildPdfUrl(`/students/${studentId}/incident-reports/${reportId}/pdf`),
   combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/incident-reports/pdf`),
+};
+
+export const riskAssessmentApi = {
+  list: (studentId: string): Promise<RiskAssessmentHistoryResponse> =>
+    apiClient.get<RiskAssessmentHistoryResponse>(
+      `/students/${studentId}/risk-assessments`
+    ),
+  responsibleCandidates: (studentId: string): Promise<StaffMember[]> =>
+    apiClient.get<StaffMember[]>(
+      `/students/${studentId}/risk-assessments/responsible-candidates`
+    ),
+  create: (
+    studentId: string,
+    body: RiskAssessmentRequest
+  ): Promise<RiskAssessmentEntryResponse> =>
+    apiClient.post<RiskAssessmentEntryResponse>(
+      `/students/${studentId}/risk-assessments`,
+      body
+    ),
+  update: (
+    studentId: string,
+    assessmentId: string,
+    body: RiskAssessmentRequest
+  ): Promise<RiskAssessmentEntryResponse> =>
+    apiClient.put<RiskAssessmentEntryResponse>(
+      `/students/${studentId}/risk-assessments/${assessmentId}`,
+      body
+    ),
+  archive: (
+    studentId: string,
+    assessmentId: string
+  ): Promise<RiskAssessmentEntryResponse> =>
+    apiClient.post<RiskAssessmentEntryResponse>(
+      `/students/${studentId}/risk-assessments/${assessmentId}/archive`
+    ),
+  pdfUrl: (studentId: string, assessmentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/risk-assessments/${assessmentId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/risk-assessments/pdf`),
 };
 
 export const receptionReportApi = {

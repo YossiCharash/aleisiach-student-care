@@ -1011,6 +1011,41 @@ update). API: `GET/PUT /students/{id}/medical-summary`, `GET /pdf`.
 
 ---
 
+## ADR-039 — Risk management ("ניהול סיכונים"): a dated, archivable table per student
+
+**Date:** 2026-11-10
+**Decision (per the user):** A new student tab **"ניהול סיכונים"**, modeled on the client's risk
+management form, placed **after the incident report**. It is a **dated series with history** (newest
+first, the newest expanded), with **edit**, archive-only **delete**, a **per-table PDF** and a
+**combined PDF** (shared `DocumentShell`).
+
+- **Table columns (from the form):** תחום הסיכון · מהות הסיכון ודוגמא לאירועים · רמת סיכון ·
+  תוכנית ההתערבות המוצעת ולו״ז · אחראי ביצוע.
+- **Risk domains are copied from the form** and grouped into three sections — **רפואי** (eating /
+  drinking / swallowing · over/under weight · epilepsy/diabetes/asthma · refusing medical treatment ·
+  instability), **התנהגותי** (escaping/wandering · self/environment/property harm · compulsive
+  behavior · sexual-social risk · victim behavior) and **עצמאות** (community mobility · orientation
+  and transport · staying home alone · unsupervised in the center · taking medication independently
+  · cleaning materials and sharp tools · leaving the center alone). They are a fixed code catalog
+  (like the medical-summary options), not Settings-managed taxonomy.
+- **Left out on purpose (per the user):** the form's "נקודות חוזקה", "דילמות" and "עמדת הצוות" rows,
+  and the form's header block (participants, plan-update date etc.) — the table's own date replaces it.
+- **Per row:** nature and intervention plan are free text; level is one of **נמוך / בינוני / גבוה /
+  לא רלוונטי** (or unset); **אחראי ביצוע is a multi-select of the institution's users** (disabled
+  users are not offered; ids are validated server-side against the student's institution).
+- **Access (decided):** **every role reads**; managers write any student; **instructors write students
+  in their own workshop** (other workshop = 404); professional teachers read only. **Delete (archive)
+  is manager-only.** A writer-only endpoint lists the responsible-user candidates (id + name only).
+
+**Data model:** `risk_assessments` (migration `0040_risk_assessments`): `id`, `student_id`,
+`assessment_date`, `items` (JSON list, one row per catalog domain), `author_id`, timestamps, archive
+columns; `TenantScoped` with the composite `(student_id, institution_id)` FK. Purged with the student
+(ADR-031). Audit entries list `assessment_date` / `items.<domain>` names only, never values. API:
+`GET/POST /students/{id}/risk-assessments`, `GET /responsible-candidates`, `PUT /{assessment_id}`,
+`POST /{assessment_id}/archive`, `GET /pdf` (combined) and `GET /{assessment_id}/pdf`.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.
