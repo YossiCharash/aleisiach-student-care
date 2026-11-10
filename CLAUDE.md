@@ -138,6 +138,7 @@ on purpose: it has no access to any of these.
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
+| Incident report (Form 35) | Read/Write · archive | Read/Write (own class) | Read |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
 | Tab 4 — guardianship & legal status (sensitive) | All | Own class | **Blocked** |
 | Settings — management (users · classes · taxonomy · diagnoses · Tab 4 headings) | ✔ | ✘ | ✘ |
@@ -254,7 +255,7 @@ on purpose: it has no access to any of these.
   §3 permission matrix). The UI display order (decided 2026-09-08; reception report inserted
   2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027) is: **details ·
   reception report (managers only) · program · team meetings · social-worker note ·
-  functional-report summary · supported employment (managers only)**, and **details is the
+  functional-report summary · incident report · supported employment (managers only)**, and **details is the
   default tab**.
   - **Reception report** (דוח קבלה — טופס 39): a **manager-only** tab (read + write manager-only;
     instructors and professional teachers are blocked, so the tab is hidden and the API answers
@@ -343,6 +344,16 @@ on purpose: it has no access to any of these.
     (the professional teacher is *not* blocked here). Server-side **WeasyPrint PDF** export. (Changed
     2026-09-08, ADR-020 — superseded the earlier read-only surfacing of the Tab 4 emotional-identity
     and communication cards; those cards stay in Tab 4.)
+  - **Incident report** (אירוע חריג — טופס 35): placed **after the functional report**. A **dated,
+    versioned series** like Tab 5: a **"דיווח אירוע חריג חדש"** button opens the Form 35 fields —
+    event date (default today) · time · place · reporter · internal/external type · nature of the
+    event (multi-select + "אחר" text) · description (required) · staff present · affected service
+    recipients · warning signs · actions taken · "referred to" decision (multi-select + "אחר" text) ·
+    reasons · manager-updated date/time · four lessons-learned fields · form filler name + role. The
+    **recipient line (שם + ת"ז) is auto-filled** from the student. History newest first, **edit**,
+    archive-only **delete (manager only)**, **per-report + combined PDF** with an empty signature line.
+    **Managers write any student; instructors write their own workshop's students; professional
+    teachers read.** (Added 2026-11-10, ADR-037.)
   - **Supported employment** (עבודה נתמכת — טופס 46): a **manager-only** tab (read + write
     manager-only; instructors and professional teachers are blocked, so the tab is hidden and the
     API answers 403), placed **last, after the functional report**. **One stored record per

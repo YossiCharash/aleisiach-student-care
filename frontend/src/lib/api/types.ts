@@ -455,6 +455,66 @@ export interface FunctionalReportCreateRequest extends FunctionalReportSections 
   report_date: string;
 }
 
+export type IncidentReportType = "internal" | "external";
+
+export type IncidentNature =
+  | "accident_injury_death"
+  | "violence"
+  | "property_damage"
+  | "prohibited_substances"
+  | "other";
+
+export type IncidentReferral =
+  | "internal_event"
+  | "guardian"
+  | "welfare_social_worker"
+  | "statutory_social_worker"
+  | "police"
+  | "framework_supervisor"
+  | "other";
+
+export interface IncidentReportFields {
+  event_date: string;
+  event_time: string | null;
+  location: string;
+  reporter_name_role: string;
+  report_type: IncidentReportType | null;
+  natures: IncidentNature[];
+  nature_other: string;
+  description: string;
+  staff_present: string;
+  affected_service_recipients: string;
+  warning_signs: string;
+  actions_taken: string;
+  referrals: IncidentReferral[];
+  referral_other: string;
+  decision_reasons: string;
+  manager_updated_date: string | null;
+  manager_updated_time: string | null;
+  incident_causes: string;
+  was_preventable: string;
+  lessons_learned: string;
+  corrective_action_plan: string;
+  filler_name: string;
+  filler_role: string;
+}
+
+export interface IncidentReportEntryResponse extends IncidentReportFields {
+  id: string;
+  student_id: string;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IncidentReportHistoryResponse {
+  student_id: string;
+  student_name: string;
+  national_id: string | null;
+  entries: IncidentReportEntryResponse[];
+}
+
 export interface ReceptionChecklistItem {
   done: boolean;
   note: string;

@@ -5,6 +5,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from backend.app.models.base import Base
 from backend.app.models.client.functional_report_entry import FunctionalReportEntry
+from backend.app.models.client.incident_report import IncidentReport
 from backend.app.models.client.program import Program
 from backend.app.models.client.program_plan import ProgramPlan
 from backend.app.models.client.reception_report import ReceptionReport
@@ -23,6 +24,7 @@ _CHILD_MODELS: tuple[tuple[type[Base], InstrumentedAttribute[uuid.UUID]], ...] =
     (StudentExtraSection, StudentExtraSection.student_id),
     (StudentDetails, StudentDetails.student_id),
     (FunctionalReportEntry, FunctionalReportEntry.student_id),
+    (IncidentReport, IncidentReport.student_id),
     (ReceptionReport, ReceptionReport.student_id),
     (SupportedEmployment, SupportedEmployment.student_id),
 )

@@ -8,6 +8,7 @@ from backend.app.client.students.student_purge_repository import StudentPurgeRep
 from backend.app.models.base import Base
 from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.functional_report_entry import FunctionalReportEntry
+from backend.app.models.client.incident_report import IncidentReport
 from backend.app.models.client.label import Label
 from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
 from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
@@ -162,6 +163,14 @@ def _seed_full_subtree(session: Session) -> uuid.UUID:
         )
     )
     session.add(
+        IncidentReport(
+            student_id=student.id,
+            institution_id=_INSTITUTION_ID,
+            event_date=date.today(),
+            author_id=author.id,
+        )
+    )
+    session.add(
         ReceptionReport(
             student_id=student.id,
             institution_id=_INSTITUTION_ID,
@@ -212,6 +221,7 @@ def test_purge_removes_the_whole_student_subtree(db_session: Session) -> None:
         ProgramPlanSolution,
         SocialNoteEntry,
         FunctionalReportEntry,
+        IncidentReport,
         ReceptionReport,
         SupportedEmployment,
         StudentExtraSection,
