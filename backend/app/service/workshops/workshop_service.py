@@ -35,22 +35,22 @@ class WorkshopService:
         return self._to_responses(self._workshops.list_archived())
 
     def create(self, request: WorkshopCreateRequest, actor_id: uuid.UUID) -> WorkshopResponse:
-        instructor_ids = self._require_instructors_valid(request.instructor_ids)
+        instructors = self._require_instructors(request.instructor_ids)
         entity = Workshop(name=request.name, color=request.color)
         self._workshops.add(entity)
         self._audit.record(actor_id, AuditAction.CREATE, entity.id, ["name", "color"])
-        self._assign_instructors(entity.id, instructor_ids, actor_id)
+        self._assign_instructors(entity.id, instructors, actor_id)
         return self._to_response(entity)
 
     def update(
         self, workshop_id: uuid.UUID, request: WorkshopUpdateRequest, actor_id: uuid.UUID
     ) -> WorkshopResponse:
         entity = self._require(workshop_id)
-        instructor_ids = self._require_instructors_valid(request.instructor_ids)
+        instructors = self._require_instructors(request.instructor_ids)
         entity.name = request.name
         entity.color = request.color
         self._audit.record(actor_id, AuditAction.UPDATE, entity.id, ["name", "color"])
-        self._assign_instructors(entity.id, instructor_ids, actor_id)
+        self._assign_instructors(entity.id, instructors, actor_id)
         return self._to_response(entity)
 
     def archive(self, workshop_id: uuid.UUID, actor_id: uuid.UUID) -> WorkshopResponse:
@@ -71,17 +71,19 @@ class WorkshopService:
         return self._to_response(entity)
 
     def _assign_instructors(
-        self, workshop_id: uuid.UUID, instructor_ids: set[uuid.UUID], actor_id: uuid.UUID
+        self, workshop_id: uuid.UUID, instructors: list[User], actor_id: uuid.UUID
     ) -> None:
-        for user_id in self._workshops.assign_instructors(workshop_id, instructor_ids):
+        for user_id in self._workshops.assign_instructors(workshop_id, instructors):
             self._permissions_audit.record(actor_id, AuditAction.UPDATE, user_id, ["workshop_id"])
 
-    def _require_instructors_valid(self, instructor_ids: list[uuid.UUID]) -> set[uuid.UUID]:
-        unique = set(instructor_ids)
-        for instructor_id in unique:
-            if self._workshops.get_instructor(instructor_id) is None:
+    def _require_instructors(self, instructor_ids: list[uuid.UUID]) -> list[User]:
+        instructors: list[User] = []
+        for instructor_id in dict.fromkeys(instructor_ids):
+            instructor = self._workshops.get_instructor(instructor_id)
+            if instructor is None:
                 raise NotFoundError("instructor")
-        return unique
+            instructors.append(instructor)
+        return instructors
 
     def _to_responses(self, entities: list[Workshop]) -> list[WorkshopResponse]:
         assigned = self._workshops.instructors_by_workshop()

@@ -30,13 +30,21 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [instructorIds, setInstructorIds] = useState<string[]>([]);
 
+  const initialName = workshop?.name ?? "";
+  const initialColor = workshop?.color ?? DEFAULT_COLOR;
+  const initialInstructorKey = (workshop?.instructors ?? [])
+    .map((instructor) => instructor.id)
+    .join(",");
+
   useEffect(() => {
     if (open) {
-      setName(workshop?.name ?? "");
-      setColor(workshop?.color ?? DEFAULT_COLOR);
-      setInstructorIds(workshop?.instructors.map((instructor) => instructor.id) ?? []);
+      setName(initialName);
+      setColor(initialColor);
+      setInstructorIds(
+        initialInstructorKey === "" ? [] : initialInstructorKey.split(",")
+      );
     }
-  }, [open, workshop]);
+  }, [open, initialName, initialColor, initialInstructorKey]);
 
   const instructorsQuery = useQuery({
     queryKey: queryKeys.users,

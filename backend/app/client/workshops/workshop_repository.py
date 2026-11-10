@@ -71,19 +71,19 @@ class WorkshopRepository:
         return assigned
 
     def assign_instructors(
-        self, workshop_id: uuid.UUID, instructor_ids: set[uuid.UUID]
+        self, workshop_id: uuid.UUID, instructors: list[User]
     ) -> list[uuid.UUID]:
         affected: list[uuid.UUID] = []
+        chosen_ids = {instructor.id for instructor in instructors}
         current = self._session.scalars(
             select(User).where(User.role == UserRole.INSTRUCTOR, User.workshop_id == workshop_id)
         ).all()
         for holder in current:
-            if holder.id not in instructor_ids:
+            if holder.id not in chosen_ids:
                 holder.workshop_id = None
                 affected.append(holder.id)
-        for instructor_id in instructor_ids:
-            chosen = self.get_instructor(instructor_id)
-            if chosen is not None and chosen.workshop_id != workshop_id:
+        for chosen in instructors:
+            if chosen.workshop_id != workshop_id:
                 chosen.workshop_id = workshop_id
                 affected.append(chosen.id)
         self._session.flush()
