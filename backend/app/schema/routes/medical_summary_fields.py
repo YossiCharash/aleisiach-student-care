@@ -1,9 +1,6 @@
 from datetime import date
-from typing import Self
 
-from pydantic import BaseModel, Field, model_validator
-
-from backend.app.models.client.medical_summary_options import MEDICAL_SUMMARY_OPTIONS
+from pydantic import BaseModel, Field
 
 _MAX_TEXT = 5000
 _MAX_SHORT = 300
@@ -63,17 +60,6 @@ class MedicalSummaryFields(BaseModel):
     community_social_worker: str = Field(default="", max_length=_MAX_SHORT)
     social_worker_phone: str = Field(default="", max_length=_MAX_SHORT)
     filler_role: str = Field(default="", max_length=_MAX_SHORT)
-
-    @model_validator(mode="after")
-    def _known_unique_options(self) -> Self:
-        for group, options in MEDICAL_SUMMARY_OPTIONS.items():
-            allowed = {value for value, _ in options}
-            chosen: list[str] = getattr(self, group)
-            unknown = [value for value in chosen if value not in allowed]
-            if unknown:
-                raise ValueError(f"ערך לא מוכר בשדה {group}")
-            setattr(self, group, list(dict.fromkeys(chosen)))
-        return self
 
     @classmethod
     def field_names(cls) -> tuple[str, ...]:

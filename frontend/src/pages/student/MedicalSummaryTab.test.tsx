@@ -146,4 +146,23 @@ describe("MedicalSummaryTab", () => {
     expect(body).not.toHaveProperty("student_name");
     expect(await screen.findByText("בוטנים")).toBeInTheDocument();
   });
+
+  it("clears the detail text when its option is unticked", async () => {
+    getMock.mockResolvedValue({
+      ...filledSummary,
+      diet: ["other"],
+      diet_other: "ללא גלוטן",
+    });
+    upsertMock.mockResolvedValue(filledSummary);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("עריכה"));
+    await userEvent.click(screen.getByLabelText("אחר"));
+    await userEvent.click(screen.getByText("שמירה"));
+
+    const [, body] = upsertMock.mock.calls[0];
+    expect(body.diet).toEqual([]);
+    expect(body.diet_other).toBe("");
+  });
 });

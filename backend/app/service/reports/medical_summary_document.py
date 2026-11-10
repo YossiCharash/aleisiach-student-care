@@ -45,6 +45,11 @@ _GOOD_TO_KNOW = (
     ("general_notes", "הערות כלליות"),
 )
 
+_OTHER_TEXTS: dict[str, tuple[str, str]] = {
+    "communication": ("alternative", "communication_other"),
+    "diet": ("other", "diet_other"),
+}
+
 _MEDICATION_NOTE = "תרופות קבועות ומידע נוסף מפורט במכתב הרפואי המצורף"
 
 
@@ -108,11 +113,10 @@ class MedicalSummaryDocument:
         return (
             "<h2>תפקוד ותקשורת</h2>"
             + groups
-            + self._shell.field("תקשורת חליפית — פירוט", summary.communication_other)
             + self._yes_no("האכלה באמצעות גסטרוסטום", summary.gastrostomy_feeding)
             + self._shell.field("פורמולה", summary.formula)
             + "".join(self._group(title, group, summary) for group, title in _NOURISHMENT_GROUPS)
-            + self._group("דיאטה", "diet", summary, summary.diet_other)
+            + self._group("דיאטה", "diet", summary)
             + self._group("שליטה על סוגרים", "continence", summary)
         )
 
@@ -154,29 +158,29 @@ class MedicalSummaryDocument:
             for field, title in sections
         )
 
-    def _group(
-        self, title: str, group: str, summary: MedicalSummaryResponse, other_text: str = ""
-    ) -> str:
+    def _group(self, title: str, group: str, summary: MedicalSummaryResponse) -> str:
         chosen: list[str] = getattr(summary, group)
-        return self._checklist(title, MEDICAL_SUMMARY_OPTIONS[group], chosen, other_text)
+        detail_value, detail_field = _OTHER_TEXTS.get(group, ("", ""))
+        details = {detail_value: getattr(summary, detail_field)} if detail_field else {}
+        return self._checklist(title, MEDICAL_SUMMARY_OPTIONS[group], chosen, details)
 
     def _yes_no(self, title: str, value: bool | None) -> str:
         chosen = [] if value is None else ["yes" if value else "no"]
-        return self._checklist(title, _YES_NO, chosen, "")
+        return self._checklist(title, _YES_NO, chosen, {})
 
     def _checklist(
         self,
         title: str,
         options: Sequence[tuple[str, str]],
         chosen: Sequence[str],
-        other_text: str,
+        details: dict[str, str],
     ) -> str:
         items = []
         for value, label in options:
             checked = value in chosen
             text = escape(label)
-            if value == "other" and checked and other_text:
-                text += f": {escape(other_text)}"
+            if checked and details.get(value):
+                text += f": {escape(details[value])}"
             box = "box checked" if checked else "box"
             items.append(f'<span class="option"><span class="{box}"></span>{text}</span>')
         return (

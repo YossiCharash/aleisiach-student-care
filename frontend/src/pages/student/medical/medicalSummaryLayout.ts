@@ -236,16 +236,19 @@ export const SECTIONS: LayoutSection[] = [
   },
 ];
 
-const RESPONSE_ONLY_KEYS: (keyof MedicalSummaryResponse)[] = [
-  "student_id",
-  "exists",
-  "student_name",
-  "national_id",
-  "date_of_birth",
-  "address",
-  "written_by_name",
-  "updated_at",
-];
+const RESPONSE_ONLY_KEYS: Record<
+  Exclude<keyof MedicalSummaryResponse, keyof MedicalSummaryFields>,
+  true
+> = {
+  student_id: true,
+  exists: true,
+  student_name: true,
+  national_id: true,
+  date_of_birth: true,
+  address: true,
+  written_by_name: true,
+  updated_at: true,
+};
 
 const SHORT_MAX = 300;
 const LONG_MAX = 5000;
@@ -256,7 +259,7 @@ export function maxLength(item: { multiline?: boolean }): number {
 
 export function toFields(summary: MedicalSummaryResponse): MedicalSummaryFields {
   const fields: Partial<MedicalSummaryResponse> = { ...summary };
-  for (const key of RESPONSE_ONLY_KEYS) {
+  for (const key of Object.keys(RESPONSE_ONLY_KEYS) as (keyof MedicalSummaryResponse)[]) {
     delete fields[key];
   }
   return fields as MedicalSummaryFields;

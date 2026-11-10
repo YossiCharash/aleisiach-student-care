@@ -12,7 +12,7 @@ from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.routes.pdf import BrandDep, Issue, RendererDep
 from backend.app.routes.security import Manager, require_tenant
-from backend.app.schema.routes.medical_summary_fields import MedicalSummaryFields
+from backend.app.schema.routes.medical_summary_request import MedicalSummaryRequest
 from backend.app.schema.routes.medical_summary_response import MedicalSummaryResponse
 from backend.app.service.audit.audit_logger import AuditLogger
 from backend.app.service.reports.medical_summary_document import TITLE, MedicalSummaryDocument
@@ -55,7 +55,7 @@ def get_medical_summary(
 @router.put("", response_model=MedicalSummaryResponse)
 def upsert_medical_summary(
     student_id: uuid.UUID,
-    request: MedicalSummaryFields,
+    request: MedicalSummaryRequest,
     service: ServiceDep,
     manager: Manager,
 ) -> MedicalSummaryResponse:

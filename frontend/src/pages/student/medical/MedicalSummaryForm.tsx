@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
+import { toggled } from "@/lib/utils/arrays";
 import {
   OPTIONS,
   SECTIONS,
@@ -23,10 +24,6 @@ const YES_NO: { value: boolean; label: string }[] = [
   { value: true, label: "כן" },
   { value: false, label: "לא" },
 ];
-
-function toggled(values: string[], value: string, on: boolean): string[] {
-  return on ? [...values, value] : values.filter((item) => item !== value);
-}
 
 export function MedicalSummaryForm({
   initial,
@@ -163,9 +160,12 @@ function FormItem({
                   type="checkbox"
                   className="h-4 w-4"
                   checked={chosen.includes(option.value)}
-                  onChange={(event) =>
-                    update(item.key, toggled(chosen, option.value, event.target.checked))
-                  }
+                  onChange={(event) => {
+                    update(item.key, toggled(chosen, option.value, event.target.checked));
+                    if (other && option.value === other.when && !event.target.checked) {
+                      update(other.key, "");
+                    }
+                  }}
                 />
                 {option.label}
               </label>

@@ -76,3 +76,11 @@ def test_carries_the_institution_name() -> None:
     html = MedicalSummaryDocument(BrandSettings()).to_html(_summary(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html
+
+
+def test_communication_detail_shows_only_beside_a_ticked_alternative() -> None:
+    ticked = _html(communication=["alternative"], communication_other="לוח תקשורת")
+    unticked = _html(communication=["independent"], communication_other="לוח תקשורת")
+
+    assert "מתקשר בתקשורת חליפית (פלט / לוח / אחר): לוח תקשורת" in ticked
+    assert "לוח תקשורת" not in unticked

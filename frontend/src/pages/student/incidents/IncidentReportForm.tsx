@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
+import { toggled } from "@/lib/utils/arrays";
 import {
   ATTACHMENT_NOTE,
   EVENT_SECTIONS,
@@ -21,10 +22,6 @@ type Update = <K extends keyof IncidentReportFields>(
   key: K,
   value: IncidentReportFields[K]
 ) => void;
-
-function toggled<T>(values: T[], value: T, on: boolean): T[] {
-  return on ? [...values, value] : values.filter((item) => item !== value);
-}
 
 export function IncidentReportForm({
   initial,
