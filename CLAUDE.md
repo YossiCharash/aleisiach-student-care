@@ -263,7 +263,11 @@ on purpose: it has no access to any of these.
   - **Medical information summary** (סיכום מידע רפואי — "מידע ונתונים בריאותיים"): a
     **manager-only** tab (read + write manager-only; instructors and professional teachers are
     blocked, so the tab is hidden and the API answers 403), placed **second, right after details**.
-    **One stored record per student, updated in place.** Identity (שם · ת"ז · תאריך לידה · כתובת)
+    A **dated, versioned series** (ADR-040): a **"סיכום מידע רפואי חדש"** button opens the form
+    **prefilled from the latest summary** with a **date picker** (defaults to today); saving appends a
+    new dated summary to the **history** (newest first). A manager may **edit** a summary (date/author
+    stay) and **delete** one — **archive-only**. **PDF per summary** and a **combined report across all
+    dates**. (Changed 2026-11-10 — superseded one record updated in place.) Identity (שם · ת"ז · תאריך לידה · כתובת)
     is **auto-filled** from the student + Tab 4 details; phone and "מתגורר ב" are typed. Option rows
     (ניידות, הבנה, דיבור, ראייה, שמיעה, אכילה, דיאטה, שליטה על סוגרים …) are **multi-select
     checkboxes**; yes/no questions (אפילפסיה, תחלואה כפולה, גסטרוסטום, ביטוח נוסף) are כן/לא; plus

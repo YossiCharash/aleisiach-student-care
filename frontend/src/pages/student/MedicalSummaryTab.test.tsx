@@ -4,103 +4,72 @@ import userEvent from "@testing-library/user-event";
 import { renderWithClient } from "@/test/renderWithClient";
 import { MedicalSummaryTab } from "@/pages/student/MedicalSummaryTab";
 import { medicalSummaryApi } from "@/lib/api/endpoints";
-import type { MedicalSummaryResponse } from "@/lib/api/types";
+import { formatDate } from "@/lib/utils/hebrew";
+import { EMPTY_FIELDS } from "@/pages/student/medical/medicalSummaryLayout";
+import type {
+  MedicalSummaryEntryResponse,
+  MedicalSummaryHistoryResponse,
+} from "@/lib/api/types";
 
 vi.mock("@/lib/api/endpoints", () => ({
   medicalSummaryApi: {
-    get: vi.fn(),
-    upsert: vi.fn(),
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    archive: vi.fn(),
     pdfUrl: vi.fn(() => ""),
+    combinedPdfUrl: vi.fn(() => ""),
   },
 }));
 
-const getMock = vi.mocked(medicalSummaryApi.get);
-const upsertMock = vi.mocked(medicalSummaryApi.upsert);
+const listMock = vi.mocked(medicalSummaryApi.list);
+const createMock = vi.mocked(medicalSummaryApi.create);
+const updateMock = vi.mocked(medicalSummaryApi.update);
+const archiveMock = vi.mocked(medicalSummaryApi.archive);
 
-const emptySummary: MedicalSummaryResponse = {
+const blankEntry: MedicalSummaryEntryResponse = {
+  id: "e1",
   student_id: "s1",
-  exists: false,
-  student_name: "נועה כהן",
-  national_id: "123456782",
-  date_of_birth: "2000-05-01",
-  address: "רחוב הגפן 3",
-  written_by_name: null,
-  updated_at: null,
-  phone: "",
-  lives_with: [],
-  allergies: "",
-  known_syndrome: "",
-  background_diseases: "",
-  hospitalizations_surgeries: "",
-  dental_treatment: [],
-  dentures: [],
-  epilepsy_known: null,
-  epilepsy_seizure_nature: "",
-  epilepsy_seizure_frequency: "",
-  epilepsy_last_seizure: null,
-  epilepsy_seizure_treatment: "",
-  dual_diagnosis_known: null,
-  dual_diagnosis_expression: "",
-  dual_diagnosis_frequency: "",
-  dual_diagnosis_treatment: "",
-  skin_integrity: [],
-  skin_known_issues: "",
-  comprehension: [],
-  communication: [],
-  communication_other: "",
-  speech: [],
-  vision: [],
-  hearing: [],
-  functioning: [],
-  mobility: [],
-  eating: [],
-  gastrostomy_feeding: null,
-  formula: "",
-  chewing_swallowing: [],
-  food_texture: [],
-  diet: [],
-  diet_other: "",
-  continence: [],
-  loves: "",
-  calming: "",
-  angering: "",
-  frightening: "",
-  stress_behavior: "",
-  care_recommendations: "",
-  general_notes: "",
-  guardian_name: "",
-  guardian_relation: "",
-  guardian_phone: "",
-  health_fund: "",
-  supplemental_insurance: null,
-  supplemental_insurance_detail: "",
-  attending_doctor: "",
-  care_nurse: "",
-  community_social_worker: "",
-  social_worker_phone: "",
-  filler_role: "",
+  summary_date: "2026-11-01",
+  author_id: "u1",
+  author_name: "מנהלת",
+  created_at: "2026-11-01T10:00:00Z",
+  updated_at: "2026-11-01T10:00:00Z",
+  ...EMPTY_FIELDS,
 };
 
-const filledSummary: MedicalSummaryResponse = {
-  ...emptySummary,
-  exists: true,
+const filledEntry: MedicalSummaryEntryResponse = {
+  ...blankEntry,
   allergies: "בוטנים",
   mobility: ["escort", "aids"],
   diet: ["other"],
   diet_other: "ללא גלוטן",
   epilepsy_known: false,
-  written_by_name: "מנהלת",
-  updated_at: "2026-11-10T10:00:00Z",
 };
+
+function historyOf(
+  ...entries: MedicalSummaryEntryResponse[]
+): MedicalSummaryHistoryResponse {
+  return {
+    student_id: "s1",
+    student_name: "נועה כהן",
+    national_id: "123456782",
+    date_of_birth: "2000-05-01",
+    address: "רחוב הגפן 3",
+    entries,
+  };
+}
 
 describe("MedicalSummaryTab", () => {
   beforeEach(() => {
-    getMock.mockReset();
-    upsertMock.mockReset();
+    listMock.mockReset();
+    createMock.mockReset();
+    updateMock.mockReset();
+    archiveMock.mockReset();
   });
 
   it("shows the auto-filled identity and the empty state", async () => {
-    getMock.mockResolvedValue(emptySummary);
+    listMock.mockResolvedValue(historyOf());
 
     renderWithClient(<MedicalSummaryTab studentId="s1" />);
 
@@ -112,8 +81,8 @@ describe("MedicalSummaryTab", () => {
     expect(screen.getByText("רחוב הגפן 3")).toBeInTheDocument();
   });
 
-  it("shows the chosen options and texts when a summary exists", async () => {
-    getMock.mockResolvedValue(filledSummary);
+  it("shows the chosen options and texts of the latest summary", async () => {
+    listMock.mockResolvedValue(historyOf(filledEntry));
 
     renderWithClient(<MedicalSummaryTab studentId="s1" />);
 
@@ -125,44 +94,107 @@ describe("MedicalSummaryTab", () => {
     expect(screen.getByText("לא")).toBeInTheDocument();
   });
 
-  it("lets a manager tick options, type text and save", async () => {
-    getMock.mockResolvedValue(emptySummary);
-    upsertMock.mockResolvedValue(filledSummary);
+  it("lists every dated summary with the newest one open", async () => {
+    listMock.mockResolvedValue(
+      historyOf(
+        { ...filledEntry, id: "e2", summary_date: "2026-11-09", allergies: "חלב" },
+        filledEntry
+      )
+    );
 
     renderWithClient(<MedicalSummaryTab studentId="s1" />);
 
-    await userEvent.click(await screen.findByText("מילוי הטופס"));
+    expect(await screen.findByText(formatDate("2026-11-09"))).toBeInTheDocument();
+    expect(screen.getByText(formatDate("2026-11-01"))).toBeInTheDocument();
+    expect(screen.getByText("חלב")).toBeInTheDocument();
+    expect(screen.queryByText("בוטנים")).not.toBeInTheDocument();
+    expect(screen.getByText("דוח מרוכז")).toBeInTheDocument();
+  });
+
+  it("creates a new dated summary from an empty form", async () => {
+    listMock.mockResolvedValue(historyOf());
+    createMock.mockResolvedValue(filledEntry);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("סיכום מידע רפואי חדש"));
     await userEvent.type(screen.getByLabelText("רגישויות / אלרגיה ידועה"), "בוטנים");
     await userEvent.click(screen.getByLabelText("זקוק לליווי"));
     await userEvent.click(screen.getByLabelText("מתבטא במילים בודדות"));
+    const date = screen.getByLabelText("תאריך הסיכום");
+    await userEvent.clear(date);
+    await userEvent.type(date, "2026-11-05");
     await userEvent.click(screen.getByText("שמירה"));
 
-    expect(upsertMock).toHaveBeenCalledTimes(1);
-    const [studentId, body] = upsertMock.mock.calls[0];
+    expect(createMock).toHaveBeenCalledTimes(1);
+    const [studentId, body] = createMock.mock.calls[0];
     expect(studentId).toBe("s1");
+    expect(body.summary_date).toBe("2026-11-05");
     expect(body.allergies).toBe("בוטנים");
     expect(body.mobility).toEqual(["escort"]);
     expect(body.communication).toEqual(["single_words"]);
-    expect(body).not.toHaveProperty("student_name");
-    expect(await screen.findByText("בוטנים")).toBeInTheDocument();
   });
 
-  it("clears the detail text when its option is unticked", async () => {
-    getMock.mockResolvedValue({
-      ...filledSummary,
-      diet: ["other"],
-      diet_other: "ללא גלוטן",
-    });
-    upsertMock.mockResolvedValue(filledSummary);
+  it("prefills a new summary from the latest one", async () => {
+    listMock.mockResolvedValue(historyOf(filledEntry));
+    createMock.mockResolvedValue(filledEntry);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("סיכום מידע רפואי חדש"));
+    expect(screen.getByLabelText("רגישויות / אלרגיה ידועה")).toHaveValue("בוטנים");
+    expect(screen.getAllByText("מספר זהות")).toHaveLength(1);
+    await userEvent.click(screen.getByText("שמירה"));
+
+    const [, body] = createMock.mock.calls[0];
+    expect(body.mobility).toEqual(["escort", "aids"]);
+    expect(body).not.toHaveProperty("id");
+    expect(body).not.toHaveProperty("author_name");
+  });
+
+  it("drops retired option values when prefilling a new summary", async () => {
+    listMock.mockResolvedValue(
+      historyOf({ ...filledEntry, mobility: ["escort", "retired_value"] })
+    );
+    createMock.mockResolvedValue(filledEntry);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("סיכום מידע רפואי חדש"));
+    await userEvent.click(screen.getByText("שמירה"));
+
+    const [, body] = createMock.mock.calls[0];
+    expect(body.mobility).toEqual(["escort"]);
+  });
+
+  it("edits an existing summary and clears an unticked detail", async () => {
+    listMock.mockResolvedValue(historyOf(filledEntry));
+    updateMock.mockResolvedValue(filledEntry);
 
     renderWithClient(<MedicalSummaryTab studentId="s1" />);
 
     await userEvent.click(await screen.findByText("עריכה"));
+    expect(screen.queryByLabelText("תאריך הסיכום")).not.toBeInTheDocument();
+    expect(screen.getAllByText("מספר זהות")).toHaveLength(1);
     await userEvent.click(screen.getByLabelText("אחר"));
     await userEvent.click(screen.getByText("שמירה"));
 
-    const [, body] = upsertMock.mock.calls[0];
+    const [studentId, entryId, body] = updateMock.mock.calls[0];
+    expect(studentId).toBe("s1");
+    expect(entryId).toBe("e1");
     expect(body.diet).toEqual([]);
     expect(body.diet_other).toBe("");
+  });
+
+  it("archives a summary after confirmation", async () => {
+    listMock.mockResolvedValue(historyOf(filledEntry));
+    archiveMock.mockResolvedValue(filledEntry);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("מחיקה"));
+    await userEvent.click(screen.getByText("כן, למחוק"));
+
+    expect(archiveMock).toHaveBeenCalledWith("s1", "e1");
   });
 });

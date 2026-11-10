@@ -1,8 +1,11 @@
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
-from backend.app.schema.routes.medical_summary_response import MedicalSummaryResponse
+from backend.app.schema.routes.medical_summary_entry_response import MedicalSummaryEntryResponse
+from backend.app.schema.routes.medical_summary_history_response import (
+    MedicalSummaryHistoryResponse,
+)
 from backend.app.schema.service.issue_context import IssueContext
 from backend.app.service.reports.medical_summary_document import MedicalSummaryDocument
 
@@ -16,28 +19,42 @@ def _issue(institution_name: str = "מוסד בדיקה") -> IssueContext:
     )
 
 
-def _summary(**overrides: object) -> MedicalSummaryResponse:
+def _entry(**overrides: object) -> MedicalSummaryEntryResponse:
+    now = datetime(2026, 11, 10, tzinfo=UTC)
     base: dict[str, object] = {
+        "id": uuid.uuid4(),
         "student_id": uuid.uuid4(),
-        "exists": True,
-        "student_name": "נועה כהן",
-        "national_id": "123456782",
-        "date_of_birth": date(2000, 5, 1),
-        "address": "רחוב הגפן 3",
+        "summary_date": date(2026, 11, 1),
+        "author_id": uuid.uuid4(),
+        "author_name": "מנהלת",
+        "created_at": now,
+        "updated_at": now,
         "allergies": "בוטנים",
         "mobility": ["escort"],
         "diet": ["other"],
         "diet_other": "ללא גלוטן",
         "epilepsy_known": False,
-        "written_by_name": "מנהלת",
         "filler_role": "אחות",
     }
     base.update(overrides)
-    return MedicalSummaryResponse.model_validate(base)
+    return MedicalSummaryEntryResponse.model_validate(base)
+
+
+def _history(*entries: MedicalSummaryEntryResponse) -> MedicalSummaryHistoryResponse:
+    return MedicalSummaryHistoryResponse(
+        student_id=uuid.uuid4(),
+        student_name="נועה כהן",
+        national_id="123456782",
+        date_of_birth=date(2000, 5, 1),
+        address="רחוב הגפן 3",
+        entries=list(entries),
+    )
 
 
 def _html(**overrides: object) -> str:
-    return MedicalSummaryDocument(BrandSettings()).to_html(_summary(**overrides), _issue())
+    return MedicalSummaryDocument(BrandSettings()).single_html(
+        _history(_entry(**overrides)), _issue()
+    )
 
 
 def test_html_is_rtl_with_identity_and_sections() -> None:
@@ -73,7 +90,9 @@ def test_html_escapes_free_text() -> None:
 
 
 def test_carries_the_institution_name() -> None:
-    html = MedicalSummaryDocument(BrandSettings()).to_html(_summary(), _issue("בית ספר השרון"))
+    html = MedicalSummaryDocument(BrandSettings()).single_html(
+        _history(_entry()), _issue("בית ספר השרון")
+    )
 
     assert "בית ספר השרון" in html
 
@@ -84,3 +103,24 @@ def test_communication_detail_shows_only_beside_a_ticked_alternative() -> None:
 
     assert "מתקשר בתקשורת חליפית (פלט / לוח / אחר): לוח תקשורת" in ticked
     assert "לוח תקשורת" not in unticked
+
+
+def test_combined_lists_every_entry_under_its_date() -> None:
+    history = _history(
+        _entry(summary_date=date(2026, 6, 1), allergies="חלב"),
+        _entry(summary_date=date(2026, 1, 1), allergies="ביצים"),
+    )
+
+    html = MedicalSummaryDocument(BrandSettings()).combined_html(history, _issue())
+
+    assert "כל התאריכים" in html
+    assert html.index("01/06/2026") < html.index("01/01/2026")
+    assert "חלב" in html
+    assert "ביצים" in html
+    assert html.count('class="entry"') == 2
+
+
+def test_combined_without_entries_says_so() -> None:
+    html = MedicalSummaryDocument(BrandSettings()).combined_html(_history(), _issue())
+
+    assert "אין סיכומי מידע רפואי להצגה" in html

@@ -27,8 +27,10 @@ import type {
   StaffMember,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
+  MedicalSummaryCreateRequest,
+  MedicalSummaryEntryResponse,
   MedicalSummaryFields,
-  MedicalSummaryResponse,
+  MedicalSummaryHistoryResponse,
   SupportedEmploymentResponse,
   SupportedEmploymentUpsertRequest,
   InvitationCommand,
@@ -387,14 +389,34 @@ export const receptionReportApi = {
 };
 
 export const medicalSummaryApi = {
-  get: (studentId: string): Promise<MedicalSummaryResponse> =>
-    apiClient.get<MedicalSummaryResponse>(`/students/${studentId}/medical-summary`),
-  upsert: (
+  list: (studentId: string): Promise<MedicalSummaryHistoryResponse> =>
+    apiClient.get<MedicalSummaryHistoryResponse>(
+      `/students/${studentId}/medical-summary`
+    ),
+  create: (
     studentId: string,
+    body: MedicalSummaryCreateRequest
+  ): Promise<MedicalSummaryEntryResponse> =>
+    apiClient.post<MedicalSummaryEntryResponse>(
+      `/students/${studentId}/medical-summary`,
+      body
+    ),
+  update: (
+    studentId: string,
+    entryId: string,
     body: MedicalSummaryFields
-  ): Promise<MedicalSummaryResponse> =>
-    apiClient.put<MedicalSummaryResponse>(`/students/${studentId}/medical-summary`, body),
-  pdfUrl: (studentId: string): string =>
+  ): Promise<MedicalSummaryEntryResponse> =>
+    apiClient.put<MedicalSummaryEntryResponse>(
+      `/students/${studentId}/medical-summary/${entryId}`,
+      body
+    ),
+  archive: (studentId: string, entryId: string): Promise<MedicalSummaryEntryResponse> =>
+    apiClient.post<MedicalSummaryEntryResponse>(
+      `/students/${studentId}/medical-summary/${entryId}/archive`
+    ),
+  pdfUrl: (studentId: string, entryId: string): string =>
+    buildPdfUrl(`/students/${studentId}/medical-summary/${entryId}/pdf`),
+  combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/medical-summary/pdf`),
 };
 

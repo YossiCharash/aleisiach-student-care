@@ -285,7 +285,7 @@ def test_manager_cannot_promote_a_user_to_super_admin(
         ("post", "/risk-assessments"),
         ("get", "/risk-assessments/pdf"),
         ("get", "/risk-assessments/responsible-candidates"),
-        ("put", "/medical-summary"),
+        ("post", "/medical-summary"),
         ("get", "/medical-summary/pdf"),
     ],
 )
@@ -304,7 +304,7 @@ def test_foreign_student_write_paths_are_not_found(
         "/incident-reports": {"event_date": "2026-06-01", "description": "נחטף"},
         "/risk-assessments": {"assessment_date": "2026-06-01"},
         "/meetings": {"meeting_date": "2026-06-01", "summary": "נחטף"},
-        "/medical-summary": {"allergies": "נחטף"},
+        "/medical-summary": {"summary_date": "2026-06-01", "allergies": "נחטף"},
     }.get(suffix)
     call = getattr(api, method)
     path = f"/students/{foreign.student_id}{suffix}"

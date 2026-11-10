@@ -1,14 +1,19 @@
 from collections.abc import Sequence
+from datetime import date
 from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
 from backend.app.models.client.medical_summary_options import MEDICAL_SUMMARY_OPTIONS
-from backend.app.schema.routes.medical_summary_response import MedicalSummaryResponse
+from backend.app.schema.routes.medical_summary_entry_response import MedicalSummaryEntryResponse
+from backend.app.schema.routes.medical_summary_history_response import (
+    MedicalSummaryHistoryResponse,
+)
 from backend.app.schema.service.document_meta import DocumentMeta
 from backend.app.schema.service.issue_context import IssueContext
 from backend.app.utils.service.document_shell import DocumentShell
 
 TITLE = "סיכום מידע רפואי"
+COMBINED_TITLE = "סיכומי מידע רפואי"
 
 _YES_NO = (("yes", "כן"), ("no", "לא"))
 
@@ -58,30 +63,62 @@ class MedicalSummaryDocument:
         self._brand = brand
         self._shell = DocumentShell(brand)
 
-    def to_html(self, summary: MedicalSummaryResponse, issue: IssueContext) -> str:
-        meta = DocumentMeta.build(TITLE, issue)
+    def single_html(self, history: MedicalSummaryHistoryResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build(TITLE, issue, self._single_date(history))
+        return self._render(history, meta, show_dates=False)
+
+    def combined_html(self, history: MedicalSummaryHistoryResponse, issue: IssueContext) -> str:
+        meta = DocumentMeta.build(f"{COMBINED_TITLE} — כל התאריכים", issue)
+        return self._render(history, meta, show_dates=True)
+
+    def _single_date(self, history: MedicalSummaryHistoryResponse) -> date | None:
+        return history.entries[0].summary_date if len(history.entries) == 1 else None
+
+    def _render(
+        self, history: MedicalSummaryHistoryResponse, meta: DocumentMeta, show_dates: bool
+    ) -> str:
+        if not history.entries:
+            entries = '<p class="empty">אין סיכומי מידע רפואי להצגה.</p>'
+        else:
+            entries = "".join(self._entry(history, entry, show_dates) for entry in history.entries)
+        return self._shell.render(self._css(), meta, entries)
+
+    def _entry(
+        self,
+        history: MedicalSummaryHistoryResponse,
+        summary: MedicalSummaryEntryResponse,
+        show_date: bool,
+    ) -> str:
+        heading = (
+            f'<h1 class="entry-date">{self._shell.value(summary.summary_date)}</h1>'
+            if show_date
+            else ""
+        )
         body = (
-            self._personal(summary)
+            self._personal(history, summary)
             + self._medical(summary)
             + self._functioning(summary)
             + self._good_to_know(summary)
             + self._contacts(summary)
             + self._footer(summary)
         )
-        return self._shell.render(self._css(), meta, body)
+        return f'<div class="entry">{heading}{body}</div>'
 
-    def _personal(self, summary: MedicalSummaryResponse) -> str:
+    def _personal(
+        self, history: MedicalSummaryHistoryResponse, summary: MedicalSummaryEntryResponse
+    ) -> str:
+        birth = self._shell.value(history.date_of_birth) if history.date_of_birth else ""
         return (
             "<h2>פרטים אישיים</h2>"
-            + self._shell.field("שם", summary.student_name)
-            + self._shell.field("ת.ז", summary.national_id)
-            + self._shell.field("ת. לידה", self._date(summary))
-            + self._shell.field("כתובת", summary.address)
+            + self._shell.field("שם", history.student_name)
+            + self._shell.field("ת.ז", history.national_id)
+            + self._shell.field("ת. לידה", birth)
+            + self._shell.field("כתובת", history.address)
             + self._shell.field("טלפון", summary.phone)
             + self._group("מתגורר ב", "lives_with", summary)
         )
 
-    def _medical(self, summary: MedicalSummaryResponse) -> str:
+    def _medical(self, summary: MedicalSummaryEntryResponse) -> str:
         return (
             "<h2>מידע ונתונים בריאותיים</h2>"
             + self._texts(summary, _MEDICAL_TEXTS)
@@ -108,7 +145,7 @@ class MedicalSummaryDocument:
             + f'<p class="note">{escape(_MEDICATION_NOTE)}</p>'
         )
 
-    def _functioning(self, summary: MedicalSummaryResponse) -> str:
+    def _functioning(self, summary: MedicalSummaryEntryResponse) -> str:
         groups = "".join(self._group(title, group, summary) for group, title in _FUNCTION_GROUPS)
         return (
             "<h2>תפקוד ותקשורת</h2>"
@@ -120,10 +157,10 @@ class MedicalSummaryDocument:
             + self._group("שליטה על סוגרים", "continence", summary)
         )
 
-    def _good_to_know(self, summary: MedicalSummaryResponse) -> str:
+    def _good_to_know(self, summary: MedicalSummaryEntryResponse) -> str:
         return "<h2>חשוב לדעת</h2>" + self._texts(summary, _GOOD_TO_KNOW)
 
-    def _contacts(self, summary: MedicalSummaryResponse) -> str:
+    def _contacts(self, summary: MedicalSummaryEntryResponse) -> str:
         return (
             "<h2>אנשי קשר וגורמים מטפלים</h2>"
             + self._shell.field("שם אפוטרופוס", summary.guardian_name)
@@ -138,27 +175,26 @@ class MedicalSummaryDocument:
             + self._shell.field("טלפון עו״ס", summary.social_worker_phone)
         )
 
-    def _footer(self, summary: MedicalSummaryResponse) -> str:
+    def _footer(self, summary: MedicalSummaryEntryResponse) -> str:
         return (
             '<div class="footer">'
-            + self._shell.field("שם ממלא הטופס", summary.written_by_name)
+            + self._shell.field("שם ממלא הטופס", summary.author_name)
             + self._shell.field("תפקידו", summary.filler_role)
             + '<div class="field signature"><span class="label">חתימה: </span>'
             '<span class="signature-line"></span></div>'
             "</div>"
         )
 
-    def _date(self, summary: MedicalSummaryResponse) -> str:
-        return self._shell.value(summary.date_of_birth) if summary.date_of_birth else ""
-
-    def _texts(self, summary: MedicalSummaryResponse, sections: tuple[tuple[str, str], ...]) -> str:
+    def _texts(
+        self, summary: MedicalSummaryEntryResponse, sections: tuple[tuple[str, str], ...]
+    ) -> str:
         return "".join(
             f"<h3>{escape(title)}</h3>"
             f'<div class="section-body">{self._shell.value(getattr(summary, field))}</div>'
             for field, title in sections
         )
 
-    def _group(self, title: str, group: str, summary: MedicalSummaryResponse) -> str:
+    def _group(self, title: str, group: str, summary: MedicalSummaryEntryResponse) -> str:
         chosen: list[str] = getattr(summary, group)
         detail_value, detail_field = _OTHER_TEXTS.get(group, ("", ""))
         details = {detail_value: getattr(summary, detail_field)} if detail_field else {}
@@ -190,6 +226,9 @@ class MedicalSummaryDocument:
 
     def _css(self) -> str:
         return (
+            f".entry-date{{color:{self._brand.primary_color};font-size:16pt;margin:0.4cm 0 0}}"
+            ".entry + .entry{page-break-before:always}"
+            f".empty{{color:{self._brand.muted_color}}}"
             f"h2{{color:{self._brand.accent_color};font-size:14pt;"
             f"border-bottom:2px solid {self._brand.accent_color};padding-bottom:2pt;"
             "margin-top:16pt}"
