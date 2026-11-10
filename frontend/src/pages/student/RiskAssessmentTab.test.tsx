@@ -180,8 +180,9 @@ describe("RiskAssessmentTab", () => {
       "medium"
     );
     await userEvent.type(screen.getByLabelText("תוכנית התערבות — פגיעה עצמית"), "השגחה");
-    await userEvent.click(await screen.findByLabelText("מור — אחראי ביצוע לפגיעה עצמית"));
-    await userEvent.click(screen.getByLabelText("דנה — אחראי ביצוע לפגיעה עצמית"));
+    await userEvent.click(await screen.findByLabelText("אחראי ביצוע — פגיעה עצמית"));
+    await userEvent.click(screen.getByRole("menuitemcheckbox", { name: "מור" }));
+    await userEvent.click(screen.getByRole("menuitemcheckbox", { name: "דנה" }));
     await userEvent.click(screen.getByText("שמירת הטבלה"));
 
     expect(createMock).toHaveBeenCalledWith("s1", {
@@ -239,8 +240,9 @@ describe("RiskAssessmentTab", () => {
     renderWithClient(<RiskAssessmentTab studentId="s1" />);
 
     await userEvent.click(await screen.findByText("עריכה"));
-    const assigned = await screen.findByLabelText("דנה — אחראי ביצוע לעודף / חוסר משקל");
-    expect(assigned).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(await screen.findByLabelText("אחראי ביצוע — עודף / חוסר משקל"));
+    const assigned = screen.getByRole("menuitemcheckbox", { name: "דנה" });
+    expect(assigned).toHaveAttribute("aria-checked", "true");
     await userEvent.click(assigned);
     await userEvent.click(screen.getByText("שמירה"));
 

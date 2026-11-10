@@ -117,7 +117,8 @@ describe("HealthRecordsTab", () => {
     await user.selectOptions(screen.getByLabelText("תחום"), "speech");
     await user.selectOptions(screen.getByLabelText("אישי/קבוצתי"), "individual");
     await user.type(screen.getByLabelText("תמיכה שניתנה"), "תרגול דיבור");
-    await user.click(await screen.findByRole("button", { name: "מור" }));
+    await user.click(await screen.findByRole("button", { name: "אחראי ביצוע" }));
+    await user.click(screen.getByRole("menuitemcheckbox", { name: "מור" }));
     await user.click(screen.getByRole("button", { name: "הוספת השורה" }));
 
     expect(api.create).toHaveBeenCalledWith(

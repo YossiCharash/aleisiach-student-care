@@ -9,7 +9,7 @@ import type {
   RiskLevel,
   StaffMember,
 } from "@/lib/api/types";
-import { StaffChipPicker } from "@/components/StaffChipPicker";
+import { StaffMultiSelect } from "@/components/StaffMultiSelect";
 import { withAssigned } from "@/lib/utils/staff";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
@@ -198,13 +198,13 @@ function RiskRow({
         />
       </td>
       <td className="w-48 p-2">
-        <StaffChipPicker
+        <StaffMultiSelect
           candidates={candidates}
           selected={item.responsible_user_ids}
           onChange={(selected) =>
             updateItem(domain.id, { responsible_user_ids: selected })
           }
-          memberLabel={(member) => `${member.full_name} — אחראי ביצוע ל${domain.name}`}
+          label={`אחראי ביצוע — ${domain.name}`}
         />
       </td>
     </tr>

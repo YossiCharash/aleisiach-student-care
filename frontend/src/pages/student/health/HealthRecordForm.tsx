@@ -8,7 +8,7 @@ import type {
   HealthSessionType,
   StaffMember,
 } from "@/lib/api/types";
-import { StaffChipPicker } from "@/components/StaffChipPicker";
+import { StaffMultiSelect } from "@/components/StaffMultiSelect";
 import { withAssigned } from "@/lib/utils/staff";
 import { Textarea } from "@/components/ui/Textarea";
 import { Input } from "@/components/ui/Input";
@@ -124,10 +124,11 @@ export function HealthRecordForm({
           </Alert>
         )}
         <div className="mt-1">
-          <StaffChipPicker
+          <StaffMultiSelect
             candidates={candidates}
             selected={draft.responsible_user_ids}
             onChange={(selected) => update({ responsible_user_ids: selected })}
+            label="אחראי ביצוע"
           />
         </div>
       </div>
