@@ -10,6 +10,7 @@ from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.functional_report_entry import FunctionalReportEntry
 from backend.app.models.client.incident_report import IncidentReport
 from backend.app.models.client.label import Label
+from backend.app.models.client.medical_summary import MedicalSummary
 from backend.app.models.client.meeting_foci_entry import MeetingFociEntry
 from backend.app.models.client.meeting_plan_entry import MeetingPlanEntry
 from backend.app.models.client.meeting_plan_solution import MeetingPlanSolution
@@ -186,6 +187,14 @@ def _seed_full_subtree(session: Session) -> uuid.UUID:
             updated_at=now,
         )
     )
+    session.add(
+        MedicalSummary(
+            student_id=student.id,
+            institution_id=_INSTITUTION_ID,
+            updated_by=author.id,
+            updated_at=now,
+        )
+    )
     section_type = ExtraSectionType(name=f"Heading-{tag}", institution_id=_INSTITUTION_ID)
     session.add(section_type)
     session.flush()
@@ -224,6 +233,7 @@ def test_purge_removes_the_whole_student_subtree(db_session: Session) -> None:
         IncidentReport,
         ReceptionReport,
         SupportedEmployment,
+        MedicalSummary,
         StudentExtraSection,
     ):
         assert _row_count(db_session, model) == 0

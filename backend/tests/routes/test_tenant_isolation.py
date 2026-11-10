@@ -134,6 +134,7 @@ def test_foreign_student_is_not_found(
         "social-note",
         "functional-report",
         "incident-reports",
+        "medical-summary",
         "program",
         "extra-sections",
         "meetings",

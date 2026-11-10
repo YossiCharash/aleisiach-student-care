@@ -978,6 +978,39 @@ Purged with the student (ADR-031). Audit entries list field names only. API:
 
 ---
 
+## ADR-038 — Medical information summary ("סיכום מידע רפואי"), manager-only, one per student (2026-11-10)
+
+**Decision:** a new student tab **"סיכום מידע רפואי"**, modeled on the client's form "מידע ונתונים
+בריאותיים", placed **second — right after details**. **Manager-only** (read + write; instructors and
+professional teachers are blocked: the tab is hidden and the API answers 403). **One record per
+student, updated in place** (like the reception report, ADR-026), with a server-side PDF through the
+shared `DocumentShell` (ADR-032 — same font and layout as every other document), downloaded as
+`<שם התלמיד> - סיכום מידע רפואי.pdf`.
+
+- **Identity auto-filled:** name · national ID · date of birth · address are resolved at read time
+  from `STUDENT` / `STUDENT_DETAILS` — not stored, not editable in this form. Phone and "lives with"
+  are typed in the form.
+- **Option rows are multi-select** (decided): lives with · dental treatment · dentures · skin
+  integrity · comprehension · language & communication (+ alternative-communication detail) · speech ·
+  vision · hearing · functioning · mobility · eating · chewing/swallowing · food texture · diet (+
+  "other" text) · continence. Yes/no questions (epilepsy · dual diagnosis · gastrostomy feeding ·
+  supplemental insurance) are a nullable boolean. The allowed values live in one catalog
+  (`models/client/medical_summary_options.py`) that validates requests and labels the PDF.
+- **Free text:** allergies · known syndrome · background diseases · past hospitalizations/surgeries ·
+  epilepsy details (nature · frequency · last seizure date · treatment) · dual-diagnosis details ·
+  skin notes · formula · the "חשוב לדעת" block (likes · calming · angering · frightening · stress
+  behavior · direct-care recommendations · general notes) · guardian name/relation/phone · health
+  fund · supplemental-insurance detail · attending doctor · care nurse · community social worker +
+  phone · filler role. The filler's name is the manager who saved ("נכתב על ידי"); the PDF prints an
+  empty signature line.
+
+**Data model:** `medical_summaries` (migration `0039_medical_summaries`), PK `student_id`,
+`TenantScoped` with the composite `(student_id, institution_id)` FK; option rows are JSON lists.
+Purged with the student (ADR-031). Audit lists field names only (all on create, changed ones on
+update). API: `GET/PUT /students/{id}/medical-summary`, `GET /pdf`.
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.
