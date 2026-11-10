@@ -8,6 +8,7 @@ from backend.app.models.client.audit_action import AuditAction
 from backend.app.models.client.user import User
 from backend.app.models.client.workshop import Workshop
 from backend.app.schema.routes.workshop_create_request import WorkshopCreateRequest
+from backend.app.schema.routes.workshop_instructor_response import WorkshopInstructorResponse
 from backend.app.schema.routes.workshop_response import WorkshopResponse
 from backend.app.schema.routes.workshop_update_request import WorkshopUpdateRequest
 from backend.app.schema.service.student_access_scope import StudentAccessScope
@@ -34,22 +35,22 @@ class WorkshopService:
         return self._to_responses(self._workshops.list_archived())
 
     def create(self, request: WorkshopCreateRequest, actor_id: uuid.UUID) -> WorkshopResponse:
-        self._require_instructor_valid(request.instructor_id)
+        instructors = self._require_instructors(request.instructor_ids)
         entity = Workshop(name=request.name, color=request.color)
         self._workshops.add(entity)
         self._audit.record(actor_id, AuditAction.CREATE, entity.id, ["name", "color"])
-        self._assign_instructor(entity.id, request.instructor_id, actor_id)
+        self._assign_instructors(entity.id, instructors, actor_id)
         return self._to_response(entity)
 
     def update(
         self, workshop_id: uuid.UUID, request: WorkshopUpdateRequest, actor_id: uuid.UUID
     ) -> WorkshopResponse:
         entity = self._require(workshop_id)
-        self._require_instructor_valid(request.instructor_id)
+        instructors = self._require_instructors(request.instructor_ids)
         entity.name = request.name
         entity.color = request.color
         self._audit.record(actor_id, AuditAction.UPDATE, entity.id, ["name", "color"])
-        self._assign_instructor(entity.id, request.instructor_id, actor_id)
+        self._assign_instructors(entity.id, instructors, actor_id)
         return self._to_response(entity)
 
     def archive(self, workshop_id: uuid.UUID, actor_id: uuid.UUID) -> WorkshopResponse:
@@ -69,30 +70,37 @@ class WorkshopService:
         self._audit.record(actor_id, AuditAction.UPDATE, entity.id, ["is_archived"])
         return self._to_response(entity)
 
-    def _assign_instructor(
-        self, workshop_id: uuid.UUID, instructor_id: uuid.UUID | None, actor_id: uuid.UUID
+    def _assign_instructors(
+        self, workshop_id: uuid.UUID, instructors: list[User], actor_id: uuid.UUID
     ) -> None:
-        for user_id in self._workshops.assign_instructor(workshop_id, instructor_id):
+        for user_id in self._workshops.assign_instructors(workshop_id, instructors):
             self._permissions_audit.record(actor_id, AuditAction.UPDATE, user_id, ["workshop_id"])
 
-    def _require_instructor_valid(self, instructor_id: uuid.UUID | None) -> None:
-        if instructor_id is not None and self._workshops.get_instructor(instructor_id) is None:
-            raise NotFoundError("instructor")
+    def _require_instructors(self, instructor_ids: list[uuid.UUID]) -> list[User]:
+        instructors: list[User] = []
+        for instructor_id in dict.fromkeys(instructor_ids):
+            instructor = self._workshops.get_instructor(instructor_id)
+            if instructor is None:
+                raise NotFoundError("instructor")
+            instructors.append(instructor)
+        return instructors
 
     def _to_responses(self, entities: list[Workshop]) -> list[WorkshopResponse]:
         assigned = self._workshops.instructors_by_workshop()
-        return [self._build(entity, assigned.get(entity.id)) for entity in entities]
+        return [self._build(entity, assigned.get(entity.id, [])) for entity in entities]
 
     def _to_response(self, entity: Workshop) -> WorkshopResponse:
-        return self._build(entity, self._workshops.instructor_for(entity.id))
+        return self._build(entity, self._workshops.instructors_for(entity.id))
 
-    def _build(self, entity: Workshop, instructor: User | None) -> WorkshopResponse:
+    def _build(self, entity: Workshop, instructors: list[User]) -> WorkshopResponse:
         return WorkshopResponse(
             id=entity.id,
             name=entity.name,
             color=entity.color,
-            instructor_id=instructor.id if instructor is not None else None,
-            instructor_name=instructor.full_name if instructor is not None else None,
+            instructors=[
+                WorkshopInstructorResponse(id=instructor.id, full_name=instructor.full_name)
+                for instructor in instructors
+            ],
         )
 
     def _require_empty(self, workshop_id: uuid.UUID) -> None:

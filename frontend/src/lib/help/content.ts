@@ -79,7 +79,7 @@ const student: HelpTopic = {
       blocks: [
         {
           kind: "text",
-          text: "זהות החניך, אנשי קשר, אבחונים ופרקים נוספים. זו הלשונית שנפתחת כברירת מחדל.",
+          text: "זהות החניך, אנשי קשר, אבחנות ופרקים נוספים. זו הלשונית שנפתחת כברירת מחדל.",
         },
       ],
     },
@@ -306,7 +306,7 @@ const settings: HelpTopic = {
     },
     {
       id: "diagnoses",
-      title: "אבחונים",
+      title: "אבחנות",
       roles: ["manager"],
       blocks: [
         {

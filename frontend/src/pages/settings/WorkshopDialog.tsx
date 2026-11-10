@@ -28,15 +28,23 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [color, setColor] = useState(DEFAULT_COLOR);
-  const [instructorId, setInstructorId] = useState("");
+  const [instructorIds, setInstructorIds] = useState<string[]>([]);
+
+  const initialName = workshop?.name ?? "";
+  const initialColor = workshop?.color ?? DEFAULT_COLOR;
+  const initialInstructorKey = (workshop?.instructors ?? [])
+    .map((instructor) => instructor.id)
+    .join(",");
 
   useEffect(() => {
     if (open) {
-      setName(workshop?.name ?? "");
-      setColor(workshop?.color ?? DEFAULT_COLOR);
-      setInstructorId(workshop?.instructor_id ?? "");
+      setName(initialName);
+      setColor(initialColor);
+      setInstructorIds(
+        initialInstructorKey === "" ? [] : initialInstructorKey.split(",")
+      );
     }
-  }, [open, workshop?.name, workshop?.color, workshop?.instructor_id]);
+  }, [open, initialName, initialColor, initialInstructorKey]);
 
   const instructorsQuery = useQuery({
     queryKey: queryKeys.users,
@@ -52,7 +60,7 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
       const body = {
         name: name.trim(),
         color,
-        instructor_id: instructorId || null,
+        instructor_ids: instructorIds,
       };
       return workshop === undefined
         ? workshopsApi.create(body)
@@ -65,6 +73,14 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
     },
   });
 
+  function toggleInstructor(instructorId: string): void {
+    setInstructorIds((current) =>
+      current.includes(instructorId)
+        ? current.filter((id) => id !== instructorId)
+        : [...current, instructorId]
+    );
+  }
+
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
     mutation.mutate();
@@ -75,7 +91,7 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{workshop === undefined ? "סדנה חדשה" : "עריכת סדנה"}</DialogTitle>
-          <DialogDescription>שם, צבע מזהה ומדריך אחראי לסדנה.</DialogDescription>
+          <DialogDescription>שם, צבע מזהה ומדריכי הסדנה.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mutation.isError && <Alert tone="error">{errorMessage(mutation.error)}</Alert>}
@@ -102,28 +118,37 @@ export function WorkshopDialog({ open, onOpenChange, workshop }: Props): ReactNo
               <span className="text-sm text-ink-muted">{color}</span>
             </div>
           </div>
-          <div>
-            <Label htmlFor="workshop-instructor">מדריך הסדנה</Label>
-            <select
-              id="workshop-instructor"
-              value={instructorId}
-              onChange={(event) => setInstructorId(event.target.value)}
-              disabled={instructorsQuery.isLoading || instructorsQuery.isError}
-              className="h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm disabled:bg-slate-100"
-            >
-              <option value="">ללא מדריך</option>
-              {instructors.map((instructor) => (
-                <option key={instructor.id} value={instructor.id}>
-                  {instructor.full_name}
-                </option>
-              ))}
-            </select>
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-ink">מדריכי הסדנה</legend>
+            {instructorsQuery.isLoading && (
+              <p className="text-xs text-ink-muted">טוען…</p>
+            )}
             {instructorsQuery.isError && (
-              <p className="mt-1 text-xs text-rating-red">
+              <p className="text-xs text-rating-red">
                 {errorMessage(instructorsQuery.error)}
               </p>
             )}
-          </div>
+            {instructorsQuery.isSuccess && instructors.length === 0 && (
+              <p className="text-xs text-ink-muted">אין מדריכים פעילים במוסד.</p>
+            )}
+            {instructors.length > 0 && (
+              <ul className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-slate-300 bg-white p-2">
+                {instructors.map((instructor) => (
+                  <li key={instructor.id}>
+                    <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm hover:bg-slate-50">
+                      <input
+                        type="checkbox"
+                        checked={instructorIds.includes(instructor.id)}
+                        onChange={() => toggleInstructor(instructor.id)}
+                        className="h-4 w-4 accent-brand"
+                      />
+                      {instructor.full_name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
           <div className="flex justify-start gap-2">
             <Button type="submit" disabled={mutation.isPending || name.trim() === ""}>
               {mutation.isPending ? "שומר…" : "שמירה"}

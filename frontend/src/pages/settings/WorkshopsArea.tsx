@@ -138,7 +138,9 @@ function WorkshopRow({
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold text-ink">{workshop.name}</p>
         <p className="truncate text-xs text-ink-muted">
-          {workshop.instructor_name ?? "ללא מדריך"}
+          {workshop.instructors.length > 0
+            ? workshop.instructors.map((instructor) => instructor.full_name).join(", ")
+            : "ללא מדריך"}
         </p>
       </div>
       {archive.isError && (

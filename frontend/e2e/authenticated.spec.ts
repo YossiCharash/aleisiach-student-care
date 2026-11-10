@@ -31,7 +31,7 @@ test.describe("manager (mor) authenticated flows", () => {
     await expect(page.getByRole("heading", { name: "הגדרות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "משתמשים" })).toHaveCount(0);
     await expect(page.getByRole("tab", { name: "כישורים-מיומנויות" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "אבחונים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "אבחנות" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "עריכת פרטי חניך" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "סדנאות" })).toBeVisible();
   });
