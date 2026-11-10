@@ -137,6 +137,7 @@ on purpose: it has no access to any of these.
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
 | Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
+| Medical information summary | Read/Write | **Blocked** | **Blocked** |
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
 | Incident report (Form 35) | Read/Write · archive | Read/Write (own class) | Read |
 | Tab 4 — identity · diagnoses · communication/preferences | All | Own class | Read |
@@ -253,10 +254,21 @@ on purpose: it has no access to any of these.
   student screen.
 - **Student screen (tabs).** The tabs are numbered below by their logical identity (matching the
   §3 permission matrix). The UI display order (decided 2026-09-08; reception report inserted
-  2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027) is: **details ·
+  2026-09-15, ADR-026; supported-employment appended 2026-09-15, ADR-027; medical summary inserted
+  2026-11-10, ADR-038) is: **details · medical information summary (managers only) ·
   reception report (managers only) · program · team meetings · social-worker note ·
   functional-report summary · incident report · supported employment (managers only)**, and **details is the
   default tab**.
+  - **Medical information summary** (סיכום מידע רפואי — "מידע ונתונים בריאותיים"): a
+    **manager-only** tab (read + write manager-only; instructors and professional teachers are
+    blocked, so the tab is hidden and the API answers 403), placed **second, right after details**.
+    **One stored record per student, updated in place.** Identity (שם · ת"ז · תאריך לידה · כתובת)
+    is **auto-filled** from the student + Tab 4 details; phone and "מתגורר ב" are typed. Option rows
+    (ניידות, הבנה, דיבור, ראייה, שמיעה, אכילה, דיאטה, שליטה על סוגרים …) are **multi-select
+    checkboxes**; yes/no questions (אפילפסיה, תחלואה כפולה, גסטרוסטום, ביטוח נוסף) are כן/לא; plus
+    free-text medical history, "חשוב לדעת" and contacts/caregivers. The filler is the manager who
+    saves; the PDF has an empty signature line. Server-side **WeasyPrint PDF** through the shared
+    `DocumentShell`. (Added 2026-11-10, ADR-038.)
   - **Reception report** (דוח קבלה — טופס 39): a **manager-only** tab (read + write manager-only;
     instructors and professional teachers are blocked, so the tab is hidden and the API answers
     403), placed **right after details**. **One stored report per student, updated in place**,

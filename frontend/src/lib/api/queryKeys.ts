@@ -14,6 +14,8 @@ export const queryKeys = {
     ["students", studentId, "incident-reports"] as const,
   receptionReport: (studentId: string) =>
     ["students", studentId, "reception-report"] as const,
+  medicalSummary: (studentId: string) =>
+    ["students", studentId, "medical-summary"] as const,
   supportedEmployment: (studentId: string) =>
     ["students", studentId, "supported-employment"] as const,
   taxonomyTree: ["taxonomy", "tree"] as const,

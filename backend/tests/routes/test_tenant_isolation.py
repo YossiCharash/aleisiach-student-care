@@ -134,6 +134,7 @@ def test_foreign_student_is_not_found(
         "social-note",
         "functional-report",
         "incident-reports",
+        "medical-summary",
         "program",
         "extra-sections",
         "meetings",
@@ -280,6 +281,8 @@ def test_manager_cannot_promote_a_user_to_super_admin(
         ("get", "/functional-report/pdf"),
         ("post", "/incident-reports"),
         ("get", "/incident-reports/pdf"),
+        ("put", "/medical-summary"),
+        ("get", "/medical-summary/pdf"),
     ],
 )
 def test_foreign_student_write_paths_are_not_found(
@@ -296,6 +299,7 @@ def test_foreign_student_write_paths_are_not_found(
         "/functional-report": {"report_date": "2026-06-01", "general_background": "נחטף"},
         "/incident-reports": {"event_date": "2026-06-01", "description": "נחטף"},
         "/meetings": {"meeting_date": "2026-06-01", "summary": "נחטף"},
+        "/medical-summary": {"allergies": "נחטף"},
     }.get(suffix)
     call = getattr(api, method)
     path = f"/students/{foreign.student_id}{suffix}"

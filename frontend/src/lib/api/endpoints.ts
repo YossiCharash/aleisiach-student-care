@@ -20,6 +20,8 @@ import type {
   IncidentReportHistoryResponse,
   ReceptionReportResponse,
   ReceptionReportUpsertRequest,
+  MedicalSummaryFields,
+  MedicalSummaryResponse,
   SupportedEmploymentResponse,
   SupportedEmploymentUpsertRequest,
   InvitationCommand,
@@ -327,6 +329,18 @@ export const receptionReportApi = {
     ),
   pdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/reception-report/pdf`),
+};
+
+export const medicalSummaryApi = {
+  get: (studentId: string): Promise<MedicalSummaryResponse> =>
+    apiClient.get<MedicalSummaryResponse>(`/students/${studentId}/medical-summary`),
+  upsert: (
+    studentId: string,
+    body: MedicalSummaryFields
+  ): Promise<MedicalSummaryResponse> =>
+    apiClient.put<MedicalSummaryResponse>(`/students/${studentId}/medical-summary`, body),
+  pdfUrl: (studentId: string): string =>
+    buildPdfUrl(`/students/${studentId}/medical-summary/pdf`),
 };
 
 export const supportedEmploymentApi = {

@@ -576,3 +576,70 @@ export type SupportedEmploymentUpsertRequest = Omit<
   SupportedEmploymentResponse,
   "student_id" | "exists"
 >;
+
+export interface MedicalSummaryFields {
+  phone: string;
+  lives_with: string[];
+  allergies: string;
+  known_syndrome: string;
+  background_diseases: string;
+  hospitalizations_surgeries: string;
+  dental_treatment: string[];
+  dentures: string[];
+  epilepsy_known: boolean | null;
+  epilepsy_seizure_nature: string;
+  epilepsy_seizure_frequency: string;
+  epilepsy_last_seizure: string | null;
+  epilepsy_seizure_treatment: string;
+  dual_diagnosis_known: boolean | null;
+  dual_diagnosis_expression: string;
+  dual_diagnosis_frequency: string;
+  dual_diagnosis_treatment: string;
+  skin_integrity: string[];
+  skin_known_issues: string;
+  comprehension: string[];
+  communication: string[];
+  communication_other: string;
+  speech: string[];
+  vision: string[];
+  hearing: string[];
+  functioning: string[];
+  mobility: string[];
+  eating: string[];
+  gastrostomy_feeding: boolean | null;
+  formula: string;
+  chewing_swallowing: string[];
+  food_texture: string[];
+  diet: string[];
+  diet_other: string;
+  continence: string[];
+  loves: string;
+  calming: string;
+  angering: string;
+  frightening: string;
+  stress_behavior: string;
+  care_recommendations: string;
+  general_notes: string;
+  guardian_name: string;
+  guardian_relation: string;
+  guardian_phone: string;
+  health_fund: string;
+  supplemental_insurance: boolean | null;
+  supplemental_insurance_detail: string;
+  attending_doctor: string;
+  care_nurse: string;
+  community_social_worker: string;
+  social_worker_phone: string;
+  filler_role: string;
+}
+
+export interface MedicalSummaryResponse extends MedicalSummaryFields {
+  student_id: string;
+  exists: boolean;
+  student_name: string;
+  national_id: string | null;
+  date_of_birth: string | null;
+  address: string | null;
+  written_by_name: string | null;
+  updated_at: string | null;
+}

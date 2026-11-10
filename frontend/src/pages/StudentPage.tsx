@@ -16,6 +16,7 @@ import { SocialNoteTab } from "@/pages/student/SocialNoteTab";
 import { DetailsTab } from "@/pages/student/DetailsTab";
 import { FunctionalReportTab } from "@/pages/student/FunctionalReportTab";
 import { IncidentReportTab } from "@/pages/student/IncidentReportTab";
+import { MedicalSummaryTab } from "@/pages/student/MedicalSummaryTab";
 import { ReceptionReportTab } from "@/pages/student/ReceptionReportTab";
 import { SupportedEmploymentTab } from "@/pages/student/SupportedEmploymentTab";
 import { StudentActionsMenu } from "@/pages/student/StudentActionsMenu";
@@ -46,10 +47,12 @@ export function StudentPage(): ReactNode {
 
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
+  const showMedicalSummary = permissions.canAccessMedicalSummary(user);
   const showReceptionReport = permissions.canAccessReceptionReport(user);
   const showSupportedEmployment = permissions.canAccessSupportedEmployment(user);
   const allowedTabs = [
     "details",
+    ...(showMedicalSummary ? ["medical-summary"] : []),
     ...(showReceptionReport ? ["reception-report"] : []),
     "program",
     "meetings",
@@ -92,6 +95,9 @@ export function StudentPage(): ReactNode {
       <Tabs defaultValue={initialTab}>
         <TabsList variant="pill">
           <TabsTrigger value="details">פרטים אישיים</TabsTrigger>
+          {showMedicalSummary && (
+            <TabsTrigger value="medical-summary">סיכום מידע רפואי</TabsTrigger>
+          )}
           {showReceptionReport && (
             <TabsTrigger value="reception-report">דוח קבלה</TabsTrigger>
           )}
@@ -108,6 +114,11 @@ export function StudentPage(): ReactNode {
         <TabsContent value="details">
           <DetailsTab studentId={student.id} />
         </TabsContent>
+        {showMedicalSummary && (
+          <TabsContent value="medical-summary">
+            <MedicalSummaryTab studentId={student.id} />
+          </TabsContent>
+        )}
         {showReceptionReport && (
           <TabsContent value="reception-report">
             <ReceptionReportTab studentId={student.id} />
