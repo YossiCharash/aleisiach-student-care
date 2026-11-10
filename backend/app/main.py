@@ -13,6 +13,8 @@ from backend.app.routes.diagnoses import router as diagnoses_router
 from backend.app.routes.extra_section_types import router as extra_section_types_router
 from backend.app.routes.functional_report import router as functional_report_router
 from backend.app.routes.health import router as health_router
+from backend.app.routes.health_domains import router as health_domains_router
+from backend.app.routes.health_records import router as health_records_router
 from backend.app.routes.incident_report import router as incident_report_router
 from backend.app.routes.institutions import router as institutions_router
 from backend.app.routes.medical_summary import router as medical_summary_router
@@ -107,6 +109,8 @@ def create_app(bootstrap: Bootstrap | None = None) -> FastAPI:
     app.include_router(incident_report_router)
     app.include_router(risk_assessment_router)
     app.include_router(risk_domains_router)
+    app.include_router(health_records_router)
+    app.include_router(health_domains_router)
     app.include_router(medical_summary_router)
     app.include_router(reception_report_router)
     app.include_router(supported_employment_router)

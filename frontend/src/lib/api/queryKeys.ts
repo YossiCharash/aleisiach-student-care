@@ -16,6 +16,10 @@ export const queryKeys = {
     ["students", studentId, "risk-assessments"] as const,
   riskResponsibleCandidates: (studentId: string) =>
     ["students", studentId, "risk-assessments", "responsible-candidates"] as const,
+  healthRecords: (studentId: string) =>
+    ["students", studentId, "health-records"] as const,
+  healthResponsibleCandidates: (studentId: string) =>
+    ["students", studentId, "health-records", "responsible-candidates"] as const,
   receptionReport: (studentId: string) =>
     ["students", studentId, "reception-report"] as const,
   medicalSummary: (studentId: string) =>
@@ -30,6 +34,7 @@ export const queryKeys = {
   workshops: ["workshops"] as const,
   diagnoses: ["diagnoses"] as const,
   riskDomains: ["risk-domains"] as const,
+  healthDomains: ["health-domains"] as const,
   detailOptions: ["detail-options"] as const,
   institutions: ["institutions"] as const,
 };

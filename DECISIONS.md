@@ -1079,6 +1079,35 @@ changed ones on update, `is_archived` on archive. API: `GET/POST /students/{id}/
 
 ---
 
+## ADR-041 — Health-professions documentation ("תיעוד אישי – מקצועות הבריאות"): a row log per domain (2026-11-10)
+
+**Decision (per the user, from a photo of the client's handwritten form):** a new student tab,
+placed after risk management. The form is a table per **תחום** (health domain) with the columns
+**תאריך · אישי/קבוצתי · תמיכה שניתנה · אחראי ביצוע · הערות · בקרת ביצוע**.
+
+- **Domains are managed per institution in Settings** (add · rename · deactivate), like risk domains
+  (ADR-039), but **a new institution starts with an empty list** (the user's choice). A deactivated
+  domain is not offered for new rows but stays on rows already documented in it.
+- **אישי/קבוצתי** is a choice of two; **אחראי ביצוע** is a multi-select of the institution's users
+  (a disabled user already assigned stays, but cannot be newly assigned); the other columns are free
+  text. A row must have at least one field besides the domain and date.
+- **Every role writes**: managers any student, instructors students in their own workshop, and
+  **professional teachers any student** — the one exception to "professional teacher = read-only
+  everywhere" (the user: "every instructor or teacher can see and change it"). Deleting a row stays
+  **archive-only and manager-only** (§4 rule 7).
+- **PDF per domain** and a **combined PDF of all domains** (one page per domain) through
+  `DocumentShell`; file name `<student> - תיעוד אישי – מקצועות הבריאות[ - <domain>].pdf`.
+
+**Data model:** migration `0042_health_records` creates `health_domains` (`OrderedTaxonomyNode`) and
+`health_records` (`student_id`, `domain_id`, `record_date`, `session_type`, `support_given`,
+`responsible_user_ids` JSON, `notes`, `execution_review`, `author_id`, timestamps, archive columns;
+`TenantScoped`, composite student and domain FKs). Purged with the student (ADR-031). Audit lists
+changed field names only. API: `GET/POST /students/{id}/health-records`, `GET
+/responsible-candidates`, `PUT /{record_id}`, `POST /{record_id}/archive`, `GET /pdf[?domain_id=]`;
+domains: `GET /health-domains` (any role), `POST` / `PATCH /health-domains/{id}` (manager).
+
+---
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

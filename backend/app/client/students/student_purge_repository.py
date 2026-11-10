@@ -5,6 +5,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from backend.app.models.base import Base
 from backend.app.models.client.functional_report_entry import FunctionalReportEntry
+from backend.app.models.client.health_record import HealthRecord
 from backend.app.models.client.incident_report import IncidentReport
 from backend.app.models.client.medical_summary_entry import MedicalSummaryEntry
 from backend.app.models.client.program import Program
@@ -31,6 +32,7 @@ _CHILD_MODELS: tuple[tuple[type[Base], InstrumentedAttribute[uuid.UUID]], ...] =
     (SupportedEmployment, SupportedEmployment.student_id),
     (MedicalSummaryEntry, MedicalSummaryEntry.student_id),
     (RiskAssessment, RiskAssessment.student_id),
+    (HealthRecord, HealthRecord.student_id),
 )
 
 

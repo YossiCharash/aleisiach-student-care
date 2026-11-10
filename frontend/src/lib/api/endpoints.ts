@@ -18,6 +18,10 @@ import type {
   IncidentReportEntryResponse,
   IncidentReportFields,
   IncidentReportHistoryResponse,
+  HealthDomainInfo,
+  HealthRecordHistoryResponse,
+  HealthRecordRequest,
+  HealthRecordResponse,
   RiskAssessmentEntryResponse,
   RiskAssessmentHistoryResponse,
   RiskAssessmentRequest,
@@ -371,6 +375,45 @@ export const riskAssessmentApi = {
     buildPdfUrl(`/students/${studentId}/risk-assessments/${assessmentId}/pdf`),
   combinedPdfUrl: (studentId: string): string =>
     buildPdfUrl(`/students/${studentId}/risk-assessments/pdf`),
+};
+
+export const healthDomainsApi = {
+  list: (includeInactive = false): Promise<HealthDomainInfo[]> =>
+    apiClient.get<HealthDomainInfo[]>(
+      `/health-domains?include_inactive=${includeInactive}`
+    ),
+  create: (name: string): Promise<HealthDomainInfo> =>
+    apiClient.post<HealthDomainInfo>("/health-domains", { name }),
+  update: (domainId: string, body: RiskDomainUpdate): Promise<HealthDomainInfo> =>
+    apiClient.patch<HealthDomainInfo>(`/health-domains/${domainId}`, body),
+};
+
+export const healthRecordsApi = {
+  list: (studentId: string): Promise<HealthRecordHistoryResponse> =>
+    apiClient.get<HealthRecordHistoryResponse>(`/students/${studentId}/health-records`),
+  responsibleCandidates: (studentId: string): Promise<StaffMember[]> =>
+    apiClient.get<StaffMember[]>(
+      `/students/${studentId}/health-records/responsible-candidates`
+    ),
+  create: (studentId: string, body: HealthRecordRequest): Promise<HealthRecordResponse> =>
+    apiClient.post<HealthRecordResponse>(`/students/${studentId}/health-records`, body),
+  update: (
+    studentId: string,
+    recordId: string,
+    body: HealthRecordRequest
+  ): Promise<HealthRecordResponse> =>
+    apiClient.put<HealthRecordResponse>(
+      `/students/${studentId}/health-records/${recordId}`,
+      body
+    ),
+  archive: (studentId: string, recordId: string): Promise<HealthRecordResponse> =>
+    apiClient.post<HealthRecordResponse>(
+      `/students/${studentId}/health-records/${recordId}/archive`
+    ),
+  pdfUrl: (studentId: string, domainId?: string): string =>
+    buildPdfUrl(
+      `/students/${studentId}/health-records/pdf${domainId ? `?domain_id=${domainId}` : ""}`
+    ),
 };
 
 export const receptionReportApi = {

@@ -126,6 +126,9 @@ erDiagram
     STUDENT ||--o{ INCIDENT_REPORT : "incident reports (Form 35, dated series)"
     STUDENT ||--o{ RISK_ASSESSMENT : "risk management (dated series)"
     INSTITUTION ||--o{ RISK_DOMAIN : "risk domains (Settings-managed)"
+    STUDENT ||--o{ HEALTH_RECORD : "health-professions documentation rows"
+    INSTITUTION ||--o{ HEALTH_DOMAIN : "health domains (Settings-managed)"
+    HEALTH_DOMAIN ||--o{ HEALTH_RECORD : "table"
     STUDENT ||--o{ MEDICAL_SUMMARY_ENTRY : "medical information summaries (manager only, dated series)"
     TEAM_MEETING ||--o{ MEETING_FOCI_ENTRY : "foci snapshot"
     TEAM_MEETING ||--o{ MEETING_PLAN_ENTRY : "plan snapshot"
@@ -268,6 +271,14 @@ erDiagram
   intervention plan (free text) · responsible user ids (validated against the student's
   institution, names resolved at read time). Everyone reads; managers and instructors (own workshop)
   write; archive is manager-only. Per-table and combined PDFs through `DocumentShell`.
+- **Health-professions documentation ("תיעוד אישי – מקצועות הבריאות") is a row log per domain** —
+  own table `HEALTH_RECORD` (one row per documented support, oldest first; ADR-041), each pointing to
+  a `HEALTH_DOMAIN` (institution-owned ordered taxonomy: `name` · `order` · `is_active`, managed in
+  Settings, empty for a new institution) through a composite `(domain_id, institution_id)` FK. Row:
+  `record_date` · `session_type` (`individual` / `group`, nullable) · `support_given` ·
+  `responsible_user_ids` (JSON, validated against the student's institution, names resolved at read
+  time) · `notes` · `execution_review`. Every role writes (instructors own workshop); archive is
+  manager-only. Per-domain and combined PDFs through `DocumentShell`.
 - **Tab 2 (Team meetings) is a dated read-only snapshot + summary** (decided 2026-09-09, ADR-022):
   one `TEAM_MEETING` per dated meeting with `meeting_date` and an editable `summary`, plus frozen
   copies of the foci (`MEETING_FOCI_ENTRY`) and the latest personal plan (`MEETING_PLAN_ENTRY` +

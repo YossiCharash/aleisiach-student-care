@@ -8,6 +8,8 @@ from backend.app.client.students.student_purge_repository import StudentPurgeRep
 from backend.app.models.base import Base
 from backend.app.models.client.extra_section_type import ExtraSectionType
 from backend.app.models.client.functional_report_entry import FunctionalReportEntry
+from backend.app.models.client.health_domain import HealthDomain
+from backend.app.models.client.health_record import HealthRecord
 from backend.app.models.client.incident_report import IncidentReport
 from backend.app.models.client.label import Label
 from backend.app.models.client.medical_summary_entry import MedicalSummaryEntry
@@ -204,6 +206,18 @@ def _seed_full_subtree(session: Session) -> uuid.UUID:
             author_id=author.id,
         )
     )
+    health_domain = HealthDomain(name=f"Domain-{tag}", institution_id=_INSTITUTION_ID)
+    session.add(health_domain)
+    session.flush()
+    session.add(
+        HealthRecord(
+            student_id=student.id,
+            institution_id=_INSTITUTION_ID,
+            domain_id=health_domain.id,
+            record_date=date.today(),
+            author_id=author.id,
+        )
+    )
     section_type = ExtraSectionType(name=f"Heading-{tag}", institution_id=_INSTITUTION_ID)
     session.add(section_type)
     session.flush()
@@ -244,6 +258,7 @@ def test_purge_removes_the_whole_student_subtree(db_session: Session) -> None:
         SupportedEmployment,
         MedicalSummaryEntry,
         RiskAssessment,
+        HealthRecord,
         StudentExtraSection,
     ):
         assert _row_count(db_session, model) == 0
