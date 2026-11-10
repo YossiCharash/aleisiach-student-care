@@ -24,6 +24,7 @@ _SECTIONS = (
     "summary_recommendations",
 )
 _SECTION_LIST = ", ".join(_SECTIONS)
+_LOCAL_DATE = "CAST(updated_at AT TIME ZONE 'Asia/Jerusalem' AS DATE)"
 
 
 def _section_columns() -> list[sa.Column[str]]:
@@ -68,7 +69,7 @@ def upgrade() -> None:
         "INSERT INTO functional_report_entries "
         f"(id, student_id, report_date, {_SECTION_LIST}, author_id, created_at, updated_at, "
         "is_archived, institution_id) "
-        f"SELECT gen_random_uuid(), student_id, CAST(updated_at AS DATE), {_SECTION_LIST}, "
+        f"SELECT gen_random_uuid(), student_id, {_LOCAL_DATE}, {_SECTION_LIST}, "
         "updated_by, updated_at, updated_at, false, institution_id FROM functional_reports"
     )
     op.drop_index("ix_functional_reports_institution_id", table_name="functional_reports")

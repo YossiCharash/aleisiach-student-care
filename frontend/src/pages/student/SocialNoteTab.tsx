@@ -23,13 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-
-function today(): string {
-  const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
-}
+import { todayIso } from "@/lib/utils/dates";
 
 export function SocialNoteTab({ studentId }: { studentId: string }): ReactNode {
   const { user } = useAuth();
@@ -210,7 +204,7 @@ function AddNoteForm({
   onDone: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [noteDate, setNoteDate] = useState(today);
+  const [noteDate, setNoteDate] = useState(todayIso);
   const [content, setContent] = useState("");
 
   const mutation = useMutation({

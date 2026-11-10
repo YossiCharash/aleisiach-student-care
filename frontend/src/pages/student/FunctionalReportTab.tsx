@@ -27,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
+import { todayIso } from "@/lib/utils/dates";
 
 type SectionKey = keyof FunctionalReportSections;
 
@@ -39,31 +40,16 @@ const SECTIONS: { key: SectionKey; title: string }[] = [
   { key: "summary_recommendations", title: "סיכום והמלצות" },
 ];
 
-const EMPTY_SECTIONS: FunctionalReportSections = {
-  general_background: "",
-  vocational_domain: "",
-  behavioral_emotional_domain: "",
-  communication_social_domain: "",
-  independence_life_skills_domain: "",
-  summary_recommendations: "",
-};
-
-function today(): string {
-  const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 10);
+function sectionsFrom(source: (key: SectionKey) => string): FunctionalReportSections {
+  return Object.fromEntries(
+    SECTIONS.map((section) => [section.key, source(section.key)])
+  ) as unknown as FunctionalReportSections;
 }
 
+const EMPTY_SECTIONS: FunctionalReportSections = sectionsFrom(() => "");
+
 function sectionsOf(entry: FunctionalReportEntryResponse): FunctionalReportSections {
-  return {
-    general_background: entry.general_background,
-    vocational_domain: entry.vocational_domain,
-    behavioral_emotional_domain: entry.behavioral_emotional_domain,
-    communication_social_domain: entry.communication_social_domain,
-    independence_life_skills_domain: entry.independence_life_skills_domain,
-    summary_recommendations: entry.summary_recommendations,
-  };
+  return sectionsFrom((key) => entry[key]);
 }
 
 function hasContent(sections: FunctionalReportSections): boolean {
@@ -295,7 +281,7 @@ function NewReportForm({
   onDone: () => void;
 }): ReactNode {
   const queryClient = useQueryClient();
-  const [reportDate, setReportDate] = useState(today);
+  const [reportDate, setReportDate] = useState(todayIso);
   const [draft, setDraft] = useState<FunctionalReportSections>(EMPTY_SECTIONS);
 
   const mutation = useMutation({
