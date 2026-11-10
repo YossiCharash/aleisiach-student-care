@@ -5,6 +5,7 @@ import { renderWithClient } from "@/test/renderWithClient";
 import { MedicalSummaryTab } from "@/pages/student/MedicalSummaryTab";
 import { medicalSummaryApi } from "@/lib/api/endpoints";
 import { formatDate } from "@/lib/utils/hebrew";
+import { EMPTY_FIELDS } from "@/pages/student/medical/medicalSummaryLayout";
 import type {
   MedicalSummaryEntryResponse,
   MedicalSummaryHistoryResponse,
@@ -34,59 +35,7 @@ const blankEntry: MedicalSummaryEntryResponse = {
   author_name: "מנהלת",
   created_at: "2026-11-01T10:00:00Z",
   updated_at: "2026-11-01T10:00:00Z",
-  phone: "",
-  lives_with: [],
-  allergies: "",
-  known_syndrome: "",
-  background_diseases: "",
-  hospitalizations_surgeries: "",
-  dental_treatment: [],
-  dentures: [],
-  epilepsy_known: null,
-  epilepsy_seizure_nature: "",
-  epilepsy_seizure_frequency: "",
-  epilepsy_last_seizure: null,
-  epilepsy_seizure_treatment: "",
-  dual_diagnosis_known: null,
-  dual_diagnosis_expression: "",
-  dual_diagnosis_frequency: "",
-  dual_diagnosis_treatment: "",
-  skin_integrity: [],
-  skin_known_issues: "",
-  comprehension: [],
-  communication: [],
-  communication_other: "",
-  speech: [],
-  vision: [],
-  hearing: [],
-  functioning: [],
-  mobility: [],
-  eating: [],
-  gastrostomy_feeding: null,
-  formula: "",
-  chewing_swallowing: [],
-  food_texture: [],
-  diet: [],
-  diet_other: "",
-  continence: [],
-  loves: "",
-  calming: "",
-  angering: "",
-  frightening: "",
-  stress_behavior: "",
-  care_recommendations: "",
-  general_notes: "",
-  guardian_name: "",
-  guardian_relation: "",
-  guardian_phone: "",
-  health_fund: "",
-  supplemental_insurance: null,
-  supplemental_insurance_detail: "",
-  attending_doctor: "",
-  care_nurse: "",
-  community_social_worker: "",
-  social_worker_phone: "",
-  filler_role: "",
+  ...EMPTY_FIELDS,
 };
 
 const filledEntry: MedicalSummaryEntryResponse = {
@@ -194,12 +143,28 @@ describe("MedicalSummaryTab", () => {
 
     await userEvent.click(await screen.findByText("סיכום מידע רפואי חדש"));
     expect(screen.getByLabelText("רגישויות / אלרגיה ידועה")).toHaveValue("בוטנים");
+    expect(screen.getAllByText("מספר זהות")).toHaveLength(1);
     await userEvent.click(screen.getByText("שמירה"));
 
     const [, body] = createMock.mock.calls[0];
     expect(body.mobility).toEqual(["escort", "aids"]);
     expect(body).not.toHaveProperty("id");
     expect(body).not.toHaveProperty("author_name");
+  });
+
+  it("drops retired option values when prefilling a new summary", async () => {
+    listMock.mockResolvedValue(
+      historyOf({ ...filledEntry, mobility: ["escort", "retired_value"] })
+    );
+    createMock.mockResolvedValue(filledEntry);
+
+    renderWithClient(<MedicalSummaryTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("סיכום מידע רפואי חדש"));
+    await userEvent.click(screen.getByText("שמירה"));
+
+    const [, body] = createMock.mock.calls[0];
+    expect(body.mobility).toEqual(["escort"]);
   });
 
   it("edits an existing summary and clears an unticked detail", async () => {
@@ -210,6 +175,7 @@ describe("MedicalSummaryTab", () => {
 
     await userEvent.click(await screen.findByText("עריכה"));
     expect(screen.queryByLabelText("תאריך הסיכום")).not.toBeInTheDocument();
+    expect(screen.getAllByText("מספר זהות")).toHaveLength(1);
     await userEvent.click(screen.getByLabelText("אחר"));
     await userEvent.click(screen.getByText("שמירה"));
 

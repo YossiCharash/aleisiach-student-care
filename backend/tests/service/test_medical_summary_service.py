@@ -178,3 +178,14 @@ def test_audit_records_create_update_and_archive(db_session: Session) -> None:
     assert all(log.entity_id == saved.id for log in logs)
     assert "summary_date" in logs[0].changes
     assert logs[1].changes == ["allergies"]
+
+
+def test_unchanged_update_writes_no_audit_entry(db_session: Session) -> None:
+    service, student_id, actor = _setup(db_session)
+    saved = service.create(student_id, _request(), _ALL, actor)
+
+    unchanged = MedicalSummaryRequest(**_request().model_dump(exclude={"summary_date"}))
+    service.update(student_id, saved.id, unchanged, _ALL, actor)
+
+    actions = [log.action for log in db_session.scalars(select(AuditLog))]
+    assert actions == [AuditAction.CREATE]

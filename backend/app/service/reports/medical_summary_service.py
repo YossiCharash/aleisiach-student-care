@@ -80,7 +80,8 @@ class MedicalSummaryService:
         changes = self._changed(entry, request)
         self._apply(entry, request)
         self._summaries.flush()
-        self._record(actor_id, AuditAction.UPDATE, entry.id, changes)
+        if changes:
+            self._record(actor_id, AuditAction.UPDATE, entry.id, changes)
         return self._to_response(entry)
 
     def archive(

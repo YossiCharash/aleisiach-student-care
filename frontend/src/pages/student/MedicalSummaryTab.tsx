@@ -29,6 +29,7 @@ import {
   OPTIONS,
   SECTIONS,
   toFields,
+  withKnownOptions,
   type LayoutItem,
 } from "@/pages/student/medical/medicalSummaryLayout";
 
@@ -93,7 +94,6 @@ export function MedicalSummaryTab({ studentId }: { studentId: string }): ReactNo
               key={entry.id}
               studentId={studentId}
               entry={entry}
-              identity={identity}
               initiallyOpen={index === 0}
             />
           ))}
@@ -141,7 +141,7 @@ function NewSummary({
         </p>
       )}
       <MedicalSummaryForm
-        initial={latest ? toFields(latest) : EMPTY_FIELDS}
+        initial={latest ? withKnownOptions(toFields(latest)) : EMPTY_FIELDS}
         initialDate={todayIso()}
         identity={identity}
         pending={mutation.isPending}
@@ -156,12 +156,10 @@ function NewSummary({
 function EntryCard({
   studentId,
   entry,
-  identity,
   initiallyOpen,
 }: {
   studentId: string;
   entry: MedicalSummaryEntryResponse;
-  identity: ReactNode;
   initiallyOpen: boolean;
 }): ReactNode {
   const [open, setOpen] = useState(initiallyOpen);
@@ -229,7 +227,7 @@ function EntryCard({
           {editing ? (
             <MedicalSummaryForm
               initial={toFields(entry)}
-              identity={identity}
+              identity={null}
               pending={mutation.isPending}
               error={mutation.error}
               onSubmit={(fields) => mutation.mutate(fields)}

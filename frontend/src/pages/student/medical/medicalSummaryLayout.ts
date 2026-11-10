@@ -321,3 +321,12 @@ export function toFields(entry: MedicalSummaryEntryResponse): MedicalSummaryFiel
   }
   return fields as MedicalSummaryFields;
 }
+
+export function withKnownOptions(fields: MedicalSummaryFields): MedicalSummaryFields {
+  const known = { ...fields };
+  for (const key of Object.keys(OPTIONS) as OptionKey[]) {
+    const allowed = new Set(OPTIONS[key].map((option) => option.value));
+    known[key] = fields[key].filter((value) => allowed.has(value));
+  }
+  return known;
+}
