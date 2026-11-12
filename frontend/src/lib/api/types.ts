@@ -556,10 +556,13 @@ export interface ReceptionReportUpsertRequest {
   management_updated: ReceptionChecklistItem;
 }
 
+export type WorkStyle = "individual" | "group";
+
 export interface SupportedEmploymentResponse {
   student_id: string;
   exists: boolean;
   workplace: string;
+  work_style: WorkStyle | null;
   address: string;
   activity_type: string;
   work_process: string;

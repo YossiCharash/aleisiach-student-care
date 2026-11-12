@@ -1116,6 +1116,19 @@ ADR-024.
   requires `Manager`; an instructor gets 403 like the professional teacher.
 - **UI:** the "סיכום עו״ס" tab and its help section are shown to managers only.
 
+## ADR-043 — Supported employment: work style + tab renamed "שילוב במקום העבודה" (2026-11-12)
+
+**Decision (per the user):**
+- A new field **סגנון עבודה** with the options **אישי / קבוצתי**, placed right below מקום העבודה
+  on screen, in the form and in the PDF. It is optional (empty shows "—").
+- The student-screen tab label changes from "עבודה נתמכת" to **"שילוב במקום העבודה"**. The card
+  and PDF title stay "ניתוח עבודה נתמכת" (the source form's name).
+
+**Data model:** migration `0044_employment_work_style` adds a nullable
+`supported_employments.work_style` (`String(16)`), stored by value (`individual` / `group`) via
+`values_callable`, like the risk category (0043). API: `work_style` on the supported-employment
+GET/PUT body; an unknown value answers 422. Audit lists it among the changed fields.
+
 ---
 
 ## Open / deferred items (not yet ADRs)

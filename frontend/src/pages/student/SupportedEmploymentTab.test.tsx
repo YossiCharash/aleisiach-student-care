@@ -21,6 +21,7 @@ const emptyReport: SupportedEmploymentResponse = {
   student_id: "s1",
   exists: false,
   workplace: "",
+  work_style: null,
   address: "",
   activity_type: "",
   work_process: "",
@@ -37,6 +38,7 @@ const filledReport: SupportedEmploymentResponse = {
   ...emptyReport,
   exists: true,
   workplace: "מאפייה מרכזית",
+  work_style: "group",
   hazards_and_safety: "תנור חם",
   work_hours: "08:00-14:00",
 };
@@ -66,6 +68,8 @@ describe("SupportedEmploymentTab", () => {
     expect(await screen.findByText("מאפייה מרכזית")).toBeInTheDocument();
     expect(screen.getByText("תנור חם")).toBeInTheDocument();
     expect(screen.getByText("08:00-14:00")).toBeInTheDocument();
+    expect(screen.getByText("סגנון עבודה")).toBeInTheDocument();
+    expect(screen.getByText("קבוצתי")).toBeInTheDocument();
   });
 
   it("lets a manager fill and save the analysis", async () => {
@@ -81,6 +85,22 @@ describe("SupportedEmploymentTab", () => {
     expect(upsertMock).toHaveBeenCalledWith(
       "s1",
       expect.objectContaining({ workplace: "מאפייה" })
+    );
+  });
+
+  it("lets a manager pick the work style", async () => {
+    getMock.mockResolvedValue(emptyReport);
+    upsertMock.mockResolvedValue({ ...filledReport });
+
+    renderWithClient(<SupportedEmploymentTab studentId="s1" />);
+
+    await userEvent.click(await screen.findByText("מילוי הטופס"));
+    await userEvent.selectOptions(screen.getByLabelText("סגנון עבודה"), "individual");
+    await userEvent.click(screen.getByText("שמירה"));
+
+    expect(upsertMock).toHaveBeenCalledWith(
+      "s1",
+      expect.objectContaining({ work_style: "individual" })
     );
   });
 });

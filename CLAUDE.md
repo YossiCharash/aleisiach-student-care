@@ -398,9 +398,11 @@ on purpose: it has no access to any of these.
   - **Supported employment** (עבודה נתמכת — טופס 46): a **manager-only** tab (read + write
     manager-only; instructors and professional teachers are blocked, so the tab is hidden and the
     API answers 403), placed **last, after the functional report**. **One stored record per
-    student, updated in place**, modeled on the client's Form 46 ("ניתוח עבודה נתמכת"). Eleven
+    student, updated in place**, modeled on the client's Form 46 ("ניתוח עבודה נתמכת"). The tab
+    label reads **"שילוב במקום העבודה"** (ADR-043). Eleven
     free-text fields — מקום העבודה · כתובת · סוג הפעילות · תהליך העבודה · סביבת העבודה · תפקודי גוף
-    נחוצים · סכנות ובטיחות · איש קשר במקום העבודה · איש קשר מלווה · ניידות · שעת עבודה — with **no
+    נחוצים · סכנות ובטיחות · איש קשר במקום העבודה · איש קשר מלווה · ניידות · שעת עבודה — plus a
+    **סגנון עבודה** choice (**אישי / קבוצתי**, optional) right below מקום העבודה (ADR-043) — with **no
     identity header and no issuer/date footer** (the source form has none; `updated_by`/`updated_at`
     are still stored for the audit log). Server-side **WeasyPrint PDF** export in the app's own
     branded layout. (Added 2026-09-15, ADR-027.)

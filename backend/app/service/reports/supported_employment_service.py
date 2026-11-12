@@ -18,6 +18,7 @@ from backend.app.utils.service.clock import Clock
 _ENTITY_TYPE = "supported_employment"
 _FIELDS = (
     "workplace",
+    "work_style",
     "address",
     "activity_type",
     "work_process",

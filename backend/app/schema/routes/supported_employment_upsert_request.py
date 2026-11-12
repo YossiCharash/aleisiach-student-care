@@ -1,10 +1,13 @@
 from pydantic import BaseModel, Field
 
+from backend.app.models.client.work_style import WorkStyle
+
 _MAX_FIELD = 5000
 
 
 class SupportedEmploymentUpsertRequest(BaseModel):
     workplace: str = Field(default="", max_length=_MAX_FIELD)
+    work_style: WorkStyle | None = None
     address: str = Field(default="", max_length=_MAX_FIELD)
     activity_type: str = Field(default="", max_length=_MAX_FIELD)
     work_process: str = Field(default="", max_length=_MAX_FIELD)

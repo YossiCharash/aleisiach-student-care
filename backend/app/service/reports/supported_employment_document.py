@@ -1,6 +1,7 @@
 from html import escape
 
 from backend.app.configuration.pdf.brand_settings import BrandSettings
+from backend.app.models.client.work_style_labels import WORK_STYLE_LABELS
 from backend.app.schema.routes.supported_employment_response import SupportedEmploymentResponse
 from backend.app.schema.service.document_meta import DocumentMeta
 from backend.app.schema.service.issue_context import IssueContext
@@ -8,6 +9,7 @@ from backend.app.utils.service.document_shell import DocumentShell
 
 _FIELD_TITLES = (
     ("workplace", "מקום העבודה"),
+    ("work_style", "סגנון עבודה"),
     ("address", "כתובת"),
     ("activity_type", "סוג הפעילות"),
     ("work_process", "תהליך העבודה"),
@@ -42,6 +44,12 @@ class SupportedEmploymentDocument:
     def _fields(self, report: SupportedEmploymentResponse) -> str:
         return "".join(
             f"<h2>{escape(title)}</h2>"
-            f'<div class="section-body">{self._shell.value(getattr(report, field))}</div>'
+            f'<div class="section-body">{self._shell.value(self._text(report, field))}</div>'
             for field, title in _FIELD_TITLES
         )
+
+    def _text(self, report: SupportedEmploymentResponse, field: str) -> str:
+        if field == "work_style":
+            return WORK_STYLE_LABELS[report.work_style] if report.work_style else ""
+        text: str = getattr(report, field)
+        return text
