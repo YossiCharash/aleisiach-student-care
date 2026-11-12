@@ -1106,6 +1106,16 @@ changed field names only. API: `GET/POST /students/{id}/health-records`, `GET
 /responsible-candidates`, `PUT /{record_id}`, `POST /{record_id}/archive`, `GET /pdf[?domain_id=]`;
 domains: `GET /health-domains` (any role), `POST` / `PATCH /health-domains/{id}` (manager).
 
+## ADR-042 — Social-worker note becomes manager-only (2026-11-12)
+
+**Decision (per the user):** instructors no longer read the social-worker note (Tab 3); professional
+teachers stay blocked. Only managers read and write it. Supersedes the instructor "read only" of
+ADR-024.
+
+- **Server:** every `/students/{id}/social-note` endpoint — list, per-entry and combined PDF — now
+  requires `Manager`; an instructor gets 403 like the professional teacher.
+- **UI:** the "סיכום עו״ס" tab and its help section are shown to managers only.
+
 ## ADR-043 — Supported employment: work style + tab renamed "שילוב במקום העבודה" (2026-11-12)
 
 **Decision (per the user):**

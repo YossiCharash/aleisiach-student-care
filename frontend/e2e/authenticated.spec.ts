@@ -80,6 +80,10 @@ test.describe("role-based access in the UI", () => {
     await expect(page.getByRole("button", { name: "חניך חדש" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "סדנה חדשה" })).toHaveCount(0);
 
+    await page.getByRole("link", { name: "נועה כהן" }).click();
+    await expect(page.getByRole("tab", { name: "פרטים אישיים" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "סיכום עו״ס" })).toHaveCount(0);
+
     await page.getByRole("link", { name: "הגדרות", exact: true }).click();
     await expect(page.getByRole("tab", { name: "החשבון שלי" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "משתמשים" })).toHaveCount(0);

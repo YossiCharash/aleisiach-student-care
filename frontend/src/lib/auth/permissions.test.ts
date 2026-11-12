@@ -38,9 +38,11 @@ describe("permissions matrix", () => {
     expect(permissions.canWriteMeetings(teacher)).toBe(false);
   });
 
-  it("only the manager writes the social note; the teacher cannot read it", () => {
+  it("only the manager reads and writes the social note", () => {
     expect(permissions.canWriteSocialNote(manager)).toBe(true);
     expect(permissions.canWriteSocialNote(instructor)).toBe(false);
+    expect(permissions.canReadSocialNote(manager)).toBe(true);
+    expect(permissions.canReadSocialNote(instructor)).toBe(false);
     expect(permissions.canReadSocialNote(teacher)).toBe(false);
   });
 

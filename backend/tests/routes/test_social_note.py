@@ -54,7 +54,7 @@ def test_manager_creates_reads_updates_and_archives(
     assert after.json()["entries"] == []
 
 
-def test_instructor_reads_own_workshop_but_cannot_create(
+def test_instructor_is_blocked(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -65,35 +65,19 @@ def test_instructor_reads_own_workshop_but_cannot_create(
     student_id = seed_student(workshop_id)
     seed_user("boss", UserRole.MANAGER)
     seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
-    api.post(
+    created = api.post(
         f"/students/{student_id}/social-note",
         headers=auth_headers(api, "boss"),
         json=_BODY,
     )
-    teacher_headers = auth_headers(api, "teacher")
-
-    got = api.get(f"/students/{student_id}/social-note", headers=teacher_headers)
-    assert got.status_code == 200
-    assert got.json()["entries"][0]["content"] == "שיחה עם ההורים"
-
-    write = api.post(f"/students/{student_id}/social-note", headers=teacher_headers, json=_BODY)
-    assert write.status_code == 403
-
-
-def test_instructor_cannot_read_other_workshop_note(
-    api: TestClient,
-    seed_workshop: SeedWorkshop,
-    seed_student: SeedStudent,
-    seed_user: SeedUser,
-    auth_headers: AuthHeaders,
-) -> None:
-    class_a = seed_workshop("Aleph")
-    class_b = seed_workshop("Bet")
-    student_id = seed_student(class_b)
-    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
+    entry_id = created.json()["id"]
     headers = auth_headers(api, "teacher")
+    base = f"/students/{student_id}/social-note"
 
-    assert api.get(f"/students/{student_id}/social-note", headers=headers).status_code == 404
+    assert api.get(base, headers=headers).status_code == 403
+    assert api.get(f"{base}/pdf", headers=headers).status_code == 403
+    assert api.get(f"{base}/{entry_id}/pdf", headers=headers).status_code == 403
+    assert api.post(base, headers=headers, json=_BODY).status_code == 403
 
 
 def test_professional_teacher_is_blocked(

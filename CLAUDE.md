@@ -135,7 +135,7 @@ on purpose: it has no access to any of these.
 | Student list | All in the institution | Own class only | All in the institution |
 | Tab 1 — Program | Read/Write | Read/Write (own class) | Read |
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
-| Tab 3 — Social-worker note | Read/Write | Read only | **Blocked** |
+| Tab 3 — Social-worker note | Read/Write | **Blocked** | **Blocked** |
 | Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
 | Medical information summary | Read/Write | **Blocked** | **Blocked** |
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
@@ -339,8 +339,9 @@ on purpose: it has no access to any of these.
     entry's text** (date/author stay) and **delete** an entry — **archive-only** (soft-delete,
     retained in the audit log). **PDF export** per entry and a **combined report** of all the
     student's social-worker summaries (server-side WeasyPrint). Written by managers (manager =
-    social worker), read-only for instructors, blocked for professional teachers. (Changed
-    2026-09-09, ADR-024 — superseded the single-note-per-student shape.)
+    social worker); **manager-only** — instructors and professional teachers are blocked, so the
+    tab is hidden and the API answers 403. (Changed 2026-09-09, ADR-024 — superseded the
+    single-note-per-student shape; instructor read removed 2026-11-12, ADR-042.)
   - Tab 4 — **Student details**: basic identity · emergency contacts & guardianship · official
     medical/functional diagnoses · + additional headings (5+) stored in **normalized tables**
     (`extra_section_type` + `student_extra_section`); the heading text is configurable in Settings.

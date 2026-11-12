@@ -73,16 +73,14 @@ describe("SocialNoteTab", () => {
     expect(screen.getByText("הערה חדשה")).toBeInTheDocument();
   });
 
-  it("renders a dated entry with its author for a read-only instructor", async () => {
-    signedInAs("instructor");
+  it("renders a dated entry with its author", async () => {
+    signedInAs("manager");
     listMock.mockResolvedValue(report([entry()]));
 
     renderWithClient(<SocialNoteTab studentId="s1" />);
 
     expect(await screen.findByText("שיחה עם ההורים")).toBeInTheDocument();
     expect(screen.getByText(/מור/)).toBeInTheDocument();
-    expect(screen.queryByText("הערה חדשה")).not.toBeInTheDocument();
-    expect(screen.queryByText("עריכה")).not.toBeInTheDocument();
   });
 
   it("lets a manager add a dated note", async () => {

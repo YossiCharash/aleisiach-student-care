@@ -462,7 +462,7 @@ flowchart LR
   is platform-level: it reaches `/institutions` and nothing else, and every institution router
   carries the `require_tenant` dependency that rejects it. The three institution roles are
   unchanged; no social-worker role —
-  Tab 3 is written by managers. Professional teacher is read-only everywhere, blocked from Tab 3
+  Tab 3 is read and written by managers only (ADR-042). Professional teacher is read-only everywhere, blocked from Tab 3
   and the guardianship/legal-status fields (see `CLAUDE.md` §3 matrix).
 
 ---
