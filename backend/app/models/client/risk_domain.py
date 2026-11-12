@@ -12,5 +12,11 @@ class RiskDomain(OrderedTaxonomyNode):
     )
 
     category: Mapped[RiskCategory] = mapped_column(
-        Enum(RiskCategory, native_enum=False, length=16), nullable=False
+        Enum(
+            RiskCategory,
+            native_enum=False,
+            length=16,
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
+        nullable=False,
     )
