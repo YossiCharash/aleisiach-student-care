@@ -55,7 +55,7 @@ describe("HelpButton", () => {
     render(<HelpButton topic="student" />);
     await openHelp();
 
-    expect(screen.getByText("סיכום עו״ס")).toBeInTheDocument();
+    expect(screen.queryByText("סיכום עו״ס")).not.toBeInTheDocument();
     expect(screen.getByText("פתיחת ישיבת צוות")).toBeInTheDocument();
     expect(screen.queryByText("כתיבת סיכום עו״ס")).not.toBeInTheDocument();
     expect(screen.queryByText("מילוי הדוח התפקודי")).not.toBeInTheDocument();
