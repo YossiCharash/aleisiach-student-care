@@ -1124,7 +1124,7 @@ ADR-024.
 - The student-screen tab label changes from "עבודה נתמכת" to **"שילוב במקום העבודה"**. The card
   and PDF title stay "ניתוח עבודה נתמכת" (the source form's name).
 
-**Data model:** migration `0044_supported_employment_work_style` adds a nullable
+**Data model:** migration `0044_employment_work_style` adds a nullable
 `supported_employments.work_style` (`String(16)`), stored by value (`individual` / `group`) via
 `values_callable`, like the risk category (0043). API: `work_style` on the supported-employment
 GET/PUT body; an unknown value answers 422. Audit lists it among the changed fields.
