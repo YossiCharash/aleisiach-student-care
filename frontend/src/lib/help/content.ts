@@ -164,7 +164,7 @@ const student: HelpTopic = {
     {
       id: "social-note-read",
       title: "סיכום עו״ס",
-      roles: ["manager", "instructor"],
+      roles: ["manager"],
       blocks: [
         {
           kind: "text",

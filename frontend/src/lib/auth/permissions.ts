@@ -6,8 +6,7 @@ export const permissions = {
     user.role === "manager" || user.role === "instructor",
   canWriteMeetings: (user: UserResponse): boolean =>
     user.role === "manager" || user.role === "instructor",
-  canReadSocialNote: (user: UserResponse): boolean =>
-    user.role === "manager" || user.role === "instructor",
+  canReadSocialNote: (user: UserResponse): boolean => user.role === "manager",
   canWriteSocialNote: (user: UserResponse): boolean => user.role === "manager",
   canWriteFunctionalReport: (user: UserResponse): boolean => user.role === "manager",
   canWriteIncidentReports: (user: UserResponse): boolean =>

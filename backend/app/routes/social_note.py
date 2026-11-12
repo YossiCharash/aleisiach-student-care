@@ -10,7 +10,7 @@ from backend.app.client.notes.social_note_repository import SocialNoteRepository
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.routes.pdf import BrandDep, Issue, RendererDep
-from backend.app.routes.security import Manager, ManagerOrInstructor, require_tenant
+from backend.app.routes.security import Manager, require_tenant
 from backend.app.schema.routes.social_note_create_request import SocialNoteCreateRequest
 from backend.app.schema.routes.social_note_entry_response import SocialNoteEntryResponse
 from backend.app.schema.routes.social_note_report_response import SocialNoteReportResponse
@@ -47,7 +47,7 @@ router = APIRouter(
 
 @router.get("", response_model=SocialNoteReportResponse)
 def list_social_notes(
-    student_id: uuid.UUID, service: ServiceDep, reader: ManagerOrInstructor
+    student_id: uuid.UUID, service: ServiceDep, reader: Manager
 ) -> SocialNoteReportResponse:
     return service.report(student_id, StudentAccessPolicy.scope_for(reader))
 
@@ -90,7 +90,7 @@ def archive_social_note(
 def get_social_notes_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
-    reader: ManagerOrInstructor,
+    reader: Manager,
     issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
@@ -110,7 +110,7 @@ def get_social_note_pdf(
     student_id: uuid.UUID,
     entry_id: uuid.UUID,
     service: ServiceDep,
-    reader: ManagerOrInstructor,
+    reader: Manager,
     issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
