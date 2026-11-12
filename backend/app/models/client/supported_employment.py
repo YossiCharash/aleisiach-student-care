@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, ForeignKeyConstraint, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, ForeignKeyConstraint, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.app.models.base import Base
 from backend.app.models.client.tenant_scoped import TenantScoped
+from backend.app.models.client.work_style import WorkStyle
 
 
 class SupportedEmployment(TenantScoped, Base):
@@ -20,6 +21,15 @@ class SupportedEmployment(TenantScoped, Base):
 
     student_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     workplace: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    work_style: Mapped[WorkStyle | None] = mapped_column(
+        Enum(
+            WorkStyle,
+            native_enum=False,
+            length=16,
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
+        nullable=True,
+    )
     address: Mapped[str] = mapped_column(Text, nullable=False, default="")
     activity_type: Mapped[str] = mapped_column(Text, nullable=False, default="")
     work_process: Mapped[str] = mapped_column(Text, nullable=False, default="")

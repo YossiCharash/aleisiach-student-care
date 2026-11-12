@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 import { supportedEmploymentApi } from "@/lib/api/endpoints";
@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/api/queryKeys";
 import type {
   SupportedEmploymentResponse,
   SupportedEmploymentUpsertRequest,
+  WorkStyle,
 } from "@/lib/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -17,7 +18,21 @@ import { LoadingState } from "@/components/ui/Spinner";
 import { EmptyState, ErrorState, errorMessage } from "@/components/ui/ErrorState";
 import { PdfButton } from "@/components/PdfButton";
 
-type FieldKey = keyof SupportedEmploymentUpsertRequest;
+type FieldKey = Exclude<keyof SupportedEmploymentUpsertRequest, "work_style">;
+
+const WORK_STYLE_TITLE = "סגנון עבודה";
+
+const WORK_STYLES: { value: WorkStyle; label: string }[] = [
+  { value: "individual", label: "אישי" },
+  { value: "group", label: "קבוצתי" },
+];
+
+const SELECT_CLASS =
+  "h-11 w-full rounded-control border border-slate-300 bg-white px-2 text-sm text-ink shadow-soft focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-400/15";
+
+function workStyleLabel(style: WorkStyle | null): string {
+  return WORK_STYLES.find((option) => option.value === style)?.label ?? "";
+}
 
 const FIELDS: { key: FieldKey; title: string; multiline: boolean }[] = [
   { key: "workplace", title: "מקום העבודה", multiline: false },
@@ -36,6 +51,7 @@ const FIELDS: { key: FieldKey; title: string; multiline: boolean }[] = [
 function toDraft(report: SupportedEmploymentResponse): SupportedEmploymentUpsertRequest {
   return {
     workplace: report.workplace,
+    work_style: report.work_style,
     address: report.address,
     activity_type: report.activity_type,
     work_process: report.work_process,
@@ -97,12 +113,22 @@ export function SupportedEmploymentTab({ studentId }: { studentId: string }): Re
           <CardContent>
             <dl className="space-y-3 text-sm">
               {FIELDS.map((field) => (
-                <div key={field.key}>
-                  <dt className="text-ink-muted">{field.title}</dt>
-                  <dd className="whitespace-pre-wrap font-medium text-ink">
-                    {report[field.key] || "—"}
-                  </dd>
-                </div>
+                <Fragment key={field.key}>
+                  <div>
+                    <dt className="text-ink-muted">{field.title}</dt>
+                    <dd className="whitespace-pre-wrap font-medium text-ink">
+                      {report[field.key] || "—"}
+                    </dd>
+                  </div>
+                  {field.key === "workplace" && (
+                    <div>
+                      <dt className="text-ink-muted">{WORK_STYLE_TITLE}</dt>
+                      <dd className="font-medium text-ink">
+                        {workStyleLabel(report.work_style) || "—"}
+                      </dd>
+                    </div>
+                  )}
+                </Fragment>
               ))}
             </dl>
           </CardContent>
@@ -153,25 +179,53 @@ function SupportedEmploymentForm({
         </CardHeader>
         <CardContent className="space-y-4">
           {FIELDS.map((field) => (
-            <div key={field.key} className="space-y-1.5">
-              <Label htmlFor={field.key}>{field.title}</Label>
-              {field.multiline ? (
-                <Textarea
-                  id={field.key}
-                  value={draft[field.key]}
-                  maxLength={5000}
-                  onChange={(event) => setField(field.key, event.target.value)}
-                  className="min-h-24"
-                />
-              ) : (
-                <Input
-                  id={field.key}
-                  value={draft[field.key]}
-                  maxLength={5000}
-                  onChange={(event) => setField(field.key, event.target.value)}
-                />
+            <Fragment key={field.key}>
+              <div className="space-y-1.5">
+                <Label htmlFor={field.key}>{field.title}</Label>
+                {field.multiline ? (
+                  <Textarea
+                    id={field.key}
+                    value={draft[field.key]}
+                    maxLength={5000}
+                    onChange={(event) => setField(field.key, event.target.value)}
+                    className="min-h-24"
+                  />
+                ) : (
+                  <Input
+                    id={field.key}
+                    value={draft[field.key]}
+                    maxLength={5000}
+                    onChange={(event) => setField(field.key, event.target.value)}
+                  />
+                )}
+              </div>
+              {field.key === "workplace" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="work_style">{WORK_STYLE_TITLE}</Label>
+                  <select
+                    id="work_style"
+                    value={draft.work_style ?? ""}
+                    onChange={(event) =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        work_style:
+                          event.target.value === ""
+                            ? null
+                            : (event.target.value as WorkStyle),
+                      }))
+                    }
+                    className={SELECT_CLASS}
+                  >
+                    <option value="">בחירה…</option>
+                    {WORK_STYLES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
-            </div>
+            </Fragment>
           ))}
         </CardContent>
       </Card>

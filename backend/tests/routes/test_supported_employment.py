@@ -13,6 +13,7 @@ SeedStudent = Callable[..., uuid.UUID]
 
 _BODY = {
     "workplace": "מאפייה מרכזית",
+    "work_style": "individual",
     "address": "רחוב הפרחים 5",
     "activity_type": "אריזה",
     "work_process": "אריזת מאפים",
@@ -48,6 +49,7 @@ def test_manager_writes_and_reads(
     got = api.get(f"/students/{student_id}/supported-employment", headers=headers)
     assert got.status_code == 200
     assert got.json()["hazards_and_safety"] == "תנור חם"
+    assert got.json()["work_style"] == "individual"
 
 
 def test_get_before_write_returns_empty(
@@ -67,6 +69,7 @@ def test_get_before_write_returns_empty(
     payload = got.json()
     assert payload["exists"] is False
     assert payload["workplace"] == ""
+    assert payload["work_style"] is None
 
 
 def test_instructor_cannot_read_or_write(
@@ -132,3 +135,23 @@ def test_requires_authentication(
     student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/supported-employment").status_code == 401
+
+
+def test_rejects_an_unknown_work_style(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    workshop_id = seed_workshop("Aleph")
+    student_id = seed_student(workshop_id)
+    seed_user("boss", UserRole.MANAGER)
+
+    put = api.put(
+        f"/students/{student_id}/supported-employment",
+        headers=auth_headers(api, "boss"),
+        json={**_BODY, "work_style": "solo"},
+    )
+
+    assert put.status_code == 422

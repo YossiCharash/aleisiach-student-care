@@ -113,7 +113,7 @@ export function StudentPage(): ReactNode {
           <TabsTrigger value="risk-assessments">ניהול סיכונים</TabsTrigger>
           <TabsTrigger value="health-records">מקצועות הבריאות</TabsTrigger>
           {showSupportedEmployment && (
-            <TabsTrigger value="supported-employment">עבודה נתמכת</TabsTrigger>
+            <TabsTrigger value="supported-employment">שילוב במקום העבודה</TabsTrigger>
           )}
         </TabsList>
 

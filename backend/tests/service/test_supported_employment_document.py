@@ -70,3 +70,20 @@ def test_carries_the_institution_name() -> None:
     html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), _issue("בית ספר השרון"))
 
     assert "בית ספר השרון" in html
+
+
+def test_work_style_follows_workplace_as_a_hebrew_label() -> None:
+    html = SupportedEmploymentDocument(BrandSettings()).to_html(
+        _report(work_style="group"), _issue()
+    )
+
+    assert "סגנון עבודה" in html
+    assert "קבוצתי" in html
+    assert html.index("מקום העבודה") < html.index("סגנון עבודה") < html.index("כתובת")
+
+
+def test_missing_work_style_shows_a_dash() -> None:
+    html = SupportedEmploymentDocument(BrandSettings()).to_html(_report(), _issue())
+
+    section = html[html.index("סגנון עבודה") : html.index("כתובת")]
+    assert "—" in section
