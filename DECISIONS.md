@@ -1129,6 +1129,16 @@ ADR-024.
 `values_callable`, like the risk category (0043). API: `work_style` on the supported-employment
 GET/PUT body; an unknown value answers 422. Audit lists it among the changed fields.
 
+## ADR-044 — Functional report becomes manager-only (2026-11-15)
+
+**Decision (per the user):** instructors and professional teachers no longer read the functional
+report (Tab 5, Form 33). Only managers read and write it. Supersedes the instructor and
+professional-teacher "read only" of ADR-020 / ADR-036.
+
+- **Server:** every `/students/{id}/functional-report` endpoint — list, per-report and combined
+  PDF — now requires `Manager`; an instructor or a professional teacher gets 403.
+- **UI:** the "דוח תפקודי" tab and its help section are shown to managers only.
+
 ---
 
 ## Open / deferred items (not yet ADRs)

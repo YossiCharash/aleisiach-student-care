@@ -46,6 +46,14 @@ describe("permissions matrix", () => {
     expect(permissions.canReadSocialNote(teacher)).toBe(false);
   });
 
+  it("only the manager reads and writes the functional report", () => {
+    expect(permissions.canReadFunctionalReport(manager)).toBe(true);
+    expect(permissions.canReadFunctionalReport(instructor)).toBe(false);
+    expect(permissions.canReadFunctionalReport(teacher)).toBe(false);
+    expect(permissions.canWriteFunctionalReport(manager)).toBe(true);
+    expect(permissions.canWriteFunctionalReport(instructor)).toBe(false);
+  });
+
   it("only the manager can access the reception report", () => {
     expect(permissions.canAccessReceptionReport(manager)).toBe(true);
     expect(permissions.canAccessReceptionReport(instructor)).toBe(false);

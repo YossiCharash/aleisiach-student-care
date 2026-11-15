@@ -136,7 +136,7 @@ on purpose: it has no access to any of these.
 | Tab 1 — Program | Read/Write | Read/Write (own class) | Read |
 | Tab 2 — Team meetings | Read/Write | Read/Write | Read |
 | Tab 3 — Social-worker note | Read/Write | **Blocked** | **Blocked** |
-| Tab 5 — Functional report (Form 33) | Read/Write | Read | Read |
+| Tab 5 — Functional report (Form 33) | Read/Write | **Blocked** | **Blocked** |
 | Medical information summary | Read/Write | **Blocked** | **Blocked** |
 | Reception report (Form 39) | Read/Write | **Blocked** | **Blocked** |
 | Incident report (Form 35) | Read/Write · archive | Read/Write (own class) | Read |
@@ -150,7 +150,7 @@ on purpose: it has no access to any of these.
 
 > **Professional teacher = read-only everywhere** (decided) — **one exception: the
 > health-professions documentation tab, which every role writes** (ADR-041, 2026-11-10): sees all students, reads Tabs 1, 2
-> and the non-sensitive part of Tab 4; blocked from Tab 3 and from the guardianship/legal-status
+> and the non-sensitive part of Tab 4; blocked from Tab 3, Tab 5 and from the guardianship/legal-status
 > section of Tab 4; no write anywhere; no management Settings (may still open the Settings page
 > to reach the **"my account"** tab and change their own password).
 
@@ -360,8 +360,9 @@ on purpose: it has no access to any of these.
     free-text sections (רקע כללי · התחום התעסוקתי · התחום ההתנהגותי-רגשי · התחום התקשורתי-חברתי ·
     תחום עצמאות וכישורי חיים · סיכום והמלצות). The identity header (שם · ת"ז · תאריך לידה) is
     **auto-filled** from the student + Tab 4 details; the issuer ("נכתב על ידי") and date are
-    **auto-captured** from the manager who saves. Instructors and professional teachers **read only**
-    (the professional teacher is *not* blocked here). Server-side **WeasyPrint PDF** export. (Changed
+    **auto-captured** from the manager who saves. **Manager-only** — instructors and professional
+    teachers are blocked, so the tab is hidden and the API answers 403 (ADR-044, 2026-11-15; was read
+    only for both). Server-side **WeasyPrint PDF** export. (Changed
     2026-09-08, ADR-020 — superseded the earlier read-only surfacing of the Tab 4 emotional-identity
     and communication cards; those cards stay in Tab 4.)
   - **Incident report** (אירוע חריג — טופס 35): placed **after the functional report**. A **dated,
@@ -449,8 +450,8 @@ on purpose: it has no access to any of these.
       meetings read from Tab 1 and still do not feed it.
 - [x] Tab 5 — **manager-authored functional report ("Form 33")**; a dated series with history,
       edit + archive-only delete, per-report and combined PDFs (ADR-036, 2026-11-10; was one report
-      updated in place); six free-text sections; identity + issuer auto-filled; instructors and
-      professional teachers read only; server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).
+      updated in place); six free-text sections; identity + issuer auto-filled; **manager-only**
+      (instructors and professional teachers blocked — ADR-044, 2026-11-15); server-side WeasyPrint PDF (decided 2026-09-08, ADR-020).
       Superseded the earlier read-only surfacing of Tab 4 cards.
 - [x] Deletion & audit — **archive-only (manager); audit log records changes only** (decided).
       Retention period is a config value, number TBD.

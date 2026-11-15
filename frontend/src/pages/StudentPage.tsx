@@ -49,6 +49,7 @@ export function StudentPage(): ReactNode {
 
   const student = query.data;
   const showSocialNote = permissions.canReadSocialNote(user);
+  const showFunctionalReport = permissions.canReadFunctionalReport(user);
   const showMedicalSummary = permissions.canAccessMedicalSummary(user);
   const showReceptionReport = permissions.canAccessReceptionReport(user);
   const showSupportedEmployment = permissions.canAccessSupportedEmployment(user);
@@ -59,7 +60,7 @@ export function StudentPage(): ReactNode {
     "program",
     "meetings",
     ...(showSocialNote ? ["social-note"] : []),
-    "functional-report",
+    ...(showFunctionalReport ? ["functional-report"] : []),
     "incident-reports",
     "risk-assessments",
     "health-records",
@@ -108,7 +109,9 @@ export function StudentPage(): ReactNode {
           <TabsTrigger value="program">תוכנית קידום</TabsTrigger>
           <TabsTrigger value="meetings">ישיבות צוות</TabsTrigger>
           {showSocialNote && <TabsTrigger value="social-note">סיכום עו״ס</TabsTrigger>}
-          <TabsTrigger value="functional-report">דוח תפקודי</TabsTrigger>
+          {showFunctionalReport && (
+            <TabsTrigger value="functional-report">דוח תפקודי</TabsTrigger>
+          )}
           <TabsTrigger value="incident-reports">אירוע חריג</TabsTrigger>
           <TabsTrigger value="risk-assessments">ניהול סיכונים</TabsTrigger>
           <TabsTrigger value="health-records">מקצועות הבריאות</TabsTrigger>
@@ -145,9 +148,11 @@ export function StudentPage(): ReactNode {
             <SocialNoteTab studentId={student.id} />
           </TabsContent>
         )}
-        <TabsContent value="functional-report">
-          <FunctionalReportTab studentId={student.id} />
-        </TabsContent>
+        {showFunctionalReport && (
+          <TabsContent value="functional-report">
+            <FunctionalReportTab studentId={student.id} />
+          </TabsContent>
+        )}
         <TabsContent value="incident-reports">
           <IncidentReportTab studentId={student.id} />
         </TabsContent>

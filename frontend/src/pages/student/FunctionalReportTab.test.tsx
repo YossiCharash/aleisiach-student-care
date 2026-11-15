@@ -89,7 +89,7 @@ describe("FunctionalReportTab", () => {
   });
 
   it("lists dated reports with the newest one expanded", async () => {
-    signedInAs("instructor");
+    signedInAs("manager");
     listMock.mockResolvedValue(
       history([
         entry({ id: "new", report_date: "2026-09-08" }),
@@ -106,18 +106,6 @@ describe("FunctionalReportTab", () => {
 
     await userEvent.click(screen.getByText("הצגה"));
     expect(screen.getByText("רקע ישן")).toBeInTheDocument();
-  });
-
-  it("hides write actions from a read-only professional teacher", async () => {
-    signedInAs("professional_teacher");
-    listMock.mockResolvedValue(history([entry({})]));
-
-    renderWithClient(<FunctionalReportTab studentId="s1" />);
-
-    expect(await screen.findByText("רקע של נועה")).toBeInTheDocument();
-    expect(screen.queryByText("עריכה")).not.toBeInTheDocument();
-    expect(screen.queryByText("מחיקה")).not.toBeInTheDocument();
-    expect(screen.queryByText("דוח תפקודי חדש")).not.toBeInTheDocument();
   });
 
   it("lets a manager create a new dated report from an empty form", async () => {

@@ -83,13 +83,14 @@ test.describe("role-based access in the UI", () => {
     await page.getByRole("link", { name: "נועה כהן" }).click();
     await expect(page.getByRole("tab", { name: "פרטים אישיים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "סיכום עו״ס" })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "דוח תפקודי" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "הגדרות", exact: true }).click();
     await expect(page.getByRole("tab", { name: "החשבון שלי" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "משתמשים" })).toHaveCount(0);
   });
 
-  test("professional teacher (yoav) is read-only, no social-note tab", async ({
+  test("professional teacher (yoav) is read-only, no social-note or functional-report tab", async ({
     page,
   }) => {
     await login(page, "yoav");
@@ -100,5 +101,6 @@ test.describe("role-based access in the UI", () => {
     await page.getByRole("link", { name: "נועה כהן" }).click();
     await expect(page.getByRole("tab", { name: "פרטים אישיים" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "סיכום עו״ס" })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "דוח תפקודי" })).toHaveCount(0);
   });
 });

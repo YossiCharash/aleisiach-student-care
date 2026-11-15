@@ -110,7 +110,7 @@ def test_empty_report_is_rejected(
     assert response.status_code == 422
 
 
-def test_instructor_reads_own_workshop_but_cannot_write(
+def test_instructor_is_blocked(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -124,7 +124,9 @@ def test_instructor_reads_own_workshop_but_cannot_write(
     seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=workshop_id)
     headers = auth_headers(api, "teacher")
 
-    assert api.get(_url(student_id), headers=headers).status_code == 200
+    assert api.get(_url(student_id), headers=headers).status_code == 403
+    assert api.get(_url(student_id, "/pdf"), headers=headers).status_code == 403
+    assert api.get(_url(student_id, f"/{entry['id']}/pdf"), headers=headers).status_code == 403
     assert api.post(_url(student_id), headers=headers, json=_BODY).status_code == 403
     patch = api.patch(
         _url(student_id, f"/{entry['id']}"), headers=headers, json={"general_background": "x"}
@@ -134,7 +136,7 @@ def test_instructor_reads_own_workshop_but_cannot_write(
     assert archive.status_code == 403
 
 
-def test_professional_teacher_reads_but_cannot_write(
+def test_professional_teacher_is_blocked(
     api: TestClient,
     seed_workshop: SeedWorkshop,
     seed_student: SeedStudent,
@@ -142,27 +144,15 @@ def test_professional_teacher_reads_but_cannot_write(
     auth_headers: AuthHeaders,
 ) -> None:
     student_id = seed_student(seed_workshop("Aleph"))
+    seed_user("boss", UserRole.MANAGER)
+    entry = _create(api, student_id, auth_headers(api, "boss"))
     seed_user("prof", UserRole.PROFESSIONAL_TEACHER)
     headers = auth_headers(api, "prof")
 
-    assert api.get(_url(student_id), headers=headers).status_code == 200
+    assert api.get(_url(student_id), headers=headers).status_code == 403
+    assert api.get(_url(student_id, "/pdf"), headers=headers).status_code == 403
+    assert api.get(_url(student_id, f"/{entry['id']}/pdf"), headers=headers).status_code == 403
     assert api.post(_url(student_id), headers=headers, json=_BODY).status_code == 403
-
-
-def test_instructor_cannot_read_other_workshop(
-    api: TestClient,
-    seed_workshop: SeedWorkshop,
-    seed_student: SeedStudent,
-    seed_user: SeedUser,
-    auth_headers: AuthHeaders,
-) -> None:
-    class_a = seed_workshop("Aleph")
-    student_id = seed_student(seed_workshop("Bet"))
-    seed_user("teacher", UserRole.INSTRUCTOR, workshop_id=class_a)
-
-    response = api.get(_url(student_id), headers=auth_headers(api, "teacher"))
-
-    assert response.status_code == 404
 
 
 def test_single_and_combined_pdf_export(

@@ -186,6 +186,7 @@ const student: HelpTopic = {
     {
       id: "functional-report-read",
       title: "דוח תפקודי",
+      roles: ["manager"],
       blocks: [
         {
           kind: "text",

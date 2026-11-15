@@ -11,7 +11,7 @@ from backend.app.client.students.student_details_repository import StudentDetail
 from backend.app.client.students.student_repository import StudentRepository
 from backend.app.client.users.user_repository import UserRepository
 from backend.app.routes.pdf import BrandDep, Issue, RendererDep
-from backend.app.routes.security import CurrentUser, Manager, require_tenant
+from backend.app.routes.security import Manager, require_tenant
 from backend.app.schema.routes.functional_report_create_request import (
     FunctionalReportCreateRequest,
 )
@@ -65,9 +65,9 @@ def _pdf_response(pdf: bytes, student_name: str, document_name: str) -> Response
 
 @router.get("", response_model=FunctionalReportHistoryResponse)
 def list_functional_reports(
-    student_id: uuid.UUID, service: ServiceDep, user: CurrentUser
+    student_id: uuid.UUID, service: ServiceDep, reader: Manager
 ) -> FunctionalReportHistoryResponse:
-    return service.history(student_id, StudentAccessPolicy.scope_for(user))
+    return service.history(student_id, StudentAccessPolicy.scope_for(reader))
 
 
 @router.post("", response_model=FunctionalReportEntryResponse, status_code=status.HTTP_201_CREATED)
@@ -107,12 +107,12 @@ def archive_functional_report(
 def get_functional_reports_pdf(
     student_id: uuid.UUID,
     service: ServiceDep,
-    user: CurrentUser,
+    reader: Manager,
     issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
 ) -> Response:
-    history = service.history(student_id, StudentAccessPolicy.scope_for(user))
+    history = service.history(student_id, StudentAccessPolicy.scope_for(reader))
     pdf = renderer.render(FunctionalReportDocument(brand).combined_html(history, issue))
     return _pdf_response(pdf, issue.student_name, "דוחות תפקודיים")
 
@@ -122,11 +122,11 @@ def get_functional_report_pdf(
     student_id: uuid.UUID,
     entry_id: uuid.UUID,
     service: ServiceDep,
-    user: CurrentUser,
+    reader: Manager,
     issue: Issue,
     renderer: RendererDep,
     brand: BrandDep,
 ) -> Response:
-    history = service.entry_history(student_id, entry_id, StudentAccessPolicy.scope_for(user))
+    history = service.entry_history(student_id, entry_id, StudentAccessPolicy.scope_for(reader))
     pdf = renderer.render(FunctionalReportDocument(brand).single_html(history, issue))
     return _pdf_response(pdf, issue.student_name, "דוח תפקודי")
