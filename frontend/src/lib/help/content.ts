@@ -186,6 +186,7 @@ const student: HelpTopic = {
     {
       id: "functional-report-read",
       title: "דוח תפקודי",
+      roles: ["manager"],
       blocks: [
         {
           kind: "text",
@@ -284,7 +285,7 @@ const student: HelpTopic = {
       blocks: [
         {
           kind: "text",
-          text: "מכל מסמך (תוכנית אישית, ישיבה, סיכום עו״ס, דוח תפקודי) אפשר להפיק קובץ PDF מסודר בעברית בלחיצה על כפתור ה־PDF שבפינת המסמך.",
+          text: "מכל מסמך (למשל תוכנית אישית או ישיבת צוות) אפשר להפיק קובץ PDF מסודר בעברית בלחיצה על כפתור ה־PDF שבפינת המסמך.",
         },
       ],
     },

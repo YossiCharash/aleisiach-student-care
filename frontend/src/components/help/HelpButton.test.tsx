@@ -43,7 +43,7 @@ describe("HelpButton", () => {
     render(<HelpButton topic="student" />);
     await openHelp();
 
-    expect(screen.getByText("דוח תפקודי")).toBeInTheDocument();
+    expect(screen.queryByText("דוח תפקודי")).not.toBeInTheDocument();
     expect(screen.queryByText("סיכום עו״ס")).not.toBeInTheDocument();
     expect(screen.queryByText("פרטי אפוטרופסות ומעמד משפטי")).not.toBeInTheDocument();
     expect(screen.queryByText("עריכת תוכנית הקידום")).not.toBeInTheDocument();
@@ -59,6 +59,7 @@ describe("HelpButton", () => {
     expect(screen.getByText("פתיחת ישיבת צוות")).toBeInTheDocument();
     expect(screen.queryByText("כתיבת סיכום עו״ס")).not.toBeInTheDocument();
     expect(screen.queryByText("מילוי הדוח התפקודי")).not.toBeInTheDocument();
+    expect(screen.queryByText("דוח תפקודי")).not.toBeInTheDocument();
   });
 
   it("limits the settings topic to the account section for a non-manager", async () => {

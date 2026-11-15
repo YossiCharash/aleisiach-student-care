@@ -247,7 +247,8 @@ erDiagram
   sections, `author_id`, timestamps and archive-only soft-delete columns, mirroring
   `SOCIAL_NOTE_ENTRY` widened. Per-report and combined PDFs. The identity header (name · national id ·
   date of birth) and the issuer name are **resolved at read time** from `STUDENT` / `STUDENT_DETAILS` /
-  `USER` — not stored on the report. Manager writes; instructors and professional teachers read only.
+  `USER` — not stored on the report. Manager-only: read and write (instructors and professional
+  teachers get 403 — ADR-044).
   Server-side WeasyPrint PDF. (Earlier it was a read-only projection of the Tab 4 emotional-identity /
   communication fields; **superseded — ADR-020**.)
 - **Medical information summary ("סיכום מידע רפואי") is a dated series** — own table
