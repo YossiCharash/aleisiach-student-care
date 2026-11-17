@@ -28,6 +28,7 @@ def _details(
         date_of_birth=date(2012, 5, 1),
         age=14,
         address="רחוב הבנים 1",
+        phone="052-1234567",
         home_language="עברית",
         idd_severity="קלה",
         functioning_level="בינוני",
@@ -56,6 +57,7 @@ def test_full_details_include_guardianship() -> None:
 
     assert 'dir="rtl"' in html
     assert "123456789" in html
+    assert '<bdi dir="ltr">052-1234567</bdi>' in html
     assert "ADHD" in html
     assert "קושי בריכוז" in html
     assert "אמא" in html
@@ -116,6 +118,7 @@ def test_empty_fields_and_sections_are_omitted() -> None:
     assert "זהות" in html
     assert "123456789" in html
     assert "כתובת" not in html
+    assert "טלפון" not in html
     assert "אבחנות" in html
     assert "אוטיזם" not in html
     assert "אנשי קשר לחירום" not in html

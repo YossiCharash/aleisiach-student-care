@@ -92,6 +92,7 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://aleisiach:aleisiach@localhost:5432/aleisiach
       PYTHONPATH: ${{ github.workspace }}
+      AUTH_RATE_LIMIT_MAX_ATTEMPTS: 1000
     steps:
       - uses: actions/checkout@v4
       - name: Install uv

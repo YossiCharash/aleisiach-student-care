@@ -14,6 +14,7 @@ class StudentDetailsResponse(BaseModel):
     date_of_birth: date | None = None
     age: int | None = None
     address: str | None = None
+    phone: str | None = None
     home_language: str | None = None
     idd_severity: str | None = None
     functioning_level: str | None = None

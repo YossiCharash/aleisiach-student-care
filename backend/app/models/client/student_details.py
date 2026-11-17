@@ -23,6 +23,7 @@ class StudentDetails(TenantScoped, Base):
     national_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
     date_of_birth: Mapped[date | None] = mapped_column(Date, nullable=True)
     address: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(40), nullable=True)
     home_language: Mapped[str | None] = mapped_column(String(100), nullable=True)
     idd_severity: Mapped[str | None] = mapped_column(String(200), nullable=True)
     functioning_level: Mapped[str | None] = mapped_column(String(200), nullable=True)

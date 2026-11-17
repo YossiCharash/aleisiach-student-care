@@ -34,6 +34,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           age,
           details.home_language,
           details.address,
+          details.phone,
         ].some(filled)}
       >
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -41,6 +42,7 @@ export function DetailsView({ details }: { details: StudentDetailsResponse }): R
           <Field label="תאריך לידה" value={dob} />
           <Field label="גיל" value={age} />
           <Field label="שפת דיבור עיקרית בבית" value={details.home_language} />
+          <Field label="טלפון" value={details.phone} ltr />
           <Field label="כתובת" value={details.address} span2 />
         </dl>
       </Section>
@@ -208,10 +210,12 @@ function Field({
   label,
   value,
   span2,
+  ltr,
 }: {
   label: string;
   value: string | null;
   span2?: boolean;
+  ltr?: boolean;
 }): ReactNode {
   if (!filled(value)) {
     return null;
@@ -219,7 +223,9 @@ function Field({
   return (
     <div className={span2 ? "col-span-2" : undefined}>
       <dt className="text-ink-muted">{label}</dt>
-      <dd className="font-medium text-ink">{value}</dd>
+      <dd className="font-medium text-ink">
+        {ltr ? <bdi dir="ltr">{value}</bdi> : value}
+      </dd>
     </div>
   );
 }

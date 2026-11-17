@@ -243,6 +243,7 @@ class DemoSeeder:
                 national_id="000000000",
                 date_of_birth=date(2015, 3, 12),
                 address="רחוב הדגמה 1, עיר הדגמה",
+                phone="050-0000000",
                 home_language="עברית",
                 idd_severity="קלה",
                 functioning_level="בינוני",
