@@ -82,4 +82,20 @@ describe("DetailsForm", () => {
     expect(screen.getByDisplayValue("ADHD")).toBeInTheDocument();
     expect(screen.getByDisplayValue("קושי בריכוז")).toBeInTheDocument();
   });
+
+  it("prefills the optional phone in a left-to-right tel input", () => {
+    renderWithClient(
+      <DetailsForm
+        studentId="s1"
+        details={{ ...details(), phone: "052-1234567" }}
+        onDone={vi.fn()}
+      />
+    );
+
+    const phone = screen.getByLabelText("טלפון");
+    expect(phone).toHaveValue("052-1234567");
+    expect(phone).toHaveAttribute("type", "tel");
+    expect(phone).toHaveAttribute("dir", "ltr");
+    expect(phone).not.toBeRequired();
+  });
 });

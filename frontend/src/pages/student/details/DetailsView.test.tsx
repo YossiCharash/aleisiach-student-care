@@ -82,6 +82,6 @@ describe("DetailsView empty handling", () => {
     expect(screen.getByText("תעודת זהות רגשית")).toBeInTheDocument();
     expect(screen.getByText("אנשי קשר לחירום")).toBeInTheDocument();
     expect(screen.getByText("אמא")).toBeInTheDocument();
-    expect(screen.getByText("052-1234567")).toBeInTheDocument();
+    expect(screen.getByText("052-1234567")).toHaveAttribute("dir", "ltr");
   });
 });

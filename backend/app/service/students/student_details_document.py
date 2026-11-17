@@ -53,7 +53,7 @@ class StudentDetailsDocument:
             self._field("תאריך לידה", dob),
             self._field("גיל", age),
             self._field("כתובת", details.address),
-            self._field("טלפון", details.phone),
+            self._field("טלפון", details.phone, ltr=True),
             self._field("שפת דיבור עיקרית בבית", details.home_language),
         )
 
@@ -144,13 +144,11 @@ class StudentDetailsDocument:
         body = "".join(part for part in parts if part)
         return f"<h2>{escape(title)}</h2>{body}" if body else ""
 
-    def _field(self, label: str, value: str | None) -> str:
+    def _field(self, label: str, value: str | None, ltr: bool = False) -> str:
         if value is None or not value.strip():
             return ""
-        return (
-            f'<div class="field"><span class="label">{escape(label)}: </span>'
-            f"{escape(value)}</div>"
-        )
+        content = f'<bdi dir="ltr">{escape(value)}</bdi>' if ltr else escape(value)
+        return f'<div class="field"><span class="label">{escape(label)}: </span>{content}</div>'
 
     def _named_list(self, label: str, values: list[str]) -> str:
         if not values:

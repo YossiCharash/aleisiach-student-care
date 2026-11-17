@@ -57,7 +57,7 @@ def test_full_details_include_guardianship() -> None:
 
     assert 'dir="rtl"' in html
     assert "123456789" in html
-    assert "052-1234567" in html
+    assert '<bdi dir="ltr">052-1234567</bdi>' in html
     assert "ADHD" in html
     assert "קושי בריכוז" in html
     assert "אמא" in html
