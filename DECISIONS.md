@@ -1141,6 +1141,17 @@ professional-teacher "read only" of ADR-020 / ADR-036.
 
 ---
 
+## ADR-045 — Optional student phone number (2026-11-17)
+
+**Decision (per the user):** Tab 4's identity section gets a **טלפון** field for the student.
+It is **optional** — saving without it is valid, and an empty phone is hidden on screen and in the
+details PDF like every other empty field.
+
+**Data model:** migration `0045_student_phone` adds a nullable `student_details.phone`
+(`String(40)`, the same limit as a contact's phone). API: `phone` on the details GET/PUT body.
+Audit lists it among the changed fields. Read/write access follows the rest of Tab 4's identity
+section.
+
 ## Open / deferred items (not yet ADRs)
 - **Tab 4 extra sections** — the manager builds the headings/sub-headings themselves in Settings
   (ADR-011 mechanism implemented); no fixed names needed.

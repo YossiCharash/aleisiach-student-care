@@ -16,6 +16,7 @@ SeedStudent = Callable[..., object]
 _BODY = {
     "national_id": "123456789",
     "date_of_birth": "2012-05-01",
+    "phone": "052-1234567",
     "home_language": "עברית",
     "idd_severity": "mild",
     "additional_diagnoses": [{"name": "ADHD", "note": "קושי בריכוז"}],
@@ -57,6 +58,7 @@ def test_manager_upserts_and_reads_full_details(
     got = api.get(f"/students/{student_id}/details", headers=headers)
     assert got.status_code == 200
     assert got.json()["guardians"][0]["full_name"] == "Guardian"
+    assert got.json()["phone"] == "052-1234567"
     assert got.json()["sensitive_visible"] is True
 
 
@@ -196,3 +198,21 @@ def test_details_pdf_requires_authentication(
     student_id = seed_student(workshop_id)
 
     assert api.get(f"/students/{student_id}/details/pdf").status_code == 401
+
+
+def test_details_save_without_phone(
+    api: TestClient,
+    seed_workshop: SeedWorkshop,
+    seed_student: SeedStudent,
+    seed_user: SeedUser,
+    auth_headers: AuthHeaders,
+) -> None:
+    student_id = seed_student(seed_workshop("Aleph"))
+    seed_user("boss", UserRole.MANAGER)
+    headers = auth_headers(api, "boss")
+    body = {key: value for key, value in _BODY.items() if key != "phone"}
+
+    put = api.put(f"/students/{student_id}/details", headers=headers, json=body)
+
+    assert put.status_code == 200
+    assert put.json()["phone"] is None

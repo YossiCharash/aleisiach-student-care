@@ -44,6 +44,7 @@ interface FormValues {
   national_id: string;
   date_of_birth: string;
   address: string;
+  phone: string;
   home_language: string;
   idd_severity: string;
   functioning_level: string;
@@ -97,6 +98,7 @@ function toFormValues(details: StudentDetailsResponse): FormValues {
     national_id: details.national_id ?? "",
     date_of_birth: details.date_of_birth ?? "",
     address: details.address ?? "",
+    phone: details.phone ?? "",
     home_language: details.home_language ?? "",
     idd_severity: details.idd_severity ?? "",
     functioning_level: details.functioning_level ?? "",
@@ -165,6 +167,7 @@ function toRequest(values: FormValues): StudentDetailsUpsertRequest {
     national_id: emptyToNull(values.national_id),
     date_of_birth: emptyToNull(values.date_of_birth),
     address: emptyToNull(values.address),
+    phone: emptyToNull(values.phone),
     home_language: emptyToNull(values.home_language),
     idd_severity: emptyToNull(values.idd_severity),
     functioning_level: emptyToNull(values.functioning_level),
@@ -251,6 +254,16 @@ export function DetailsForm({ studentId, details, onDone }: Props): ReactNode {
           <div>
             <Label htmlFor="home_language">שפת דיבור עיקרית בבית</Label>
             <Input id="home_language" {...register("home_language")} maxLength={100} />
+          </div>
+          <div>
+            <Label htmlFor="phone">טלפון</Label>
+            <Input
+              id="phone"
+              type="tel"
+              dir="ltr"
+              {...register("phone")}
+              maxLength={40}
+            />
           </div>
           <div className="sm:col-span-2">
             <Label htmlFor="address">כתובת</Label>

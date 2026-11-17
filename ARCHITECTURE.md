@@ -181,6 +181,7 @@ erDiagram
         date dob
         int age
         string address
+        string phone "optional"
         string home_language
         enum legal_status "guardian_appointed|parents_are_guardians"
         jsonb contacts "guardian A/B + emergency"

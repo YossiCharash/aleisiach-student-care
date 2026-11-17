@@ -343,6 +343,7 @@ export interface StudentDetailsResponse {
   date_of_birth: string | null;
   age: number | null;
   address: string | null;
+  phone: string | null;
   home_language: string | null;
   idd_severity: string | null;
   functioning_level: string | null;
@@ -373,6 +374,7 @@ export interface StudentDetailsUpsertRequest {
   national_id: string | null;
   date_of_birth: string | null;
   address: string | null;
+  phone: string | null;
   home_language: string | null;
   idd_severity: string | null;
   functioning_level: string | null;

@@ -53,6 +53,7 @@ class StudentDetailsDocument:
             self._field("תאריך לידה", dob),
             self._field("גיל", age),
             self._field("כתובת", details.address),
+            self._field("טלפון", details.phone),
             self._field("שפת דיבור עיקרית בבית", details.home_language),
         )
 

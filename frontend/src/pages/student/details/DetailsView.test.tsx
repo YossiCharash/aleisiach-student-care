@@ -13,6 +13,7 @@ function details(
     date_of_birth: "2005-01-01",
     age: 20,
     address: null,
+    phone: null,
     home_language: null,
     idd_severity: "קלה",
     functioning_level: null,
@@ -49,6 +50,7 @@ describe("DetailsView empty handling", () => {
     expect(screen.getByText("123456789")).toBeInTheDocument();
 
     expect(screen.queryByText("כתובת")).not.toBeInTheDocument();
+    expect(screen.queryByText("טלפון")).not.toBeInTheDocument();
     expect(screen.queryByText(/אוטיזם/)).not.toBeInTheDocument();
     expect(screen.queryByText("אנשי קשר לחירום")).not.toBeInTheDocument();
     expect(screen.queryByText("פרופיל רפואי ובטיחותי קריטי")).not.toBeInTheDocument();
@@ -64,6 +66,7 @@ describe("DetailsView empty handling", () => {
       <DetailsView
         details={details({
           functioning_level: "בינוני",
+          phone: "052-1234567",
           expression_mode: "דיבור מילולי שוטף",
           previous_institution: "גן תקשורת",
           interests_strengths: "ציור",
@@ -79,5 +82,6 @@ describe("DetailsView empty handling", () => {
     expect(screen.getByText("תעודת זהות רגשית")).toBeInTheDocument();
     expect(screen.getByText("אנשי קשר לחירום")).toBeInTheDocument();
     expect(screen.getByText("אמא")).toBeInTheDocument();
+    expect(screen.getByText("052-1234567")).toBeInTheDocument();
   });
 });

@@ -21,6 +21,7 @@ function details(): StudentDetailsResponse {
     date_of_birth: null,
     age: null,
     address: null,
+    phone: null,
     home_language: null,
     idd_severity: null,
     functioning_level: null,

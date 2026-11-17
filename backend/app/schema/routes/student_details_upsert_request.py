@@ -15,6 +15,7 @@ class StudentDetailsUpsertRequest(BaseModel):
     national_id: str | None = Field(default=None, max_length=20)
     date_of_birth: date | None = None
     address: str | None = Field(default=None, max_length=300)
+    phone: str | None = Field(default=None, max_length=40)
     home_language: str | None = Field(default=None, max_length=100)
     idd_severity: str | None = Field(default=None, max_length=200)
     functioning_level: str | None = Field(default=None, max_length=200)

@@ -25,6 +25,7 @@ _TRACKED_FIELDS = (
     "national_id",
     "date_of_birth",
     "address",
+    "phone",
     "home_language",
     "idd_severity",
     "functioning_level",
@@ -111,6 +112,7 @@ class StudentDetailsService:
         details.national_id = request.national_id
         details.date_of_birth = request.date_of_birth
         details.address = request.address
+        details.phone = request.phone
         details.home_language = request.home_language
         details.idd_severity = request.idd_severity
         details.functioning_level = request.functioning_level
@@ -250,6 +252,7 @@ class StudentDetailsService:
             date_of_birth=details.date_of_birth,
             age=age,
             address=details.address,
+            phone=details.phone,
             home_language=details.home_language,
             idd_severity=details.idd_severity,
             functioning_level=details.functioning_level,
