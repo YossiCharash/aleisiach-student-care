@@ -71,7 +71,7 @@ def test_single_report_shows_recipient_identity_and_fields() -> None:
     assert "חצר" in html
     assert "בשעה 16:00" in html
     assert "לקח חשוב" in html
-    assert "מדריכת סדנה" in html
+    assert "מדריכת סדנה" not in html
 
 
 def test_checked_options_are_marked_and_other_text_is_shown() -> None:
