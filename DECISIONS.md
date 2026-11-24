@@ -863,7 +863,10 @@ container/CI, not on Windows dev machines (GTK libraries absent).
    institution-instructor chips to append their names or type any names freely; an **instructor**
    sees the free-text field only (the instructor list endpoint is manager-only, so no new endpoint
    was added). Participants is editable together with the summary, appears in the meeting's PDF, and
-   is included in the create/update audit changes.
+   is included in the create/update audit changes. *(Amended 2026-11-24: the chips became a
+   checkbox **dropdown** that lists the institution's active **managers and instructors**; ticking
+   a name adds it to the participants string and unticking removes it. Professional teachers are
+   not listed.)*
 4. **Team-meeting history as date tiles.** The meeting history is a grid of **date tiles**; clicking
    a tile opens a **floating dialog** with that meeting's participants, personal plan and summary,
    plus the edit action and per-meeting PDF export (replacing the earlier stacked cards).

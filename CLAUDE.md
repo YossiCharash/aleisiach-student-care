@@ -316,8 +316,9 @@ on purpose: it has no access to any of these.
     that shows the student's **current areas-to-strengthen and personal plan read-only** (a frozen
     snapshot taken at that moment), a **participants** (משתתפים) field, and a large **summary**
     (סיכום) free-text field, plus a **date picker** (defaults to today). **Participants** is stored
-    as a single string; on the form a **manager** may click institution-instructor chips to append
-    their names or type any names freely, while an instructor sees the free-text field only. On
+    as a single string; on the form a **manager** may tick names in a **staff dropdown** (the
+    institution's active managers and instructors — 2026-11-24) to add or remove them, or type any
+    names freely, while an instructor sees the free-text field only. On
     screen the snapshot shows **only תוכנית אישית — both מוקדי כוח and מוקדים לחיזוק are hidden**
     (both still stored in the snapshot, but the PDF now prints **only תוכנית אישית** too — ADR-034).
     The form also shows the
