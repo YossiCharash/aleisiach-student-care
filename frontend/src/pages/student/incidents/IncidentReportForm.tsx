@@ -9,7 +9,6 @@ import { Alert } from "@/components/ui/Alert";
 import { errorMessage } from "@/components/ui/ErrorState";
 import { toggled } from "@/lib/utils/arrays";
 import {
-  ATTACHMENT_NOTE,
   EVENT_SECTIONS,
   LESSON_SECTIONS,
   NATURES,
@@ -246,24 +245,6 @@ export function IncidentReportForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <TextSections draft={draft} update={update} sections={LESSON_SECTIONS} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>ממלא הטופס</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="max-w-sm">
-            <Label htmlFor="ir-filler-role">תפקיד</Label>
-            <Input
-              id="ir-filler-role"
-              value={draft.filler_role}
-              maxLength={300}
-              onChange={(event) => update("filler_role", event.target.value)}
-            />
-          </div>
-          <p className="text-sm text-ink-muted">{ATTACHMENT_NOTE}</p>
         </CardContent>
       </Card>
 
