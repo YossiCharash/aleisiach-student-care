@@ -35,6 +35,13 @@ function isParticipantCandidate(candidate: UserResponse): boolean {
   return PARTICIPANT_ROLES.includes(candidate.role) && candidate.status !== "disabled";
 }
 
+function uniqueByName(members: UserResponse[]): UserResponse[] {
+  return members.filter(
+    (member, index) =>
+      members.findIndex((other) => other.full_name === member.full_name) === index
+  );
+}
+
 export function ParticipantsField({ id, value, onChange }: Props): ReactNode {
   const { user } = useAuth();
   const isManager = user ? permissions.canManage(user) : false;
@@ -45,7 +52,9 @@ export function ParticipantsField({ id, value, onChange }: Props): ReactNode {
     enabled: isManager,
   });
 
-  const staff: UserResponse[] = (usersQuery.data ?? []).filter(isParticipantCandidate);
+  const staff: UserResponse[] = uniqueByName(
+    (usersQuery.data ?? []).filter(isParticipantCandidate)
+  );
   const names: string[] = splitNames(value);
   const selectedCount: number = staff.filter((member) =>
     names.includes(member.full_name)

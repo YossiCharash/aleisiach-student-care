@@ -75,6 +75,20 @@ describe("ParticipantsField", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("lists a name shared by two staff members once", async () => {
+    signedInAs("manager");
+    usersMock.mockResolvedValue([instructor, staffMember("u6", "דנה מדריכה", "manager")]);
+    renderWithClient(
+      <ParticipantsField id="participants" value="" onChange={() => {}} />
+    );
+
+    await openStaffDropdown();
+
+    expect(screen.getAllByRole("menuitemcheckbox", { name: "דנה מדריכה" })).toHaveLength(
+      1
+    );
+  });
+
   it("appends a checked staff member to the typed names", async () => {
     signedInAs("manager");
     const onChange = vi.fn();
