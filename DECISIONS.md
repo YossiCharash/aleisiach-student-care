@@ -954,6 +954,9 @@ ADR-032 — same font and layout as every other document).
 
 - **Recipient auto-filled:** "שם מקבל השירות המעורב באירוע" is the student's name + national ID,
   resolved at read time from `STUDENT` / `STUDENT_DETAILS` — not stored on the report.
+  _(2026-11-24: relabeled "שם החניך המעורב באירוע", and the affected-recipients question now reads
+  "חניכים שהיו נוכחים באירוע…" — the app's term is חניך, not מקבל שירות; the "ימולא ע״י מי שנכח
+  באירוע" hint under the form filler was dropped.)_
 - **Fields (from the form):** event date (required, defaults to today) · time · place · reporter name
   and role · report type (internal / external, single choice) · nature of the event (**multi-select**:
   accident/injury/death · violence · property damage · prohibited substances · other + free text) ·

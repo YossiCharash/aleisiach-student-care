@@ -64,6 +64,8 @@ def test_single_report_shows_recipient_identity_and_fields() -> None:
     html = _document().single_html(_history(_entry()), _issue())
 
     assert "דו״ח אירוע חריג" in html
+    assert "שם החניך המעורב באירוע" in html
+    assert "מקבל השירות" not in html
     assert "נועה, ת.ז 123456782" in html
     assert "09:05" in html
     assert "חצר" in html
