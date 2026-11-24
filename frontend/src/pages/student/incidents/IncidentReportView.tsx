@@ -43,7 +43,7 @@ export function IncidentReportView({
   return (
     <div className="space-y-5">
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-3">
-        <Field label="שם מקבל השירות המעורב באירוע" value={recipient} />
+        <Field label="שם החניך המעורב באירוע" value={recipient} />
         <Field label="תאריך האירוע" value={formatDate(entry.event_date)} />
         <Field label="שעת האירוע" value={shortTime(entry.event_time)} />
         <Field label="מקום האירוע" value={entry.location} />
