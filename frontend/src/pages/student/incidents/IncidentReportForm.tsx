@@ -52,7 +52,7 @@ export function IncidentReportForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <span className="text-sm text-ink-muted">שם מקבל השירות המעורב באירוע</span>
+            <span className="text-sm text-ink-muted">שם החניך המעורב באירוע</span>
             <p className="font-medium text-ink">{recipient}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -254,7 +254,6 @@ export function IncidentReportForm({
           <CardTitle>ממלא הטופס</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-ink-muted">ימולא ע״י מי שנכח באירוע.</p>
           <div className="max-w-sm">
             <Label htmlFor="ir-filler-role">תפקיד</Label>
             <Input

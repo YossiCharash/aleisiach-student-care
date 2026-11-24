@@ -37,7 +37,7 @@ export const EVENT_SECTIONS: { key: TextKey; title: string }[] = [
   { key: "staff_present", title: "אנשי צוות שנכחו באירוע" },
   {
     key: "affected_service_recipients",
-    title: "מקבלי שירות שהיו נוכחים באירוע והושפעו מכך ובאיזה אופן?",
+    title: "חניכים שהיו נוכחים באירוע והושפעו מכך ובאיזה אופן?",
   },
   { key: "warning_signs", title: "האם היו סימנים מקדימים לאירוע?" },
   {

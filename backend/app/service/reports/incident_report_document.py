@@ -43,7 +43,7 @@ _REFERRALS: dict[StrEnum, str] = {
 _EVENT_SECTIONS = (
     ("description", "תיאור האירוע"),
     ("staff_present", "אנשי צוות שנכחו באירוע"),
-    ("affected_service_recipients", "מקבלי שירות שהיו נוכחים באירוע והושפעו מכך ובאיזה אופן"),
+    ("affected_service_recipients", "חניכים שהיו נוכחים באירוע והושפעו מכך ובאיזה אופן"),
     ("warning_signs", "האם היו סימנים מקדימים לאירוע"),
     ("actions_taken", "סיכום הפעולות שבוצעו ע״י המדווח ואנשי הצוות האחרים"),
 )
@@ -104,7 +104,7 @@ class IncidentReportDocument:
         self, history: IncidentReportHistoryResponse, entry: IncidentReportEntryResponse
     ) -> str:
         return (
-            self._shell.field("שם מקבל השירות המעורב באירוע", self._recipient(history))
+            self._shell.field("שם החניך המעורב באירוע", self._recipient(history))
             + self._shell.field("תאריך האירוע", self._shell.value(entry.event_date))
             + self._shell.field("שעת האירוע", self._time(entry.event_time))
             + self._shell.field("מקום האירוע", entry.location)
